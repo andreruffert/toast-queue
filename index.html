@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toast Notifications</title>
+    <style>
+      body {
+        margin: unset;
+        min-height: 100dvh;
+        place-content: center;
+      }
+
+      [data-toast="popover"] {
+        --toast-width: 40vw;
+        /* --toast-width: 33ch; */
+      }
+
+      [data-toast="notification"] {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      /* [data-toast="popover"],
+      [data-toast="container"] {
+        width: 100%;
+      } */
+    </style>
+  </head>
+  <body>
+    <section>
+      <details>
+        <summary>Placement</summary>
+        <div>
+          <button onClick="window.toast.placement = 'top'">top</button>
+          <button onClick="window.toast.placement = 'top center'">top center</button>
+          <button onClick="window.toast.placement = 'top end'">top end</button>
+        </div>
+        <div>
+          <button onClick="window.toast.placement = 'bottom'">bottom</button>
+          <button onClick="window.toast.placement = 'bottom center'">bottom center</button>
+          <button onClick="window.toast.placement = 'bottom end'">bottom end</button>
+        </div>
+      </details>
+    </section>
+
+    <button onClick="window.toast.add(Math.random().toString(36).slice(2))">toast</button>
+    <script type="module">
+      import './src/index.js';
+
+
+    </script>
+  </body>
+</html>

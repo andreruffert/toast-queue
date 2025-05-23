@@ -1,0 +1,17 @@
+{
+  "name": "toast-queue",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "format": "biome check --write",
+    "lint": "biome ci"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "vite": "6.2.0"
+  }
+}
