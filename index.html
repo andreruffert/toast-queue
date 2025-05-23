@@ -22,6 +22,11 @@
         justify-content: space-between;
       }
 
+      [data-toast="popover"]:popover-open {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
       /* [data-toast="popover"],
       [data-toast="container"] {
         width: 100%;
@@ -33,9 +38,9 @@
       <details>
         <summary>Placement</summary>
         <div>
-          <button onClick="window.toast.placement = 'top'">top</button>
-          <button onClick="window.toast.placement = 'top center'">top center</button>
-          <button onClick="window.toast.placement = 'top end'">top end</button>
+          <button onClick="setToastPlacement('top')">top</button>
+          <button onClick="setToastPlacement('top center')">top center</button>
+          <button onClick="setToastPlacement('top end')">top end</button>
         </div>
         <div>
           <button onClick="window.toast.placement = 'bottom'">bottom</button>
@@ -47,9 +52,22 @@
 
     <button onClick="window.toast.add(Math.random().toString(36).slice(2))">toast</button>
     <script type="module">
-      import './src/index.js';
+      import {ToastQueue} from './src/index.js';
 
+      const toastPlacement = localStorage.getItem('toast-placement') || 'top center';
 
+      const toast = new ToastQueue({
+        timeout: null,
+        placement: toastPlacement,
+        root: document.body
+      });
+
+      window.toast = toast;
+
+      window.setToastPlacement = (value) => {
+        window.toast.placement = value;
+        localStorage.setItem('toast-placement', value);
+      }
     </script>
   </body>
 </html>
