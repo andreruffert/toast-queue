@@ -13,6 +13,8 @@ TOAST_TEMPLATE.innerHTML = `<li data-toast="root" role="alertdialog" aria-modal=
   </div>
 </li>`;
 
+const MAX_TOASTS = 5;
+
 const getPlacementViewTransitionClass = (placement) => {
   if (placement === 'top') return 'block-start inline-start';
   if (placement === 'top center') return 'block-start';
@@ -25,8 +27,8 @@ const getPlacementViewTransitionClass = (placement) => {
 export class ToastQueue {
   #queue = new Set();
   #timeout = 8000;
-  #placement = 'top end';
   /** @type ToastPlacement 'top' | 'top center' | 'top end' | 'bottom' | 'bottom center' | 'bottom end' */
+  #placement = 'top end';
   #popover;
   #container;
 
@@ -42,7 +44,7 @@ export class ToastQueue {
     root.appendChild(toastContainer);
 
     this.#popover.addEventListener('click', (event) => {
-      console.log(event.target.dataset);
+      console.log('click', event.target.dataset);
 
       if (event.target.dataset.toastButton === 'minimize') {
         wrapInViewTransition(() => {
@@ -52,9 +54,12 @@ export class ToastQueue {
         return;
       }
 
-      if (event.target.closest('[data-toast="container"]').dataset.minimized !== '') return;
-      if (event.target.dataset.toastButton === 'clear') return;
-      console.log(event.target);
+      // if (event.target.closest('[data-toast="container"]')?.dataset.minimized !== '') return;
+      if (event.target.dataset.toastButton === 'clear') {
+        const toastId = event.target.closest('[data-toast-id]').dataset.toastId;
+        this.close(toastId);
+        return;
+      }
 
       wrapInViewTransition(() => {
         this.#container.removeAttribute('data-minimized', '');
@@ -106,6 +111,29 @@ export class ToastQueue {
     }
   }
 
+  render(toasts = []) {
+    wrapInViewTransition(() => {
+      if (toasts.length === 0) {
+        this.#popover.hidePopover();
+      }
+      if (toasts.length === 1) {
+        this.#popover.showPopover();
+      }
+
+      this.#container.innerHTML = '';
+
+      for (const toast of toasts) {
+        if (this.#container.firstChild) {
+          this.#container.insertBefore(toast.ref, this.#container.firstChild);
+        } else {
+          this.#container.appendChild(toast.ref);
+        }
+      }
+
+      // toastNotification.scrollIntoView();
+    });
+  }
+
   add(content, variant, options) {
     const timeout = options?.timeout || this.#timeout;
     const clone = TOAST_TEMPLATE.content.cloneNode(true);
@@ -138,38 +166,20 @@ export class ToastQueue {
     this.#container.style.setProperty('--numtoasts', this.#queue.size);
     this.#container.setAttribute('aria-label', `${this.#queue.size} notifications`);
 
-    wrapInViewTransition(() => {
-      if (this.#queue.size === 1) {
-        this.#popover.showPopover();
-      }
+    this.render(
+      Array.from(this.#queue)
+        .reverse()
+        .filter((_, i) => i <= MAX_TOASTS)
+        .reverse(),
+    );
 
-      if (this.#container.firstChild) {
-        this.#container.insertBefore(toastRoot, this.#container.firstChild);
-      } else {
-        this.#container.appendChild(toastRoot);
-      }
+    // toastClearButton.addEventListener('click', (event) => {
+    //   console.log('clear', event.target);
+    //   this.close(toastId);
+    // });
 
-      toastNotification.scrollIntoView();
-    });
-
-    toastClearButton.addEventListener('click', (event) => {
-      console.log('clear', event.target);
-      this.close(toastId);
-    });
-
-    toastRoot.addEventListener('toggle', (event) => {
-      console.log('toggle', event.target);
-    });
-
-    // toastRoot.addEventListener("scrollsnapchanging", event => {
-    //   const toastId = event.target.dataset.toastId;
-    //   const snapTarget = event.snapTargetInline;
-    //   if (!toastId) return;
-    //   if (snapTarget.dataset.toast === 'sentinel') {
-    //     console.log(event);
-    //     this.close(toastId);
-    //   };
-
+    // toastRoot.addEventListener('toggle', (event) => {
+    //   console.log('toggle', event.target);
     // });
 
     return toastRoot;
@@ -191,12 +201,13 @@ export class ToastQueue {
     this.#container.style.setProperty('--numtoasts', this.#queue.size);
     this.#container.setAttribute('aria-label', `${this.#queue.size} notifications`);
 
-    wrapInViewTransition(() => {
-      if (this.#queue.size === 0) {
-        this.#popover.hidePopover();
-      }
-      toastRef.remove();
-    });
+    // toastRef.remove();
+    this.render(
+      Array.from(this.#queue)
+        .reverse()
+        .filter((_, i) => i <= MAX_TOASTS)
+        .reverse(),
+    );
   }
 
   /** Clear all toasts. */
@@ -205,6 +216,7 @@ export class ToastQueue {
       toast.ref.remove();
     }
     this.#queue.clear();
+    this.render([]);
   }
 
   /** Pause the timer for all toasts. */
