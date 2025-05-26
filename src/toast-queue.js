@@ -1,9 +1,9 @@
-// import { Swipeable } from './swipeable';
+import { Swipeable } from './swipeable';
 import { Timer, wrapInViewTransition } from './utils';
 
 const TOAST_CONTAINER_TEMPLATE = document.createElement('template');
 TOAST_CONTAINER_TEMPLATE.innerHTML =
-  '<div data-toast="popover" popover="manual"><div data-toast="actions"><button data-toast-button="minimize">Show less</button></div><ul data-toast="container" data-minimized></ul></div>';
+  '<section data-toast="popover" popover="manual"><div data-toast="actions"><button data-toast-button="minimize">Show less</button></div><ul data-toast="container" data-minimized></ul></section>';
 
 const TOAST_TEMPLATE = document.createElement('template');
 TOAST_TEMPLATE.innerHTML = `<li data-toast="root" role="alertdialog" aria-modal="false" tabindex="0">
@@ -24,6 +24,15 @@ const getPlacementViewTransitionClass = (placement) => {
   if (placement === 'bottom end') return 'block-end inline-end';
 };
 
+const getSwipeableDirection = (placement) => {
+  if (placement === 'top') return 'inline-start';
+  if (placement === 'top center') return 'block-start';
+  if (placement === 'top end') return 'inline-end';
+  if (placement === 'bottom') return 'inline-start';
+  if (placement === 'bottom center') return 'block-end';
+  if (placement === 'bottom end') return 'inline-end';
+};
+
 export class ToastQueue {
   #queue = new Set();
   #timeout = 8000;
@@ -31,6 +40,7 @@ export class ToastQueue {
   #placement = 'top end';
   #popover;
   #container;
+  #swipeable;
 
   constructor(options) {
     this.#timeout = options?.timeout !== undefined ? options.timeout : this.#timeout;
@@ -42,6 +52,14 @@ export class ToastQueue {
     this.#popover.dataset.toastPlacement = this.#placement;
     this.#container = toastContainer.querySelector('[data-toast="container"]');
     root.appendChild(toastContainer);
+
+    this.#swipeable = new Swipeable({
+      direction: getSwipeableDirection(this.#placement),
+      removeFunction: (target) => {
+        const id = target.dataset.toastId;
+        this.close(id);
+      },
+    });
 
     this.#popover.addEventListener('click', (event) => {
       console.log('click', event.target.dataset);
@@ -82,13 +100,6 @@ export class ToastQueue {
         this.resumeAll();
       }
     });
-
-    // new Swipeable({
-    //   removeFunction: (target) => {
-    //     const id = target.dataset.toastId;
-    //     this.close(id);
-    //   },
-    // });
   }
 
   get placement() {
@@ -101,6 +112,7 @@ export class ToastQueue {
   set placement(value) {
     this.#placement = value;
     this.#popover.dataset.toastPlacement = value;
+    this.#swipeable.direction = getSwipeableDirection(value);
 
     // Update existing view transition classes
     for (const toast of this.#queue) {
@@ -112,6 +124,9 @@ export class ToastQueue {
   }
 
   render(toasts = []) {
+    this.#container.style.setProperty('--numtoasts', this.#queue.size);
+    this.#container.setAttribute('aria-label', `${this.#queue.size} notifications`);
+
     wrapInViewTransition(() => {
       if (toasts.length === 0) {
         this.#popover.hidePopover();
@@ -163,24 +178,12 @@ export class ToastQueue {
       timer: timeout ? new Timer(() => this.close(toastId), timeout) : undefined,
     });
 
-    this.#container.style.setProperty('--numtoasts', this.#queue.size);
-    this.#container.setAttribute('aria-label', `${this.#queue.size} notifications`);
-
     this.render(
       Array.from(this.#queue)
         .reverse()
         .filter((_, i) => i <= MAX_TOASTS)
         .reverse(),
     );
-
-    // toastClearButton.addEventListener('click', (event) => {
-    //   console.log('clear', event.target);
-    //   this.close(toastId);
-    // });
-
-    // toastRoot.addEventListener('toggle', (event) => {
-    //   console.log('toggle', event.target);
-    // });
 
     return toastRoot;
   }
@@ -197,9 +200,6 @@ export class ToastQueue {
       // toast.index = toast.index - 1;
       // toast.ref.style.setProperty('--index', toast.index);
     }
-
-    this.#container.style.setProperty('--numtoasts', this.#queue.size);
-    this.#container.setAttribute('aria-label', `${this.#queue.size} notifications`);
 
     // toastRef.remove();
     this.render(

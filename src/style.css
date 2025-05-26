@@ -62,7 +62,7 @@
 
   [data-toast="root"] {
     list-style-position: unset;
-    transition: all 0.2s ease-in-out;
+    /* transition: all 0.2s ease-in-out; */
   }
 
   [data-toast="root"]:first-child {
@@ -99,7 +99,6 @@
   }
   [data-toast="container"][data-minimized] [data-toast="root"]:nth-child(2) {
     scale: 0.95;
-    opacity: 0.6;
   }
   [data-toast="container"][data-minimized] [data-toast="root"]:nth-child(3),
   [data-toast="container"][data-minimized] [data-toast="root"]:nth-child(4) {
@@ -126,7 +125,7 @@
     -webkit-user-select: none;
 
     /* Make sure capture pointer events will work properly on touch devices */
-    touch-action: manipulation;
+    touch-action: none;
   }
 
   ::view-transition-group(.toast) {
