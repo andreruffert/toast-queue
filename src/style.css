@@ -7,6 +7,8 @@
     --numtoasts: 3;
     --toast-height: 55px;
     --toast-width: 33ch;
+
+    width: var(--toast-width);
   }
 
   [data-toast="popover"]:popover-open {
@@ -15,8 +17,9 @@
     inset: unset;
     background-color: unset;
     border: unset;
-    max-height: 100dvh;
-    overscroll-behavior: contain;
+    overflow: clip;
+    /* max-height: 100dvh; */
+    /* overscroll-behavior: contain; */
     /*scrollbar-width: none; */
   }
 
@@ -38,7 +41,6 @@
 
   [data-toast="container"] {
     pointer-events: auto;
-    width: fit-content;
     list-style: none;
     margin: unset;
     padding: unset;
@@ -53,7 +55,7 @@
 
   [data-toast="actions"] {
     pointer-events: auto;
-    width: var(--toast-width);
+    /* width: var(--toast-width); */
   }
 
   [data-toast="popover"]:has([data-minimized]) [data-toast="actions"] {
@@ -111,7 +113,7 @@
   }
 
   [data-toast="notification"] {
-    width: var(--toast-width);
+    /* width: var(--toast-width); */
     box-sizing: inherit;
     display: flex;
     padding: 1rem;
