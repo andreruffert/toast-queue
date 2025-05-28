@@ -1,3 +1,3 @@
 # toast-queue
 
-An opinionated toast component for the web.
+An opinionated toast library for the web.

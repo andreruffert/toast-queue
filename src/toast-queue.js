@@ -20,26 +20,26 @@ const render = (where, what) => {
 };
 
 const getpositionViewTransitionClass = (position) => {
-  if (position === 'top') return 'block-start inline-start';
+  if (position === 'top start') return 'block-start inline-start';
   if (position === 'top center') return 'block-start';
   if (position === 'top end') return 'block-start inline-end';
-  if (position === 'bottom') return 'block-end inline-start';
+  if (position === 'bottom start') return 'block-end inline-start';
   if (position === 'bottom center') return 'block-end';
   if (position === 'bottom end') return 'block-end inline-end';
 };
 
 const getSwipeableDirection = (position) => {
-  if (position === 'top') return 'inline-start';
+  if (position === 'top start') return 'inline-start';
   if (position === 'top center') return 'block-start';
   if (position === 'top end') return 'inline-end';
-  if (position === 'bottom') return 'inline-start';
+  if (position === 'bottom start') return 'inline-start';
   if (position === 'bottom center') return 'block-end';
   if (position === 'bottom end') return 'inline-end';
 };
 
 export class ToastQueue {
   #queue = new Set();
-  #timeout = 8000;
+  #timeout = null;
   /** @type ToastPosition 'top' | 'top center' | 'top end' | 'bottom' | 'bottom center' | 'bottom end' */
   #position = 'top end';
   #popover;

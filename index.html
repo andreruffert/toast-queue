@@ -52,10 +52,10 @@
     <section>
         <span>Toast Position</span>
         <menu>
-          <button onClick="setToastPosition('top')">top</button>
+          <button onClick="setToastPosition('top start')">top start</button>
           <button onClick="setToastPosition('top center')">top center</button>
           <button onClick="setToastPosition('top end')">top end</button>
-          <button onClick="setToastPosition('bottom')">bottom</button>
+          <button onClick="setToastPosition('bottom start')">bottom start</button>
           <button onClick="setToastPosition('bottom center')">bottom center</button>
           <button onClick="setToastPosition('bottom end')">bottom end</button>
         </menu>
@@ -68,7 +68,6 @@
       const toastPosition = localStorage.getItem('toast-position') || 'top center';
 
       window.toast = new ToastQueue({
-        timeout: null,
         position: toastPosition,
         root: document.body
       });
