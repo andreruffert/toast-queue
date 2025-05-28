@@ -45,7 +45,7 @@
     transition: all ease-in-out 0.25s;
   }
 
-  [data-toast="container"]:not([data-minimized]) {
+  [data-toast="popover"]:not([data-minimized]) [data-toast="container"] {
     gap: .6rem;
   }
 
@@ -53,7 +53,7 @@
     pointer-events: auto;
   }
 
-  [data-toast="popover"]:has([data-minimized]) [data-toast="actions"] {
+  [data-toast="popover"][data-minimized] [data-toast="actions"] {
     display: none;
   }
 
@@ -71,35 +71,35 @@
     z-index: 1;
   }
 
-  [data-toast-position^="top"]:has([data-minimized]) [data-toast="root"]:nth-child(2) {
+  [data-toast-position^="top"][data-minimized] [data-toast="root"]:nth-child(2) {
     margin-block-start: 10px;
   }
-  [data-toast-position^="top"]:has([data-minimized]) [data-toast="root"]:nth-child(3) {
+  [data-toast-position^="top"][data-minimized] [data-toast="root"]:nth-child(3) {
     margin-block-start: 19px;
   }
 
-  [data-toast-position^="bottom"]:has([data-minimized]) [data-toast="root"]:nth-child(2) {
+  [data-toast-position^="bottom"][data-minimized] [data-toast="root"]:nth-child(2) {
     margin-block-start: -10px;
   }
-  [data-toast-position^="bottom"]:has([data-minimized]) [data-toast="root"]:nth-child(3) {
+  [data-toast-position^="bottom"][data-minimized] [data-toast="root"]:nth-child(3) {
     margin-block-start: -19px;
   }
 
-  [data-toast="container"][data-minimized] [data-toast="root"]:not(:first-child) {
+  [data-toast="popover"][data-minimized] [data-toast="root"]:not(:first-child) {
     pointer-events: none;
   }
-  [data-toast="container"][data-minimized] [data-toast="root"] {
+  [data-toast="popover"][data-minimized] [data-toast="root"] {
     grid-area: 1 / 1;
   }
-  [data-toast="container"][data-minimized] [data-toast="root"]:nth-child(2) {
+  [data-toast="popover"][data-minimized] [data-toast="root"]:nth-child(2) {
     scale: 0.95;
   }
-  [data-toast="container"][data-minimized] [data-toast="root"]:nth-child(3),
-  [data-toast="container"][data-minimized] [data-toast="root"]:nth-child(4) {
+  [data-toast="popover"][data-minimized] [data-toast="root"]:nth-child(3),
+  [data-toast="popover"][data-minimized] [data-toast="root"]:nth-child(4) {
     scale: 0.9;
     opacity: 0.6;
   }
-  [data-toast="container"][data-minimized] [data-toast="root"]:nth-child(n + 4) {
+  [data-toast="popover"][data-minimized] [data-toast="root"]:nth-child(n + 4) {
     scale: 0.85;
     opacity: 0;
     block-size: 0;

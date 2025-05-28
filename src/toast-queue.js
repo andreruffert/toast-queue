@@ -76,7 +76,7 @@ export class ToastQueue {
 
       if (event.target.dataset.toastButton === 'minimize') {
         wrapInViewTransition(() => {
-          this.#container.setAttribute('data-minimized', '');
+          this.#popover.setAttribute('data-minimized', '');
         });
 
         return;
@@ -90,7 +90,7 @@ export class ToastQueue {
       }
 
       wrapInViewTransition(() => {
-        this.#container.removeAttribute('data-minimized', '');
+        this.#popover.removeAttribute('data-minimized', '');
       });
     });
 
