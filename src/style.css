@@ -4,11 +4,10 @@
   }
 
   [data-toast="popover"] {
-    --numtoasts: 3;
-    --toast-height: 55px;
     --toast-width: 33ch;
 
     width: var(--toast-width);
+    max-width: 100%;
   }
 
   [data-toast="popover"]:popover-open {
@@ -107,7 +106,6 @@
   }
 
   [data-toast="notification"] {
-    box-sizing: inherit;
     background-color: Canvas;
 
     /* Prevent selection relevant for touch devices */
