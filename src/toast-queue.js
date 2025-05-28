@@ -115,16 +115,8 @@ export class ToastQueue {
    */
   set placement(value) {
     this.#placement = value;
-    this.#popover.dataset.toastPlacement = value;
     this.#swipeable.direction = getSwipeableDirection(value);
-
-    // Update existing view transition classes
-    for (const toast of this.#queue) {
-      toast.ref.style.setProperty(
-        'view-transition-class',
-        `toast ${getPlacementViewTransitionClass(value)}`,
-      );
-    }
+    this.update();
   }
 
   update() {
@@ -135,6 +127,7 @@ export class ToastQueue {
     this.#container.setAttribute('aria-label', `${this.#queue.size} notifications`);
 
     wrapInViewTransition(() => {
+      this.#popover.dataset.toastPlacement = this.#placement;
       render(this.#container, () => this.render());
     });
   }
@@ -179,7 +172,6 @@ export class ToastQueue {
 
     this.#queue.add(toastRef);
     this.update();
-
     return toastRef;
   }
 
@@ -189,17 +181,13 @@ export class ToastQueue {
         this.#queue.delete(toast);
       }
     }
-
     this.update();
   }
 
   /** Clear all toasts. */
   clearAll() {
-    for (const toast of this.#queue) {
-      toast.ref.remove();
-    }
     this.#queue.clear();
-    this.render([]);
+    this.update();
   }
 
   /** Pause the timer for all toasts. */

@@ -68,9 +68,7 @@
       });
 
       window.setToastPlacement = (value) => {
-        document.startViewTransition(() => {
-          window.toast.placement = value;
-        });
+        window.toast.placement = value;
         localStorage.setItem('toast-placement', value);
       }
     </script>
