@@ -78,11 +78,9 @@ export class ToastQueue {
         wrapInViewTransition(() => {
           this.#popover.setAttribute('data-minimized', '');
         });
-
         return;
       }
 
-      // if (event.target.closest('[data-toast="container"]')?.dataset.minimized !== '') return;
       if (event.target.dataset.toastButton === 'clear') {
         const toastId = event.target.closest('[data-toast-id]').dataset.toastId;
         this.delete(toastId);
@@ -129,7 +127,6 @@ export class ToastQueue {
     if (this.#queue.size === 0) this.#popover.hidePopover();
     if (this.#queue.size === 1) this.#popover.showPopover();
 
-    // this.#container.style.setProperty('--numtoasts', this.#queue.size);
     this.#container.setAttribute('aria-label', `${this.#queue.size} notifications`);
 
     wrapInViewTransition(() => {
@@ -146,24 +143,21 @@ export class ToastQueue {
         const toastId = toast.id;
         const ariaLabelId = `aria-label-${toastId}`;
         const toastRoot = clone.querySelector('[data-toast="root"]');
-        const toastNotification = clone.querySelector('[data-toast="notification"]');
         const toastContent = clone.querySelector('[data-toast="content"]');
-        const toastClearButton = clone.querySelector('[data-toast-button="clear"]');
 
         toastRoot.dataset.toastId = toastId;
         toastRoot.setAttribute('aria-labelledby', ariaLabelId);
-        // toastRoot.style.setProperty('--index', this.#queue.size + 1);
-        toastRoot.style.setProperty(
-          'touch-action',
-          'none',
-        ); /* Make sure capture pointer events will work properly on touch devices */
         toastRoot.style.setProperty('view-transition-name', `toast-${toastId}`);
         toastRoot.style.setProperty(
           'view-transition-class',
           `toast ${getpositionViewTransitionClass(this.#position)}`,
         );
+        // Make sure capture pointer events will work properly on touch devices
+        toastRoot.style.setProperty('touch-action', 'none');
+
         toastContent.textContent = toast?.content;
         toastContent.setAttribute('id', ariaLabelId);
+
         return toastRoot.outerHTML;
       })
       .join('');
