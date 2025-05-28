@@ -13,7 +13,11 @@ TOAST_TEMPLATE.innerHTML = `<li data-toast="root" role="alertdialog" aria-modal=
   </div>
 </li>`;
 
-const MAX_TOASTS = 5;
+const MAX_TOASTS = 6;
+
+const render = (where, what) => {
+  where.innerHTML = what();
+};
 
 const getPlacementViewTransitionClass = (placement) => {
   if (placement === 'top') return 'block-start inline-start';
@@ -57,12 +61,12 @@ export class ToastQueue {
       direction: getSwipeableDirection(this.#placement),
       removeFunction: (target) => {
         const id = target.dataset.toastId;
-        this.close(id);
+        this.delete(id);
       },
     });
 
     this.#popover.addEventListener('click', (event) => {
-      console.log('click', event.target.dataset);
+      if (event.target.closest('[data-swiping]')) return;
 
       if (event.target.dataset.toastButton === 'minimize') {
         wrapInViewTransition(() => {
@@ -75,7 +79,7 @@ export class ToastQueue {
       // if (event.target.closest('[data-toast="container"]')?.dataset.minimized !== '') return;
       if (event.target.dataset.toastButton === 'clear') {
         const toastId = event.target.closest('[data-toast-id]').dataset.toastId;
-        this.close(toastId);
+        this.delete(toastId);
         return;
       }
 
@@ -123,91 +127,70 @@ export class ToastQueue {
     }
   }
 
-  render(toasts = []) {
+  update() {
+    if (this.#queue.size === 0) this.#popover.hidePopover();
+    if (this.#queue.size === 1) this.#popover.showPopover();
+
     this.#container.style.setProperty('--numtoasts', this.#queue.size);
     this.#container.setAttribute('aria-label', `${this.#queue.size} notifications`);
 
     wrapInViewTransition(() => {
-      if (toasts.length === 0) {
-        this.#popover.hidePopover();
-      }
-      if (toasts.length === 1) {
-        this.#popover.showPopover();
-      }
-
-      this.#container.innerHTML = '';
-
-      for (const toast of toasts) {
-        if (this.#container.firstChild) {
-          this.#container.insertBefore(toast.ref, this.#container.firstChild);
-        } else {
-          this.#container.appendChild(toast.ref);
-        }
-      }
-
-      // toastNotification.scrollIntoView();
+      render(this.#container, () => this.render());
     });
+  }
+
+  render(toasts = Array.from(this.#queue).slice(Math.max(this.#queue.size - MAX_TOASTS, 0))) {
+    return toasts
+      .reverse()
+      .map((toast) => {
+        const clone = TOAST_TEMPLATE.content.cloneNode(true);
+        const toastId = toast.id;
+        const ariaLabelId = `aria-label-${toastId}`;
+        const toastRoot = clone.querySelector('[data-toast="root"]');
+        const toastNotification = clone.querySelector('[data-toast="notification"]');
+        const toastContent = clone.querySelector('[data-toast="content"]');
+        const toastClearButton = clone.querySelector('[data-toast-button="clear"]');
+
+        toastRoot.dataset.toastId = toastId;
+        toastRoot.setAttribute('aria-labelledby', ariaLabelId);
+        // toastRoot.style.setProperty('--index', this.#queue.size + 1);
+        toastRoot.style.setProperty('view-transition-name', `toast-${toastId}`);
+        toastRoot.style.setProperty(
+          'view-transition-class',
+          `toast ${getPlacementViewTransitionClass(this.#placement)}`,
+        );
+        toastContent.textContent = toast?.content;
+        toastContent.setAttribute('id', ariaLabelId);
+        return toastRoot.outerHTML;
+      })
+      .join('');
   }
 
   add(content, variant, options) {
     const timeout = options?.timeout || this.#timeout;
-    const clone = TOAST_TEMPLATE.content.cloneNode(true);
     const toastId = Math.random().toString(36).slice(2);
-    const labelId = `aria-label-${toastId}`;
-
-    const toastRoot = clone.querySelector('[data-toast="root"]');
-    const toastNotification = clone.querySelector('[data-toast="notification"]');
-    const toastContent = clone.querySelector('[data-toast="content"]');
-    const toastClearButton = clone.querySelector('[data-toast-button="clear"]');
-
-    toastRoot.dataset.toastId = toastId;
-    toastRoot.setAttribute('aria-labelledby', labelId);
-    toastRoot.style.setProperty('--index', this.#queue.size + 1);
-    toastRoot.style.setProperty('view-transition-name', `toast-${toastId}`);
-    toastRoot.style.setProperty(
-      'view-transition-class',
-      `toast ${getPlacementViewTransitionClass(this.#placement)}`,
-    );
-    toastContent.textContent = content;
-    toastContent.setAttribute('id', labelId);
-
-    this.#queue.add({
+    const toastRef = {
       id: toastId,
       index: this.#queue.size + 1,
-      ref: toastRoot,
-      timer: timeout ? new Timer(() => this.close(toastId), timeout) : undefined,
-    });
+      timer: timeout ? new Timer(() => this.delete(toastId), timeout) : undefined,
+      content,
+      variant,
+    };
 
-    this.render(
-      Array.from(this.#queue)
-        .reverse()
-        .filter((_, i) => i <= MAX_TOASTS)
-        .reverse(),
-    );
+    this.#queue.add(toastRef);
+    this.update();
 
-    return toastRoot;
+    return toastRef;
   }
 
-  close(id) {
-    let toastRef;
-
+  delete(id) {
     for (const toast of this.#queue) {
       if (toast.id === id) {
-        toastRef = toast.ref;
         this.#queue.delete(toast);
       }
-
-      // toast.index = toast.index - 1;
-      // toast.ref.style.setProperty('--index', toast.index);
     }
 
-    // toastRef.remove();
-    this.render(
-      Array.from(this.#queue)
-        .reverse()
-        .filter((_, i) => i <= MAX_TOASTS)
-        .reverse(),
-    );
+    this.update();
   }
 
   /** Clear all toasts. */

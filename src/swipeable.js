@@ -52,6 +52,7 @@ export class Swipeable {
     this.currentY = this.startY;
     this.isDragging = true;
     this.target.style.willChange = 'transform';
+    this.target.style.zIndex = 'calc(infinity)';
   };
 
   onMove = (event) => {
@@ -61,6 +62,7 @@ export class Swipeable {
     if (this.#direction === 'block-start' && event.pageY > this.startY) return;
     if (this.#direction === 'block-end' && event.pageY < this.startY) return;
 
+    this.target.dataset.swiping = '';
     this.currentX = event.pageX;
     this.currentY = event.pageY;
   };
@@ -141,7 +143,10 @@ export class Swipeable {
 
   resetTarget() {
     if (!this.target) return;
+    delete this.target.dataset.swiping;
+
     this.target.style.removeProperty('will-change');
+    this.target.style.removeProperty('z-index');
     this.target.style.removeProperty('transform');
     this.target.style.removeProperty('opacity');
     this.target = null;

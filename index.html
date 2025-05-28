@@ -10,16 +10,19 @@
         margin: unset;
         min-height: 100dvh;
         place-content: center;
+        text-align: center;
+      }
+
+      menu {
+        padding: unset;
+        overflow: auto;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
       }
 
       [data-toast="popover"] {
         --toast-width: 360px;
-        /* --toast-width: 33ch; */
-      }
-
-      [data-toast="notification"] {
-        display: flex;
-        justify-content: space-between;
       }
 
       [data-toast="popover"]:popover-open {
@@ -28,42 +31,41 @@
         gap: 1rem;
       }
 
-      /* [data-toast="popover"],
-      [data-toast="container"] {
-        width: clamp(200px, 40%, 400px);
-      } */
+      [data-toast="notification"] {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem;
+        background-color: white;
+        border: 1px solid #0000001a;
+        border-radius: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.102);
+      }
     </style>
   </head>
   <body>
     <section>
-      <details>
-        <summary>Placement</summary>
-        <div>
+        <span>Placement</span>
+        <menu>
           <button onClick="setToastPlacement('top')">top</button>
           <button onClick="setToastPlacement('top center')">top center</button>
           <button onClick="setToastPlacement('top end')">top end</button>
-        </div>
-        <div>
           <button onClick="setToastPlacement('bottom')">bottom</button>
           <button onClick="setToastPlacement('bottom center')">bottom center</button>
           <button onClick="setToastPlacement('bottom end')">bottom end</button>
-        </div>
-      </details>
+        </menu>
     </section>
 
-    <button onClick="window.toast.add(Math.random().toString(36).slice(2))">toast</button>
+    <button onClick="window.toast.add(Math.random().toString(36).slice(2))">🔔</button>
     <script type="module">
       import {ToastQueue} from './src/index.js';
 
       const toastPlacement = localStorage.getItem('toast-placement') || 'top center';
 
-      const toast = new ToastQueue({
+      window.toast = new ToastQueue({
         timeout: null,
         placement: toastPlacement,
         root: document.body
       });
-
-      window.toast = toast;
 
       window.setToastPlacement = (value) => {
         document.startViewTransition(() => {
@@ -71,13 +73,6 @@
         });
         localStorage.setItem('toast-placement', value);
       }
-
-
-      document.addEventListener('pagereveal', function(event) {
-
-        const viewTransition = event.viewTransition;
-        console.log({viewTransition})
-      });
     </script>
   </body>
 </html>
