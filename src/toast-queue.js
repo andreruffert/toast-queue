@@ -19,46 +19,52 @@ const render = (where, what) => {
   where.innerHTML = what();
 };
 
-const getPlacementViewTransitionClass = (placement) => {
-  if (placement === 'top') return 'block-start inline-start';
-  if (placement === 'top center') return 'block-start';
-  if (placement === 'top end') return 'block-start inline-end';
-  if (placement === 'bottom') return 'block-end inline-start';
-  if (placement === 'bottom center') return 'block-end';
-  if (placement === 'bottom end') return 'block-end inline-end';
+const getpositionViewTransitionClass = (position) => {
+  if (position === 'top') return 'block-start inline-start';
+  if (position === 'top center') return 'block-start';
+  if (position === 'top end') return 'block-start inline-end';
+  if (position === 'bottom') return 'block-end inline-start';
+  if (position === 'bottom center') return 'block-end';
+  if (position === 'bottom end') return 'block-end inline-end';
 };
 
-const getSwipeableDirection = (placement) => {
-  if (placement === 'top') return 'inline-start';
-  if (placement === 'top center') return 'block-start';
-  if (placement === 'top end') return 'inline-end';
-  if (placement === 'bottom') return 'inline-start';
-  if (placement === 'bottom center') return 'block-end';
-  if (placement === 'bottom end') return 'inline-end';
+const getSwipeableDirection = (position) => {
+  if (position === 'top') return 'inline-start';
+  if (position === 'top center') return 'block-start';
+  if (position === 'top end') return 'inline-end';
+  if (position === 'bottom') return 'inline-start';
+  if (position === 'bottom center') return 'block-end';
+  if (position === 'bottom end') return 'inline-end';
 };
 
 export class ToastQueue {
   #queue = new Set();
   #timeout = 8000;
-  /** @type ToastPlacement 'top' | 'top center' | 'top end' | 'bottom' | 'bottom center' | 'bottom end' */
-  #placement = 'top end';
+  /** @type ToastPosition 'top' | 'top center' | 'top end' | 'bottom' | 'bottom center' | 'bottom end' */
+  #position = 'top end';
   #popover;
   #container;
   #swipeable;
 
+  /**
+   * @typedef {Object} ToastQueueOptions
+   * @property {number} timeout -
+   * @property {string} position -
+   * @property {string} root -
+   */
   constructor(options) {
     this.#timeout = options?.timeout !== undefined ? options.timeout : this.#timeout;
-    this.#placement = options?.placement || this.#placement;
+    this.#position = options?.position || this.#position;
 
     const root = options?.root || document.body;
     const toastContainer = TOAST_CONTAINER_TEMPLATE.content.cloneNode(true);
     this.#popover = toastContainer.querySelector('[data-toast="popover"]');
-    this.#popover.dataset.toastPlacement = this.#placement;
+    this.#popover.dataset.toastPosition = this.#position;
     this.#container = toastContainer.querySelector('[data-toast="container"]');
     root.appendChild(toastContainer);
 
     this.#swipeable = new Swipeable({
-      direction: getSwipeableDirection(this.#placement),
+      direction: getSwipeableDirection(this.#position),
       removeFunction: (target) => {
         const id = target.dataset.toastId;
         this.delete(id);
@@ -106,15 +112,15 @@ export class ToastQueue {
     });
   }
 
-  get placement() {
-    return this.#placement;
+  get position() {
+    return this.#position;
   }
 
   /**
-   * @param {string} ToastPlacement - Toast placement
+   * @param {string} Toastposition - Toast position
    */
-  set placement(value) {
-    this.#placement = value;
+  set position(value) {
+    this.#position = value;
     this.#swipeable.direction = getSwipeableDirection(value);
     this.update();
   }
@@ -123,11 +129,11 @@ export class ToastQueue {
     if (this.#queue.size === 0) this.#popover.hidePopover();
     if (this.#queue.size === 1) this.#popover.showPopover();
 
-    this.#container.style.setProperty('--numtoasts', this.#queue.size);
+    // this.#container.style.setProperty('--numtoasts', this.#queue.size);
     this.#container.setAttribute('aria-label', `${this.#queue.size} notifications`);
 
     wrapInViewTransition(() => {
-      this.#popover.dataset.toastPlacement = this.#placement;
+      this.#popover.dataset.toastPosition = this.#position;
       render(this.#container, () => this.render());
     });
   }
@@ -147,10 +153,14 @@ export class ToastQueue {
         toastRoot.dataset.toastId = toastId;
         toastRoot.setAttribute('aria-labelledby', ariaLabelId);
         // toastRoot.style.setProperty('--index', this.#queue.size + 1);
+        toastRoot.style.setProperty(
+          'touch-action',
+          'none',
+        ); /* Make sure capture pointer events will work properly on touch devices */
         toastRoot.style.setProperty('view-transition-name', `toast-${toastId}`);
         toastRoot.style.setProperty(
           'view-transition-class',
-          `toast ${getPlacementViewTransitionClass(this.#placement)}`,
+          `toast ${getpositionViewTransitionClass(this.#position)}`,
         );
         toastContent.textContent = toast?.content;
         toastContent.setAttribute('id', ariaLabelId);

@@ -76,8 +76,8 @@ export class Swipeable {
     const screenX = this.currentX - this.startX;
     const screenY = this.currentY - this.startY;
     const threshold = this.#direction.includes('inline')
-      ? this.targetBCR.width * 0.5
-      : this.targetBCR.height * 0.8;
+      ? this.targetBCR.width * 0.3
+      : this.targetBCR.height * 0.6;
 
     if (this.#direction.includes('inline') && Math.abs(screenX) > threshold) {
       this.targetX = screenX > 0 ? this.targetBCR.width : -this.targetBCR.width;
