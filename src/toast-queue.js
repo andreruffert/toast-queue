@@ -3,7 +3,7 @@ import { Timer, wrapInViewTransition } from './utils';
 
 const TOAST_CONTAINER_TEMPLATE = document.createElement('template');
 TOAST_CONTAINER_TEMPLATE.innerHTML =
-  '<section data-toast="popover" popover="manual"><div data-toast="actions"><button data-toast-button="minimize">Show less</button></div><ul data-toast="container" data-minimized></ul></section>';
+  '<section data-toast="popover" popover="manual" data-minimized><div data-toast="actions"><button data-toast-button="minimize">Show less</button></div><ul data-toast="container"></ul></section>';
 
 const TOAST_TEMPLATE = document.createElement('template');
 TOAST_TEMPLATE.innerHTML = `<li data-toast="root" role="alertdialog" aria-modal="false" tabindex="0">
@@ -135,7 +135,9 @@ export class ToastQueue {
     });
   }
 
-  render(toasts = Array.from(this.#queue).slice(Math.max(this.#queue.size - MAX_TOASTS, 0))) {
+  render() {
+    const toasts = Array.from(this.#queue).slice(Math.max(this.#queue.size - MAX_TOASTS, 0));
+
     return toasts
       .reverse()
       .map((toast) => {
