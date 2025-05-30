@@ -39,7 +39,6 @@
   }
 
   [data-toast="container"] {
-    pointer-events: auto;
     list-style: none;
     margin: unset;
     padding: unset;
@@ -50,10 +49,6 @@
 
   [data-toast="popover"]:not([data-minimized]) [data-toast="container"] {
     gap: .6rem;
-  }
-
-  [data-toast="actions"] {
-    pointer-events: auto;
   }
 
   [data-toast="popover"][data-minimized] [data-toast="actions"] {
@@ -151,7 +146,6 @@
   @keyframes slide-in {
     from {
       translate: var(--slideX) var(--slideY);
-      scale: 1.1;
       opacity: 0;
     }
   }
@@ -159,7 +153,6 @@
   @keyframes slide-out {
     to {
       translate: var(--slideX) var(--slideY);
-      /* scale: 0.85; */
       opacity: 0;
     }
   }

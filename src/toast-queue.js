@@ -2,8 +2,13 @@ import { Swipeable } from './swipeable';
 import { Timer, wrapInViewTransition } from './utils';
 
 const TOAST_CONTAINER_TEMPLATE = document.createElement('template');
-TOAST_CONTAINER_TEMPLATE.innerHTML =
-  '<section data-toast="popover" popover="manual" data-minimized><div data-toast="actions"><button data-toast-button="minimize">Show less</button></div><ul data-toast="container"></ul></section>';
+TOAST_CONTAINER_TEMPLATE.innerHTML = `<section data-toast="popover" popover="manual" data-minimized>
+  <div data-toast="actions">
+    <button data-toast-button="minimize">Show less</button>
+    <button data-toast-button="clear-all">Clear all</button>
+  </div>
+  <ul data-toast="container"></ul>
+</section>`;
 
 const TOAST_TEMPLATE = document.createElement('template');
 TOAST_TEMPLATE.innerHTML = `<li data-toast="root" role="alertdialog" aria-modal="false" tabindex="0">
@@ -42,6 +47,7 @@ export class ToastQueue {
   #timeout = null;
   /** @type ToastPosition 'top' | 'top center' | 'top end' | 'bottom' | 'bottom center' | 'bottom end' */
   #position = 'top end';
+  #isMinimized = true;
   #popover;
   #container;
   #swipeable;
@@ -71,27 +77,6 @@ export class ToastQueue {
       },
     });
 
-    this.#popover.addEventListener('click', (event) => {
-      if (event.target.closest('[data-swiping]')) return;
-
-      if (event.target.dataset.toastButton === 'minimize') {
-        wrapInViewTransition(() => {
-          this.#popover.setAttribute('data-minimized', '');
-        });
-        return;
-      }
-
-      if (event.target.dataset.toastButton === 'clear') {
-        const toastId = event.target.closest('[data-toast-id]').dataset.toastId;
-        this.delete(toastId);
-        return;
-      }
-
-      wrapInViewTransition(() => {
-        this.#popover.removeAttribute('data-minimized', '');
-      });
-    });
-
     this.#container.addEventListener('pointerover', (event) => {
       if (!event.target.closest('[data-toast="container"]')) return;
       this.pauseAll();
@@ -110,6 +95,15 @@ export class ToastQueue {
     });
   }
 
+  set isMinimized(value) {
+    this.#isMinimized = value;
+    this.update();
+  }
+
+  get isMinimized() {
+    return this.#isMinimized;
+  }
+
   get position() {
     return this.#position;
   }
@@ -124,13 +118,14 @@ export class ToastQueue {
   }
 
   update() {
-    if (this.#queue.size === 0) this.#popover.hidePopover();
     if (this.#queue.size === 1) this.#popover.showPopover();
+    if (this.#queue.size === 0) this.#popover.hidePopover();
 
     this.#container.setAttribute('aria-label', `${this.#queue.size} notifications`);
 
     wrapInViewTransition(() => {
       this.#popover.dataset.toastPosition = this.#position;
+      this.#isMinimized ? this.#popover.dataset.minimized =  '' : delete this.#popover.dataset.minimized;
       render(this.#container, () => this.render());
     });
   }

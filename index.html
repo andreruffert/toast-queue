@@ -29,6 +29,7 @@
 
       [data-toast="popover"] {
         --toast-width: 380px;
+        padding: 1.5rem;
       }
 
       [data-toast="popover"]:popover-open {
@@ -43,7 +44,56 @@
         border: 1px solid #0000001a;
         border-radius: 1rem;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.102);
+        position: relative;
       }
+
+      [data-toast="actions"] {
+        view-transition-name: toast-actions;
+        view-transition-class: toast-actions;
+      }
+
+      ::view-transition-old(.toast-actions):only-child {
+        --slideX: 0;
+        --slideY: calc(-100%);
+        animation-name: slide-out;
+      }
+      ::view-transition-new(.toast-actions):only-child {
+        --slideX: 0;
+        --slideY: calc(-100%);
+        animation-name: slide-in;
+      }
+
+      [data-toast="popover"]:not([data-minimized]) [data-toast="actions"] {
+        display: flex;
+        justify-content: flex-end;
+        gap: .5rem;
+      }
+
+      [data-minimized] [data-toast="root"]:not(:first-child) [data-toast="notification"] [data-toast-button="clear"] {
+        display: none;
+      }
+
+
+      [data-toast="notification"] [data-toast-button="clear"] {
+        position: absolute;
+        right: 100%;
+        bottom: 100%;
+        translate: 50% 50%;
+        aspect-ratio: 1;
+        border-radius: 100%;
+        z-index: inherit;
+
+        border-color: ButtonBorder;
+        border-style: solid;
+        opacity: 0;
+        transition: opacity .3s ease-in-out;
+      }
+
+      [data-toast="notification"]:hover [data-toast-button="clear"] {
+        opacity: 1;
+      }
+
+
     </style>
   </head>
   <body>
@@ -74,6 +124,31 @@
         window.toast.position = value;
         localStorage.setItem('toast-position', value);
       }
+
+      document.addEventListener('click', event => {
+        if (event.target.dataset.toastButton === 'clear') {
+          const toastId = event.target.closest('[data-toast-id]').dataset.toastId;
+          toast.delete(toastId);
+          return;
+        }
+
+        if (event.target.closest('[data-minimized]')) {
+          if (event.target.closest('[data-swiping]')) return;
+          toast.isMinimized = false;
+          return;
+        }
+
+        if (event.target.dataset.toastButton === 'minimize') {
+          console.log(event.target)
+          toast.isMinimized = true;
+          return;
+        }
+
+        if (event.target.dataset.toastButton === 'clear-all') {
+          toast.clearAll();
+          return;
+        }
+      })
     </script>
   </body>
 </html>
