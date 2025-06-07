@@ -3,7 +3,7 @@ import { Timer, wrapInViewTransition } from './utils';
 
 const TOAST_CONTAINER_TEMPLATE = document.createElement('template');
 TOAST_CONTAINER_TEMPLATE.innerHTML = `<section data-toast="popover" popover="manual" data-minimized>
-  <div data-toast="actions">
+  <div data-toast="menubar">
     <button data-toast-button="minimize">Show less</button>
     <button data-toast-button="clear-all">Clear all</button>
   </div>
@@ -14,7 +14,8 @@ const TOAST_TEMPLATE = document.createElement('template');
 TOAST_TEMPLATE.innerHTML = `<li data-toast="root" role="alertdialog" aria-modal="false" tabindex="0">
   <div data-toast="notification">
     <div data-toast="content" role="alert" aria-atomic="true"></div>
-    <button data-toast-button="clear">x</button>
+    <div data-toast="actions"></div>
+    <button data-toast-button="clear">&times;</button>
   </div>
 </li>`;
 
@@ -61,6 +62,7 @@ export class ToastQueue {
   constructor(options) {
     this.#timeout = options?.timeout !== undefined ? options.timeout : this.#timeout;
     this.#position = options?.position || this.#position;
+    this.#isMinimized = options?.minimized || this.#isMinimized;
 
     const root = options?.root || document.body;
     const toastContainer = TOAST_CONTAINER_TEMPLATE.content.cloneNode(true);
@@ -125,13 +127,22 @@ export class ToastQueue {
 
     wrapInViewTransition(() => {
       this.#popover.dataset.toastPosition = this.#position;
-      this.#isMinimized ? this.#popover.dataset.minimized =  '' : delete this.#popover.dataset.minimized;
+      if (this.#isMinimized) {
+        this.#popover.dataset.minimized = '';
+      } else {
+        delete this.#popover.dataset.minimized;
+      }
       render(this.#container, () => this.render());
     });
   }
 
   render() {
     const toasts = Array.from(this.#queue).slice(Math.max(this.#queue.size - MAX_TOASTS, 0));
+
+    // TODO: handle timeout on render?
+    // if (toasts[0].options.timeout) {
+    //     toasts[0].timer = new Timer(() => this.delete(toastId), toasts[0].options.timeout)
+    // }
 
     return toasts
       .reverse()
@@ -141,6 +152,7 @@ export class ToastQueue {
         const ariaLabelId = `aria-label-${toastId}`;
         const toastRoot = clone.querySelector('[data-toast="root"]');
         const toastContent = clone.querySelector('[data-toast="content"]');
+        const toastActions = clone.querySelector('[data-toast="actions"]');
 
         toastRoot.dataset.toastId = toastId;
         toastRoot.setAttribute('aria-labelledby', ariaLabelId);
@@ -151,8 +163,10 @@ export class ToastQueue {
         );
         // Make sure capture pointer events will work properly on touch devices
         toastRoot.style.setProperty('touch-action', 'none');
-
-        toastContent.textContent = toast?.content;
+        toastActions.innerHTML = toast.action
+          ? `<button data-toast-button="action">${toast.action.label}</button>`
+          : undefined;
+        toastContent.innerHTML = `${toast.content}`;
         toastContent.setAttribute('id', ariaLabelId);
 
         return toastRoot.outerHTML;
@@ -160,7 +174,16 @@ export class ToastQueue {
       .join('');
   }
 
-  add(content, variant, options) {
+  get(toastId) {
+    for (const toast of this.#queue) {
+      if (toast.id === toastId) {
+        return toast;
+      }
+    }
+    return;
+  }
+
+  add(content, options) {
     const timeout = options?.timeout || this.#timeout;
     const toastId = Math.random().toString(36).slice(2);
     const toastRef = {
@@ -168,7 +191,7 @@ export class ToastQueue {
       index: this.#queue.size + 1,
       timer: timeout ? new Timer(() => this.delete(toastId), timeout) : undefined,
       content,
-      variant,
+      action: options?.action || undefined,
     };
 
     this.#queue.add(toastRef);

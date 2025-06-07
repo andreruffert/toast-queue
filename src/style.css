@@ -4,21 +4,32 @@
   }
 
   [data-toast="popover"] {
-    --toast-width: auto;
+    --toast-width: 200px;
 
     width: var(--toast-width);
     max-width: 100%;
-  }
 
-  [data-toast="popover"]:popover-open {
-    display: flex;
+    display: none;
     flex-direction: column;
     padding: 1rem;
     margin: unset;
     inset: unset;
     background-color: unset;
     border: unset;
-    overflow: clip;
+    /* overflow: clip; */
+
+    transition: opacity 0.3s ease-in-out, display 0.3s linear;
+    transition-behavior: allow-discrete;
+    opacity: 0.8;
+
+    @starting-style {
+      opacity: 0.8;
+    }
+  }
+
+  [data-toast="popover"]:popover-open {
+    display: flex;
+    opacity: 1;
   }
 
   [data-toast="popover"][data-toast-position^="top"] {
@@ -51,7 +62,7 @@
     gap: .6rem;
   }
 
-  [data-toast="popover"][data-minimized] [data-toast="actions"] {
+  [data-toast="popover"][data-minimized] [data-toast="menubar"] {
     display: none;
   }
 
@@ -117,18 +128,22 @@
   ::view-transition-group(.toast.block-end) {
     --slideX: 0;
     --slideY: calc(100%);
+    /* object-position: bottom; */
   }
   ::view-transition-group(.toast.block-start) {
     --slideX: 0;
     --slideY: calc(-100%);
+    /* object-position: top; */
   }
   ::view-transition-group(.toast.inline-start) {
     --slideX: calc(-100%);
     --slideY: 0;
+    /* object-position: left; */
   }
   ::view-transition-group(.toast.inline-end) {
     --slideX: calc(100%);
     --slideY: 0;
+    /* object-position: right; */
   }
 
   /* ::view-transition-new(.toast):only-child,
@@ -146,7 +161,7 @@
   @keyframes slide-in {
     from {
       translate: var(--slideX) var(--slideY);
-      opacity: 0;
+      opacity: 0.4;
     }
   }
 

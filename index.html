@@ -47,9 +47,21 @@
         position: relative;
       }
 
-      [data-toast="actions"] {
-        view-transition-name: toast-actions;
-        view-transition-class: toast-actions;
+      [data-toast="content"] {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        flex: 1;
+        gap: .5rem;
+      }
+      [data-toast="content"] h1,
+      [data-toast="content"] p {
+        margin: unset;
+      }
+
+      [data-toast="menubar"] {
+        view-transition-name: toast-menubar;
+        view-transition-class: toast-menubar;
       }
 
       ::view-transition-old(.toast-actions):only-child {
@@ -63,7 +75,7 @@
         animation-name: slide-in;
       }
 
-      [data-toast="popover"]:not([data-minimized]) [data-toast="actions"] {
+      [data-toast="popover"]:not([data-minimized]) [data-toast="menubar"] {
         display: flex;
         justify-content: flex-end;
         gap: .5rem;
@@ -83,8 +95,9 @@
         border-radius: 100%;
         z-index: inherit;
 
-        border-color: ButtonBorder;
-        border-style: solid;
+        background-color: buttonface;
+        border: 1px outset buttonborder;
+
         opacity: 0;
         transition: opacity .3s ease-in-out;
       }
@@ -109,13 +122,14 @@
         </menu>
     </section>
 
-    <button onClick="window.toast.add(Math.random().toString(36).slice(2))">🔔</button>
+    <button data-action="add-toast">🔔</button>
     <script type="module">
       import {ToastQueue} from './src/index.js';
 
       const toastPosition = localStorage.getItem('toast-position') || 'top center';
 
       window.toast = new ToastQueue({
+        // timeout: 6000,
         position: toastPosition,
         root: document.body
       });
@@ -126,24 +140,46 @@
       }
 
       document.addEventListener('click', event => {
+        if (event.target.dataset.action === 'add-toast') {
+          window.toast.add(`<h1>Title</h1><p>${Date.now()}</p>`, { action: { label: 'action 1', fn: () => console.log(Date.now()) } })
+          return;
+        }
+
         if (event.target.dataset.toastButton === 'clear') {
           const toastId = event.target.closest('[data-toast-id]').dataset.toastId;
           toast.delete(toastId);
           return;
         }
 
+        if (event.target.dataset.toastButton === 'action') {
+          const toastId = event.target.closest('[data-toast-id]').dataset.toastId;
+          const toast = window.toast.get(toastId);
+          toast?.action?.fn();
+          return;
+        }
+
+          // Easy close
+        if (!event.target.closest('[data-toast="popover"]')) {
+          if (!toast.isMinimized) {
+            toast.isMinimized = true;
+          }
+          return
+        }
+
+        // Maximize
         if (event.target.closest('[data-minimized]')) {
           if (event.target.closest('[data-swiping]')) return;
           toast.isMinimized = false;
           return;
         }
 
+        // Minimize
         if (event.target.dataset.toastButton === 'minimize') {
-          console.log(event.target)
           toast.isMinimized = true;
           return;
         }
 
+        // Clear
         if (event.target.dataset.toastButton === 'clear-all') {
           toast.clearAll();
           return;
