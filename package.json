@@ -1,14 +1,23 @@
 {
   "name": "toast-queue",
-  "private": true,
   "version": "0.0.0",
   "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/toast-queue.js"
+    },
+    "./style.css": "./dist/toast-queue.css"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "format": "biome check --write",
-    "lint": "biome ci"
+    "lint": "biome ci",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
