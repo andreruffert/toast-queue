@@ -33,19 +33,23 @@
   }
 
   [data-toast="popover"][data-toast-position^="top"] {
-    inset-block-start: env(safe-area-inset-top, 0.5vh);
+    inset-block-start: env(safe-area-inset-top, 0);
   }
   [data-toast="popover"][data-toast-position^="bottom"] {
-    inset-block-end: env(safe-area-inset-bottom, 0.5vh);
+    inset-block-end: env(safe-area-inset-bottom, 0);
     flex-direction: column-reverse;
+  }
+  [data-toast="popover"][data-toast-position="top start"],
+  [data-toast="popover"][data-toast-position="bottom start"] {
+    inset-inline-start: env(safe-area-inset-left, 0);
   }
   [data-toast="popover"][data-toast-position="top end"],
   [data-toast="popover"][data-toast-position="bottom end"] {
-    inset-inline-end: env(safe-area-inset-right, 0.5vh);
+    inset-inline-end: env(safe-area-inset-right, 0);
   }
   [data-toast="popover"][data-toast-position="top center"],
   [data-toast="popover"][data-toast-position="bottom center"] {
-    inset-inline: env(safe-area-inset-left, 0.5vh);
+    inset-inline: env(safe-area-inset-left, 0);
     margin-inline: auto;
   }
 
