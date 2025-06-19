@@ -211,7 +211,7 @@ export class ToastQueue {
   /** Clear all toasts. */
   clearAll() {
     this.#queue.clear();
-    this.update();
+    this.isMinimized = true;
   }
 
   /** Pause the timer for all toasts. */
