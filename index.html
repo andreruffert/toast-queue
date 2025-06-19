@@ -141,7 +141,9 @@
 
       document.addEventListener('click', event => {
         if (event.target.dataset.action === 'add-toast') {
-          window.toast.add(`<h1>Title</h1><p>${Date.now()}</p>`, { action: { label: 'action 1', fn: () => console.log(Date.now()) } })
+          window.toast.add(`<h1>Title</h1><p>${Date.now()}</p>`, {
+            action: { label: 'action 1', fn: () => console.log(Date.now()) }
+          })
           return;
         }
 

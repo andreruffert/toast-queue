@@ -11,15 +11,13 @@ TOAST_CONTAINER_TEMPLATE.innerHTML = `<section data-toast="popover" popover="man
 </section>`;
 
 const TOAST_TEMPLATE = document.createElement('template');
-TOAST_TEMPLATE.innerHTML = `<li data-toast="root" role="alertdialog" aria-modal="false" tabindex="0">
+TOAST_TEMPLATE.innerHTML = `<li data-toast="root" role="alertdialog" aria-modal="false">
   <div data-toast="notification">
     <div data-toast="content" role="alert" aria-atomic="true"></div>
     <div data-toast="actions"></div>
     <button data-toast-button="clear">&times;</button>
   </div>
 </li>`;
-
-const MAX_TOASTS = 6;
 
 const render = (where, what) => {
   where.innerHTML = what();
@@ -46,9 +44,10 @@ const getSwipeableDirection = (position) => {
 export class ToastQueue {
   #queue = new Set();
   #timeout = null;
-  /** @type ToastPosition 'top' | 'top center' | 'top end' | 'bottom' | 'bottom center' | 'bottom end' */
+  /** @typedef ToastPosition 'top start' | 'top center' | 'top end' | 'bottom start' | 'bottom center' | 'bottom end' */
   #position = 'top end';
   #isMinimized = true;
+  #maxToasts = 6;
   #popover;
   #container;
   #swipeable;
@@ -56,13 +55,16 @@ export class ToastQueue {
   /**
    * @typedef {Object} ToastQueueOptions
    * @property {number} timeout -
-   * @property {string} position -
+   * @property {ToastPosition} position -
+   * @property {boolean} minimized -
+   * @property {number} maxToasts -
    * @property {string} root -
    */
   constructor(options) {
     this.#timeout = options?.timeout !== undefined ? options.timeout : this.#timeout;
     this.#position = options?.position || this.#position;
     this.#isMinimized = options?.minimized || this.#isMinimized;
+    this.#maxToasts = options?.maxToasts || this.#maxToasts;
 
     const root = options?.root || document.body;
     const toastContainer = TOAST_CONTAINER_TEMPLATE.content.cloneNode(true);
@@ -137,7 +139,7 @@ export class ToastQueue {
   }
 
   render() {
-    const toasts = Array.from(this.#queue).slice(Math.max(this.#queue.size - MAX_TOASTS, 0));
+    const toasts = Array.from(this.#queue).slice(Math.max(this.#queue.size - this.#maxToasts, 0));
 
     // TODO: handle timeout on render?
     // if (toasts[0].options.timeout) {
@@ -155,6 +157,7 @@ export class ToastQueue {
         const toastActions = clone.querySelector('[data-toast="actions"]');
 
         toastRoot.dataset.toastId = toastId;
+        toastRoot.setAttribute('tabindex', '0');
         toastRoot.setAttribute('aria-labelledby', ariaLabelId);
         toastRoot.style.setProperty('view-transition-name', `toast-${toastId}`);
         toastRoot.style.setProperty(
@@ -163,9 +166,11 @@ export class ToastQueue {
         );
         // Make sure capture pointer events will work properly on touch devices
         toastRoot.style.setProperty('touch-action', 'none');
-        toastActions.innerHTML = toast.action
-          ? `<button data-toast-button="action">${toast.action.label}</button>`
-          : undefined;
+
+        if (toast.action) {
+          toastActions.innerHTML = `<button data-toast-button="action">${toast.action.label}</button>`;
+        }
+
         toastContent.innerHTML = `${toast.content}`;
         toastContent.setAttribute('id', ariaLabelId);
 
