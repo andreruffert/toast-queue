@@ -100,6 +100,7 @@ export class ToastQueue {
   }
 
   set isMinimized(value) {
+    if (value === false && this.#queue.size <= 1) return;
     this.#isMinimized = value;
     this.update();
   }
