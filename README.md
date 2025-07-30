@@ -1,3 +1,7 @@
 # toast-queue
 
-An opinionated toast library for the web.
+A Vanilla JS library to display brief, temporary notifications.
+
+- Headless UI
+- View transition ready
+- Fully customizable
