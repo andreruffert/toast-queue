@@ -45,9 +45,9 @@ export class ToastQueue {
   #queue = new Set();
   #timeout = null;
   /** @typedef ToastPosition 'top start' | 'top center' | 'top end' | 'bottom start' | 'bottom center' | 'bottom end' */
-  #position = 'top end';
+  #toastPosition = 'top end';
   #isMinimized = true;
-  #maxToasts = 6;
+  #maxVisibleToasts = 6;
   #popover;
   #container;
   #swipeable;
@@ -57,24 +57,24 @@ export class ToastQueue {
    * @property {number} timeout -
    * @property {ToastPosition} position -
    * @property {boolean} minimized -
-   * @property {number} maxToasts -
+   * @property {number} maxVisibleToasts -
    * @property {string} root -
    */
   constructor(options) {
     this.#timeout = options?.timeout !== undefined ? options.timeout : this.#timeout;
-    this.#position = options?.position || this.#position;
+    this.#toastPosition = options?.position || this.#toastPosition;
     this.#isMinimized = options?.minimized || this.#isMinimized;
-    this.#maxToasts = options?.maxToasts || this.#maxToasts;
+    this.#maxVisibleToasts = options?.maxVisibleToasts || this.#maxVisibleToasts;
 
     const root = options?.root || document.body;
     const toastContainer = TOAST_CONTAINER_TEMPLATE.content.cloneNode(true);
     this.#popover = toastContainer.querySelector('[data-toast="popover"]');
-    this.#popover.dataset.toastPosition = this.#position;
+    this.#popover.dataset.toastPosition = this.#toastPosition;
     this.#container = toastContainer.querySelector('[data-toast="container"]');
     root.appendChild(toastContainer);
 
     this.#swipeable = new Swipeable({
-      direction: getSwipeableDirection(this.#position),
+      direction: getSwipeableDirection(this.#toastPosition),
       removeFunction: (target) => {
         const id = target.dataset.toastId;
         this.delete(id);
@@ -110,14 +110,14 @@ export class ToastQueue {
   }
 
   get position() {
-    return this.#position;
+    return this.#toastPosition;
   }
 
   /**
    * @param {string} Toastposition - Toast position
    */
   set position(value) {
-    this.#position = value;
+    this.#toastPosition = value;
     this.#swipeable.direction = getSwipeableDirection(value);
     this.update();
   }
@@ -129,7 +129,7 @@ export class ToastQueue {
     this.#container.setAttribute('aria-label', `${this.#queue.size} notifications`);
 
     wrapInViewTransition(() => {
-      this.#popover.dataset.toastPosition = this.#position;
+      this.#popover.dataset.toastPosition = this.#toastPosition;
       if (this.#isMinimized) {
         this.#popover.dataset.minimized = '';
       } else {
@@ -140,12 +140,7 @@ export class ToastQueue {
   }
 
   render() {
-    const toasts = Array.from(this.#queue).slice(Math.max(this.#queue.size - this.#maxToasts, 0));
-
-    // TODO: handle timeout on render?
-    // if (toasts[0].options.timeout) {
-    //     toasts[0].timer = new Timer(() => this.delete(toastId), toasts[0].options.timeout)
-    // }
+    const toasts = Array.from(this.#queue).slice(Math.max(this.#queue.size - this.#maxVisibleToasts, 0));
 
     return toasts
       .reverse()
@@ -163,7 +158,7 @@ export class ToastQueue {
         toastRoot.style.setProperty('view-transition-name', `toast-${toastId}`);
         toastRoot.style.setProperty(
           'view-transition-class',
-          `toast ${getpositionViewTransitionClass(this.#position)}`,
+          `toast ${getpositionViewTransitionClass(this.#toastPosition)}`,
         );
         // Make sure capture pointer events will work properly on touch devices
         toastRoot.style.setProperty('touch-action', 'none');
