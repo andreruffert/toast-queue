@@ -1,11 +1,8 @@
 @layer toast-queue {
-  * {
-    box-sizing: border-box;
-  }
-
-  [data-toast="popover"] {
+  [data-toastq-part="popover"] {
     --toast-width: 200px;
 
+    box-sizing: border-box;
     width: var(--toast-width);
     max-width: 100%;
 
@@ -16,163 +13,51 @@
     inset: unset;
     background-color: unset;
     border: unset;
-    /* overflow: clip; */
-
-    transition: opacity 0.3s ease-in-out, display 0.3s linear;
-    transition-behavior: allow-discrete;
-    opacity: 0.8;
-
-    @starting-style {
-      opacity: 0.8;
-    }
   }
 
-  [data-toast="popover"]:popover-open {
+  [data-toastq-part="popover"]:popover-open {
     display: flex;
-    opacity: 1;
   }
 
-  [data-toast="popover"][data-toast-position^="top"] {
+  [data-toastq-part="popover"][data-toastq-position^="top"] {
     inset-block-start: env(safe-area-inset-top, 0);
   }
-  [data-toast="popover"][data-toast-position^="bottom"] {
+  [data-toastq-part="popover"][data-toastq-position^="bottom"] {
     inset-block-end: env(safe-area-inset-bottom, 0);
-    flex-direction: column-reverse;
+    /* flex-direction: column-reverse; */
   }
-  [data-toast="popover"][data-toast-position="top start"],
-  [data-toast="popover"][data-toast-position="bottom start"] {
+  [data-toastq-part="popover"][data-toastq-position="top start"],
+  [data-toastq-part="popover"][data-toastq-position="bottom start"] {
     inset-inline-start: env(safe-area-inset-left, 0);
   }
-  [data-toast="popover"][data-toast-position="top end"],
-  [data-toast="popover"][data-toast-position="bottom end"] {
+  [data-toastq-part="popover"][data-toastq-position="top end"],
+  [data-toastq-part="popover"][data-toastq-position="bottom end"] {
     inset-inline-end: env(safe-area-inset-right, 0);
   }
-  [data-toast="popover"][data-toast-position="top center"],
-  [data-toast="popover"][data-toast-position="bottom center"] {
+  [data-toastq-part="popover"][data-toastq-position="top center"],
+  [data-toastq-part="popover"][data-toastq-position="bottom center"] {
     inset-inline: env(safe-area-inset-left, 0);
     margin-inline: auto;
   }
 
-  [data-toast="container"] {
+  [data-toastq-part="region"] {
     list-style: none;
     margin: unset;
     padding: unset;
     display: grid;
     grid-auto-flow: row;
-    transition: all ease-in-out 0.25s;
-  }
-
-  [data-toast="popover"]:not([data-minimized]) [data-toast="container"] {
     gap: .6rem;
   }
 
-  [data-toast="popover"][data-minimized] [data-toast="menubar"] {
+  [data-toastq-part="item"]:not(:nth-child(-n + 5)) {
     display: none;
   }
 
-  [data-toast="root"] {
-    list-style-position: unset;
-  }
-
-  [data-toast="root"]:first-child {
-    z-index: 3;
-  }
-  [data-toast="root"]:nth-child(2) {
-    z-index: 2;
-  }
-  [data-toast="root"]:nth-child(3) {
-    z-index: 1;
-  }
-
-  [data-toast-position^="top"][data-minimized] [data-toast="root"]:nth-child(2) {
-    margin-block-start: 10px;
-  }
-  [data-toast-position^="top"][data-minimized] [data-toast="root"]:nth-child(3) {
-    margin-block-start: 19px;
-  }
-
-  [data-toast-position^="bottom"][data-minimized] [data-toast="root"]:nth-child(2) {
-    margin-block-start: -10px;
-  }
-  [data-toast-position^="bottom"][data-minimized] [data-toast="root"]:nth-child(3) {
-    margin-block-start: -19px;
-  }
-
-  [data-toast="popover"][data-minimized] [data-toast="root"]:not(:first-child) {
-    pointer-events: none;
-  }
-  [data-toast="popover"][data-minimized] [data-toast="root"] {
-    grid-area: 1 / 1;
-  }
-  [data-toast="popover"][data-minimized] [data-toast="root"]:nth-child(2) {
-    scale: 0.95;
-  }
-  [data-toast="popover"][data-minimized] [data-toast="root"]:nth-child(3) {
-    scale: 0.9;
-  }
-  [data-toast="popover"][data-minimized] [data-toast="root"]:nth-child(n + 4) {
-    scale: 0.85;
-    opacity: 0;
-    block-size: 0;
-  }
-
-  [data-toast="notification"] {
+  [data-toastq-part="notification"] {
     background-color: Canvas;
 
     /* Prevent selection relevant for touch devices */
     user-select: none;
     -webkit-user-select: none;
-  }
-
-  ::view-transition-group(.toast) {
-    animation-duration: 0.3s;
-    /* animation-duration: 0.5s;*/
-    /* animation-timing-function: linear(0, 0.402 7.4%, 0.711 15.3%, 0.929 23.7%, 1.008 28.2%, 1.067 33%, 1.099 36.9%, 1.11 41%, 1.13 45.4%, 1.13 50.1%, 1.111 58.5%, 1.019 83.2%, 1.004 91.3%, 1); */
-  }
-  ::view-transition-group(.toast.block-end) {
-    --slideX: 0;
-    --slideY: calc(100%);
-    /* object-position: bottom; */
-  }
-  ::view-transition-group(.toast.block-start) {
-    --slideX: 0;
-    --slideY: calc(-100%);
-    /* object-position: top; */
-  }
-  ::view-transition-group(.toast.inline-start) {
-    --slideX: calc(-100%);
-    --slideY: 0;
-    /* object-position: left; */
-  }
-  ::view-transition-group(.toast.inline-end) {
-    --slideX: calc(100%);
-    --slideY: 0;
-    /* object-position: right; */
-  }
-
-  /* ::view-transition-new(.toast):only-child,
-  ::view-transition-old(.toast):only-child {
-    animation-duration: 0.3s;
-    animation-timing-function: unset;
-  } */
-  ::view-transition-new(.toast):only-child {
-    animation-name: slide-in;
-  }
-  ::view-transition-old(.toast):only-child {
-    animation-name: slide-out;
-  }
-
-  @keyframes slide-in {
-    from {
-      translate: var(--slideX) var(--slideY);
-      opacity: 0.4;
-    }
-  }
-
-  @keyframes slide-out {
-    to {
-      translate: var(--slideX) var(--slideY);
-      opacity: 0;
-    }
   }
 }

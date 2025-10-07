@@ -37,3 +37,13 @@ export class Timer {
     this.#timerId = null;
   }
 }
+
+/**
+ * Dynamically change a word in a phrase from singular to plural
+ * based on the quantity of that item.
+ *
+ * const itemInflection = inflect('item')('items')
+ * itemInflection(1) // => 'item'
+ */
+export const inflect = (singular) => (plural) => (quantity) =>
+  Number(quantity) === 1 ? singular : plural;

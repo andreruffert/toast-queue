@@ -1,6 +1,8 @@
 export class Swipeable {
   #direction = 'inline';
   #removeFunctionRef = (target) => target.parentNode.removeChild(target);
+  #prevEvent = null;
+  #prevSpeed = 0;
 
   constructor(options) {
     this.targetBCR = null;
@@ -40,11 +42,11 @@ export class Swipeable {
 
   onStart = (event) => {
     if (this.target) return;
-    if (!event.target.closest('[data-toast-id]')) return;
+    if (!event.target.closest('[data-toastq-id]')) return;
 
     event.preventDefault();
 
-    this.target = event.target.closest('[data-toast-id]');
+    this.target = event.target.closest('[data-toastq-id]');
     this.targetBCR = this.target.getBoundingClientRect();
     this.startX = event.pageX;
     this.startY = event.pageY;
@@ -57,17 +59,36 @@ export class Swipeable {
 
   onMove = (event) => {
     if (!this.target) return;
-    if (this.#direction === 'inline-start' && event.pageX > this.startX) return;
-    if (this.#direction === 'inline-end' && event.pageX < this.startX) return;
-    if (this.#direction === 'block-start' && event.pageY > this.startY) return;
-    if (this.#direction === 'block-end' && event.pageY < this.startY) return;
+    if (this.#direction === 'inline-start' && event.pageX - 10 > this.startX) return;
+    if (this.#direction === 'inline-end' && event.pageX + 10 < this.startX) return;
+    if (this.#direction === 'block-start' && event.pageY - 10 > this.startY) return;
+    if (this.#direction === 'block-end' && event.pageY + 10 < this.startY) return;
 
-    this.target.dataset.swiping = '';
+    if (this.#prevEvent) {
+      const dx = event.clientX - this.#prevEvent.clientX;
+      const dy = event.clientY - this.#prevEvent.clientY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const deltaTime = event.timeStamp - this.#prevEvent.timeStamp; // in ms
+
+      // Speed in px/ms
+      const speed = deltaTime > 0 ? distance / deltaTime : 0;
+
+      // Acceleration in px/ms²
+      const acceleration = (speed - this.#prevSpeed) / deltaTime;
+
+      this.#prevSpeed = speed;
+
+      // console.log('Acceleration:', acceleration);
+      // console.log('speed:', speed);
+    }
+
+    this.#prevEvent = event;
+    this.target.dataset.toastqDragging = '';
     this.currentX = event.pageX;
     this.currentY = event.pageY;
   };
 
-  onEnd = (event) => {
+  onEnd = () => {
     if (!this.target) return;
 
     this.targetX = 0;
@@ -86,7 +107,9 @@ export class Swipeable {
       this.targetY = screenY > 0 ? this.targetBCR.height : -this.targetBCR.height;
     }
 
+    this.#prevEvent = null;
     this.isDragging = false;
+    delete this.target.dataset.toastqDragging;
   };
 
   update = () => {
@@ -128,7 +151,7 @@ export class Swipeable {
 
     const isNearlyAtStart =
       Math.abs(this.#direction.includes('inline') ? this.screenX : this.screenY) < 0.1;
-    const isNearlyInvisible = opacity < 0.01;
+    const isNearlyInvisible = opacity < 0.01 || this.#prevSpeed > 2;
 
     // If the target is nearly gone.
     if (isNearlyInvisible) {
@@ -143,7 +166,6 @@ export class Swipeable {
 
   resetTarget() {
     if (!this.target) return;
-    delete this.target.dataset.swiping;
 
     this.target.style.removeProperty('will-change');
     this.target.style.removeProperty('z-index');

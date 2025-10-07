@@ -13,80 +13,41 @@
         text-align: center;
       }
 
-      menu {
-        padding: unset;
-        overflow: auto;
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-      }
-
       button {
         touch-action: manipulation;
         user-select: none;
         -webkit-user-select: none;
       }
 
-      [data-toast="popover"] {
+      [data-toastq-part="popover"] {
         --toast-width: 380px;
         padding: 1.5rem;
       }
 
-      [data-toast="popover"]:popover-open {
+      [data-toastq-part="popover"]:popover-open {
         gap: 1rem;
       }
 
-      [data-toast="notification"] {
+      [data-toastq-part="notification"] {
         display: flex;
         justify-content: space-between;
         padding: 1rem;
-        background-color: white;
+        background-color: Canvas;
         border: 1px solid #0000001a;
         border-radius: 1rem;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.102);
         position: relative;
       }
 
-      [data-toast="content"] {
+      [data-toastq-part="content"] {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
         flex: 1;
         gap: .5rem;
       }
-      [data-toast="content"] h1,
-      [data-toast="content"] p {
-        margin: unset;
-      }
 
-      [data-toast="menubar"] {
-        view-transition-name: toast-menubar;
-        view-transition-class: toast-menubar;
-      }
-
-      ::view-transition-old(.toast-actions):only-child {
-        --slideX: 0;
-        --slideY: calc(-100%);
-        animation-name: slide-out;
-      }
-      ::view-transition-new(.toast-actions):only-child {
-        --slideX: 0;
-        --slideY: calc(-100%);
-        animation-name: slide-in;
-      }
-
-      [data-toast="popover"]:not([data-minimized]) [data-toast="menubar"] {
-        display: flex;
-        justify-content: flex-end;
-        gap: .5rem;
-      }
-
-      [data-minimized] [data-toast="root"]:not(:first-child) [data-toast="notification"] [data-toast-button="clear"] {
-        display: none;
-      }
-
-
-      [data-toast="notification"] [data-toast-button="clear"] {
+      [data-toastq-part="item"] [data-toastq-part="close-button"] {
         position: absolute;
         right: 100%;
         bottom: 100%;
@@ -102,89 +63,57 @@
         transition: opacity .3s ease-in-out;
       }
 
-      [data-toast="notification"]:hover [data-toast-button="clear"],
-      [data-toast="notification"]:focus-within [data-toast-button="clear"] {
+      [data-toastq-part="item"]:hover [data-toastq-part="close-button"],
+      [data-toastq-part="item"]:focus-within [data-toastq-part="close-button"] {
         opacity: 1;
       }
-
-
     </style>
   </head>
   <body>
-    <section>
-        <span>Toast Position</span>
-        <menu>
-          <button onClick="setToastPosition('top start')">top start</button>
-          <button onClick="setToastPosition('top center')">top center</button>
-          <button onClick="setToastPosition('top end')">top end</button>
-          <button onClick="setToastPosition('bottom start')">bottom start</button>
-          <button onClick="setToastPosition('bottom center')">bottom center</button>
-          <button onClick="setToastPosition('bottom end')">bottom end</button>
-        </menu>
-    </section>
+    <main>
+      <button data-action="add-toast">🔔</button>
+      <select id="toastPositionMenu" aria-label="Toast position">
+        <option value="top start">top start</option>
+        <option value="top center">top center</option>
+        <option value="top end">top end</option>
+        <option value="bottom start">bottom start</option>
+        <option value="bottom center">bottom center</option>
+        <option value="bottom end">bottom end</option>
+      </select>
+    </main>
 
-    <button data-action="add-toast">🔔</button>
     <script type="module">
-      import {ToastQueue} from './src/index.js';
+      import { ToastQueue } from './src/index.js';
+      // import stackPreset from './src/presets/stack/index.js';
 
       const toastPosition = localStorage.getItem('toast-position') || 'top center';
 
-      window.toast = new ToastQueue({
+      window.toastQueue = new ToastQueue({
         // timeout: 6000,
         position: toastPosition,
-        root: document.body
+        root: document.body,
+        // ...stackPreset
       });
 
       window.setToastPosition = (value) => {
-        window.toast.position = value;
+        toastQueue.position = value;
         localStorage.setItem('toast-position', value);
       }
 
+      toastPositionMenu.value = toastPosition;
+      toastPositionMenu.addEventListener('change', event => {
+        const selectedValue = event.target.value;
+        setToastPosition(selectedValue);
+      })
+
       document.addEventListener('click', event => {
         if (event.target.dataset.action === 'add-toast') {
-          window.toast.add(`<h1>Title</h1><p>${Date.now()}</p>`, {
-            action: { label: 'action 1', fn: () => console.log(Date.now()) }
-          })
-          return;
-        }
-
-        if (event.target.dataset.toastButton === 'clear') {
-          const toastId = event.target.closest('[data-toast-id]').dataset.toastId;
-          toast.delete(toastId);
-          return;
-        }
-
-        if (event.target.dataset.toastButton === 'action') {
-          const toastId = event.target.closest('[data-toast-id]').dataset.toastId;
-          const toast = window.toast.get(toastId);
-          toast?.action?.fn();
-          return;
-        }
-
-          // Easy close
-        if (!event.target.closest('[data-toast="popover"]')) {
-          if (!toast.isMinimized) {
-            toast.isMinimized = true;
-          }
-          return
-        }
-
-        // Maximize
-        if (event.target.closest('[data-minimized]')) {
-          if (event.target.closest('[data-swiping]')) return;
-          toast.isMinimized = false;
-          return;
-        }
-
-        // Minimize
-        if (event.target.dataset.toastButton === 'minimize') {
-          toast.isMinimized = true;
-          return;
-        }
-
-        // Clear
-        if (event.target.dataset.toastButton === 'clear-all') {
-          toast.clearAll();
+          toastQueue.add(`<span>Title</span><span>${Date.now()}</span>`, {
+            actionButton: {
+              label: 'action 1',
+              onClick: () => console.log(Date.now())
+            }
+          });
           return;
         }
       })
