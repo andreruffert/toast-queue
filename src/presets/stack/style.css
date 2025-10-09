@@ -17,6 +17,11 @@
     transition: all ease-in-out 0.25s;
   }
 
+  [data-toastq-minimized] [data-toastq-part="region"] {
+    display: grid;
+    grid-auto-flow: row;
+  }
+
   [data-toastq-part="popover"]:not([data-toastq-minimized]) [data-toastq-part="region"] {
     gap: .6rem;
   }

@@ -15,7 +15,7 @@ TOAST_ITEM_TEMPLATE.innerHTML = `<li data-toastq-part="item">
   </div>
 </li>`;
 
-const getpositionViewTransitionClass = (position) => {
+const getPositionViewTransitionClass = (position) => {
   if (position === 'top start') return 'block-start inline-start';
   if (position === 'top center') return 'block-start';
   if (position === 'top end') return 'block-start inline-end';
@@ -46,33 +46,30 @@ const notificationInflection = inflect('notification')('notifications');
 
 export class ToastQueue {
   #queue = new Set();
-  #timeout = null;
+  #displayDuration = null;
   /** @typedef ToastPosition 'top start' | 'top center' | 'top end' | 'bottom start' | 'bottom center' | 'bottom end' */
   #toastPosition = 'top end';
   #isMinimized = false;
-  #order = 'reversed';
   #popover;
   #region;
   #swipeable;
 
   /**
    * @typedef {Object} ToastQueueOptions
-   * @property {number} timeout -
+   * @property {number} displayDuration -
    * @property {ToastPosition} position -
    * @property {boolean} minimized -
-   * @property {number} order -
    * @property {string} root -
    */
   constructor(options) {
     const root = options?.root || document.body;
-    const toastRegion =
-      options?.toastRegionTemplate?.content.cloneNode(true) ||
-      TOAST_REGION_TEMPLATE.content.cloneNode(true);
+    const template = options?.toastRegionTemplate || TOAST_REGION_TEMPLATE;
+    const toastRegion = template.content.cloneNode(true);
 
-    this.#timeout = options?.timeout !== undefined ? options.timeout : this.#timeout;
+    this.#displayDuration =
+      options?.displayDuration !== undefined ? options.displayDuration : this.#displayDuration;
     this.#toastPosition = options?.position || this.#toastPosition;
     this.#isMinimized = options?.minimized || this.#isMinimized;
-    this.#order = options?.order || this.#order;
     this.#popover = toastRegion.querySelector(partSelectors.popover);
     this.#popover.dataset.toastqPosition = this.#toastPosition;
     if (this.#isMinimized) this.#popover.dataset.toastqMinimized = '';
@@ -119,29 +116,41 @@ export class ToastQueue {
         return;
       }
 
-      if (options.minimized) {
-        // Easy close maximized
-        if (!event.target.closest(partSelectors.popover)) {
-          if (!this.#isMinimized) {
-            this.isMinimized = true;
-          }
-          return;
-        }
+      if (!options.minimized) return;
 
-        // Maximize
-        if (event.target.closest('[data-toastq-minimized]')) {
-          if (event.target.closest('[data-toastq-dragging]')) return;
-          this.isMinimized = false;
-          return;
-        }
+      // Backdrop minimize
+      if (!event.target.closest(partSelectors.popover) && !this.#isMinimized) {
+        this.isMinimized = true;
+        return;
+      }
 
-        // Minimize
-        if (event.target.dataset.toastqCommand === 'minimize') {
-          this.isMinimized = true;
-          return;
-        }
+      // Maximize
+      if (event.target.closest('[data-toastq-minimized]')) {
+        if (event.target.closest('[data-toastq-dragging]')) return;
+        this.isMinimized = false;
+        return;
+      }
+
+      // Minimize
+      if (event.target.dataset.toastqCommand === 'minimize') {
+        this.isMinimized = true;
+        return;
       }
     });
+  }
+
+  #createToastRef(options) {
+    const displayDuration = options?.displayDuration || this.#displayDuration;
+    const toastId = Math.random().toString(36).slice(2);
+    return {
+      id: toastId,
+      index: this.#queue.size + 1,
+      timer: displayDuration ? new Timer(() => this.delete(toastId), displayDuration) : undefined,
+      dismissible: options?.dismissible !== false,
+      content: options?.content,
+      actionButton: options?.actionButton || undefined,
+      onClose: options?.onClose || undefined,
+    };
   }
 
   set isMinimized(value) {
@@ -173,7 +182,7 @@ export class ToastQueue {
     for (const element of this.#region.childNodes) {
       element.style.setProperty(
         'view-transition-class',
-        `toast ${getpositionViewTransitionClass(this.#toastPosition)}`,
+        `toast ${getPositionViewTransitionClass(this.#toastPosition)}`,
       );
     }
     wrapInViewTransition(() => {
@@ -202,58 +211,46 @@ export class ToastQueue {
   }
 
   /**
-   *
-   * @param {*} content
+   * @param {string} content - HTML content
    * @param {object} options
-   * @param {number} options.timeout
+   * @param {number} options.displayDuration
+   * @param {number} options.dismissible
    * @param {object} options.actionButton
    * @param {function} options.onClose
    * @returns
    */
   add(content, options) {
-    const timeout = options?.timeout || this.#timeout;
-    const toastRef = {
-      id: Math.random().toString(36).slice(2),
-      index: this.#queue.size + 1,
-      timer: timeout ? new Timer(() => this.delete(toastId), timeout) : undefined,
-      content,
-      actionButton: options?.actionButton || undefined,
-      onClose: options?.onClose || undefined,
-    };
+    const toastRef = this.#createToastRef({ content, ...options });
+    const template = TOAST_ITEM_TEMPLATE.content.cloneNode(true);
+    const ariaLabelId = `aria-label-${toastRef.id}`;
+
+    const toastItem = template.querySelector(partSelectors.item);
+    toastItem.dataset.toastqId = toastRef.id;
+    toastItem.dataset.toastqDismissible = toastRef.dismissible;
+    toastItem.setAttribute('tabindex', '0');
+    toastItem.setAttribute('aria-labelledby', ariaLabelId);
+    toastItem.style.setProperty('view-transition-name', `toast-${toastRef.id}`);
+    toastItem.style.setProperty(
+      'view-transition-class',
+      `toast ${getPositionViewTransitionClass(this.#toastPosition)}`,
+    );
+    // Ensure capture pointer events will work properly on touch devices
+    toastItem.style.setProperty('touch-action', 'none');
+
+    const toastContent = template.querySelector(partSelectors.content);
+    toastContent.innerHTML = `${toastRef.content}`;
+    toastContent.setAttribute('id', ariaLabelId);
+
+    const toastActions = template.querySelector(partSelectors.actions);
+    if (toastRef.actionButton) {
+      // TODO: Add support for multiple action buttons passing an array of objects.
+      toastActions.innerHTML = `<button type="button" data-toastq-part="action-button" data-toastq-command="action">${toastRef.actionButton.label}</button>`;
+    }
 
     this.#queue.add(toastRef);
 
     this.update(() => {
-      const clone = TOAST_ITEM_TEMPLATE.content.cloneNode(true);
-      const ariaLabelId = `aria-label-${toastRef.id}`;
-      const toastItem = clone.querySelector(partSelectors.item);
-      const toastContent = clone.querySelector(partSelectors.content);
-      const toastActions = clone.querySelector(partSelectors.actions);
-      toastItem.dataset.toastqId = toastRef.id;
-      toastItem.setAttribute('tabindex', '0');
-      toastItem.setAttribute('aria-labelledby', ariaLabelId);
-      toastItem.style.setProperty('view-transition-name', `toast-${toastRef.id}`);
-      toastItem.style.setProperty(
-        'view-transition-class',
-        `toast ${getpositionViewTransitionClass(this.#toastPosition)}`,
-      );
-      // Make sure capture pointer events will work properly on touch devices
-      toastItem.style.setProperty('touch-action', 'none');
-
-      // TODO: Add support for multiple action buttons passing an array of objects.
-      if (toastRef.actionButton) {
-        toastActions.innerHTML = `<button type="button" data-toastq-part="action-button" data-toastq-command="action">${toastRef.actionButton.label}</button>`;
-      }
-      toastContent.innerHTML = `${toastRef.content}`;
-      toastContent.setAttribute('id', ariaLabelId);
-
-      if (this.#order === 'reversed') {
-        // newest first
-        this.#region.prepend(toastItem);
-      } else {
-        // newest last
-        this.#region.appendChild(toastItem);
-      }
+      this.#region.prepend(toastItem);
     });
 
     return toastRef;

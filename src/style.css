@@ -44,9 +44,13 @@
     list-style: none;
     margin: unset;
     padding: unset;
-    display: grid;
-    grid-auto-flow: row;
+    display: flex;
+    flex-direction: column;
     gap: .6rem;
+  }
+
+  [data-toastq-position^="bottom"] [data-toastq-part="region"] {
+    flex-direction: column-reverse;
   }
 
   [data-toastq-part="item"]:not(:nth-child(-n + 5)) {
@@ -60,4 +64,8 @@
     user-select: none;
     -webkit-user-select: none;
   }
+}
+
+[data-toastq-dismissible="false"] [data-toastq-part="close-button"] {
+  display: none;
 }

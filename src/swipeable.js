@@ -43,6 +43,7 @@ export class Swipeable {
   onStart = (event) => {
     if (this.target) return;
     if (!event.target.closest('[data-toastq-id]')) return;
+    if (event.target.closest('[data-toastq-dismissible="false"]')) return;
 
     event.preventDefault();
 

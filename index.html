@@ -10,7 +10,7 @@
         margin: unset;
         min-height: 100dvh;
         place-content: center;
-        text-align: center;
+        justify-items: center;
       }
 
       button {
@@ -19,6 +19,7 @@
         -webkit-user-select: none;
       }
 
+      /* toast-queue customization */
       [data-toastq-part="popover"] {
         --toast-width: 380px;
         padding: 1.5rem;
@@ -47,18 +48,16 @@
         gap: .5rem;
       }
 
-      [data-toastq-part="item"] [data-toastq-part="close-button"] {
+      [data-toastq-part="close-button"] {
         position: absolute;
         right: 100%;
         bottom: 100%;
         translate: 50% 50%;
+        z-index: inherit;
         aspect-ratio: 1;
         border-radius: 100%;
-        z-index: inherit;
-
-        background-color: buttonface;
-        border: 1px outset buttonborder;
-
+        background-color: Canvas;
+        border: 1px outset #0000001a;
         opacity: 0;
         transition: opacity .3s ease-in-out;
       }
@@ -84,12 +83,12 @@
 
     <script type="module">
       import { ToastQueue } from './src/index.js';
-      // import stackPreset from './src/presets/stack/index.js';
+      import stackPreset from './src/presets/stack/index.js';
 
       const toastPosition = localStorage.getItem('toast-position') || 'top center';
 
       window.toastQueue = new ToastQueue({
-        // timeout: 6000,
+        // displayDuration: 6000,
         position: toastPosition,
         root: document.body,
         // ...stackPreset
@@ -109,6 +108,7 @@
       document.addEventListener('click', event => {
         if (event.target.dataset.action === 'add-toast') {
           toastQueue.add(`<span>Title</span><span>${Date.now()}</span>`, {
+            // dismissible: false,
             actionButton: {
               label: 'action 1',
               onClick: () => console.log(Date.now())
