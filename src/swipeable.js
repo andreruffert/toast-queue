@@ -1,4 +1,5 @@
 export class Swipeable {
+  #selector = '[data-swipeable]';
   #direction = 'inline';
   #removeFunctionRef = (target) => target.parentNode.removeChild(target);
   #prevEvent = null;
@@ -17,7 +18,8 @@ export class Swipeable {
     this.targetY = 0;
     this.isDragging = false;
 
-    this.direction = options?.direction ?? this.#direction;
+    this.#selector = options?.selector ?? this.#selector;
+    this.#direction = options?.direction ?? this.#direction;
     this.#removeFunctionRef = options?.removeFunction ?? this.#removeFunctionRef;
 
     this.addEventListeners();
@@ -26,12 +28,6 @@ export class Swipeable {
 
   get direction() {
     return this.#direction;
-  }
-
-  set direction(value) {
-    console.log('set direction');
-
-    this.#direction = value;
   }
 
   addEventListeners() {
@@ -47,7 +43,7 @@ export class Swipeable {
 
     event.preventDefault();
 
-    this.target = event.target.closest('[data-toastq-id]');
+    this.target = event.target.closest(this.#selector);
     this.targetBCR = this.target.getBoundingClientRect();
     this.startX = event.pageX;
     this.startY = event.pageY;

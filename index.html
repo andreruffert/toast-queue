@@ -26,7 +26,12 @@
       }
 
       [data-toastq-part="popover"]:popover-open {
-        gap: 1rem;
+        overflow-block: auto;
+        max-height: 100dvh;
+      }
+
+      [data-toastq-part="region"] {
+        gap: .6rem;
       }
 
       [data-toastq-part="notification"] {
@@ -83,7 +88,7 @@
 
     <script type="module">
       import { ToastQueue } from './src/index.js';
-      import stackPreset from './src/presets/stack/index.js';
+      // import stackPreset from './src/presets/stack/index.js';
 
       const toastPosition = localStorage.getItem('toast-position') || 'top center';
 

@@ -15,24 +15,6 @@ TOAST_ITEM_TEMPLATE.innerHTML = `<li data-toastq-part="item">
   </div>
 </li>`;
 
-const getPositionViewTransitionClass = (position) => {
-  if (position === 'top start') return 'block-start inline-start';
-  if (position === 'top center') return 'block-start';
-  if (position === 'top end') return 'block-start inline-end';
-  if (position === 'bottom start') return 'block-end inline-start';
-  if (position === 'bottom center') return 'block-end';
-  if (position === 'bottom end') return 'block-end inline-end';
-};
-
-const getSwipeableDirection = (position) => {
-  if (position === 'top start') return 'inline-start';
-  if (position === 'top center') return 'block-start';
-  if (position === 'top end') return 'inline-end';
-  if (position === 'bottom start') return 'inline-start';
-  if (position === 'bottom center') return 'block-end';
-  if (position === 'bottom end') return 'inline-end';
-};
-
 const partSelectors = {
   popover: '[data-toastq-part="popover"]',
   region: '[data-toastq-part="region"]',
@@ -49,7 +31,7 @@ export class ToastQueue {
   #displayDuration = null;
   /** @typedef ToastPosition 'top start' | 'top center' | 'top end' | 'bottom start' | 'bottom center' | 'bottom end' */
   #toastPosition = 'top end';
-  #isMinimized = false;
+  #minimized = false;
   #popover;
   #region;
   #swipeable;
@@ -69,15 +51,16 @@ export class ToastQueue {
     this.#displayDuration =
       options?.displayDuration !== undefined ? options.displayDuration : this.#displayDuration;
     this.#toastPosition = options?.position || this.#toastPosition;
-    this.#isMinimized = options?.minimized || this.#isMinimized;
+    this.#minimized = options?.minimized || this.#minimized;
     this.#popover = toastRegion.querySelector(partSelectors.popover);
     this.#popover.dataset.toastqPosition = this.#toastPosition;
-    if (this.#isMinimized) this.#popover.dataset.toastqMinimized = '';
+    if (this.#minimized) this.#popover.dataset.toastqMinimized = '';
     this.#region = toastRegion.querySelector(partSelectors.region);
 
     root.appendChild(toastRegion);
 
     this.#swipeable = new Swipeable({
+      selector: '[data-toastq-id]',
       direction: getSwipeableDirection(this.#toastPosition),
       removeFunction: (target) => {
         const id = target.dataset.toastqId;
@@ -119,21 +102,21 @@ export class ToastQueue {
       if (!options.minimized) return;
 
       // Backdrop minimize
-      if (!event.target.closest(partSelectors.popover) && !this.#isMinimized) {
-        this.isMinimized = true;
+      if (!event.target.closest(partSelectors.popover) && !this.#minimized) {
+        this.minimized = true;
         return;
       }
 
       // Maximize
       if (event.target.closest('[data-toastq-minimized]')) {
         if (event.target.closest('[data-toastq-dragging]')) return;
-        this.isMinimized = false;
+        this.minimized = false;
         return;
       }
 
       // Minimize
       if (event.target.dataset.toastqCommand === 'minimize') {
-        this.isMinimized = true;
+        this.minimized = true;
         return;
       }
     });
@@ -153,11 +136,11 @@ export class ToastQueue {
     };
   }
 
-  set isMinimized(value) {
+  set minimized(value) {
     if (value === false && this.#queue.size <= 1) return;
-    this.#isMinimized = value;
+    this.#minimized = value;
     wrapInViewTransition(() => {
-      if (this.#isMinimized) {
+      if (this.#minimized) {
         this.#popover.dataset.toastqMinimized = '';
       } else {
         delete this.#popover.dataset.toastqMinimized;
@@ -165,8 +148,8 @@ export class ToastQueue {
     });
   }
 
-  get isMinimized() {
-    return this.#isMinimized;
+  get minimized() {
+    return this.#minimized;
   }
 
   get position() {
@@ -260,9 +243,7 @@ export class ToastQueue {
   delete(id) {
     for (const toast of this.#queue) {
       if (toast.id === id) {
-        if (typeof toast.onClose === 'function') {
-          toast.onClose();
-        }
+        if (typeof toast.onClose === 'function') toast.onClose();
         this.#queue.delete(toast);
       }
     }
@@ -296,4 +277,22 @@ export class ToastQueue {
       }
     }
   }
+}
+
+function getPositionViewTransitionClass(position) {
+  if (position === 'top start') return 'block-start inline-start';
+  if (position === 'top center') return 'block-start';
+  if (position === 'top end') return 'block-start inline-end';
+  if (position === 'bottom start') return 'block-end inline-start';
+  if (position === 'bottom center') return 'block-end';
+  if (position === 'bottom end') return 'block-end inline-end';
+}
+
+function getSwipeableDirection(position) {
+  if (position === 'top start') return 'inline-start';
+  if (position === 'top center') return 'block-start';
+  if (position === 'top end') return 'inline-end';
+  if (position === 'bottom start') return 'inline-start';
+  if (position === 'bottom center') return 'block-end';
+  if (position === 'bottom end') return 'inline-end';
 }

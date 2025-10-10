@@ -7,7 +7,6 @@
     max-width: 100%;
 
     display: none;
-    flex-direction: column;
     padding: 1rem;
     margin: unset;
     inset: unset;
@@ -16,7 +15,7 @@
   }
 
   [data-toastq-part="popover"]:popover-open {
-    display: flex;
+    display: initial;
   }
 
   [data-toastq-part="popover"][data-toastq-position^="top"] {
@@ -46,7 +45,6 @@
     padding: unset;
     display: flex;
     flex-direction: column;
-    gap: .6rem;
   }
 
   [data-toastq-position^="bottom"] [data-toastq-part="region"] {

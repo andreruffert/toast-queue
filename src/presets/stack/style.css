@@ -22,14 +22,6 @@
     grid-auto-flow: row;
   }
 
-  [data-toastq-part="popover"]:not([data-toastq-minimized]) [data-toastq-part="region"] {
-    gap: .6rem;
-  }
-
-  /* [data-toastq-part="popover"][data-toastq-minimized] [data-toastq="menubar"] {
-    display: none;
-  } */
-
   [data-toastq-part="item"]:first-child {
     z-index: 3;
   }
