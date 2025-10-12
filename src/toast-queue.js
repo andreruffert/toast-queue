@@ -7,7 +7,7 @@ ROOT_TEMPLATE.innerHTML = `<section data-toastq-part="popover"><ol data-toastq-p
 const ITEM_TEMPLATE = document.createElement('template');
 ITEM_TEMPLATE.innerHTML = `<li data-toastq-part="item">
   <div data-toastq-part="toast">
-    <div data-toastq-part="content" role="alert" aria-atomic="true">
+    <div data-toastq-part="content">
       <span slot="title"></span>
       <span slot="description"></span>
     </div>
@@ -67,8 +67,7 @@ export class ToastQueue {
       selector: '[data-toastq-id]',
       direction: getSwipeableDirection(this.#toastPosition),
       removeFunction: (target) => {
-        const toastId = target.dataset.toastqId;
-        this.close(toastId);
+        this.close(target.dataset.toastqId);
       },
     });
 
@@ -187,13 +186,12 @@ export class ToastQueue {
    */
   add(content, options) {
     const toastRef = this.#createToastRef({ content, ...options });
-    const template = ITEM_TEMPLATE.content.cloneNode(true);
     const ariaLabelId = `aria-label-${toastRef.id}`;
     const ariaDescId = `aria-desc-${toastRef.id}`;
-
+    const template = ITEM_TEMPLATE.content.cloneNode(true);
     const toastItem = template.querySelector(partSelectors.item);
-    const toastPart = toastItem.querySelector(partSelectors.toast);
 
+    const toastPart = toastItem.querySelector(partSelectors.toast);
     toastPart.dataset.toastqId = toastRef.id;
     toastPart.dataset.toastqDismissible = toastRef.dismissible;
     toastPart.setAttribute('tabindex', '0');
@@ -210,7 +208,8 @@ export class ToastQueue {
     toastPart.style.setProperty('touch-action', 'none');
 
     const contentPart = template.querySelector(partSelectors.content);
-
+    contentPart.setAttribute('role', 'alert');
+    contentPart.setAttribute('aria-atomic', 'true');
     if (typeof content === 'string') {
       contentPart.setAttribute('id', ariaLabelId);
       contentPart.innerHTML = `${toastRef.content}`;
@@ -230,10 +229,7 @@ export class ToastQueue {
     }
 
     this.#queue.add(toastRef);
-
-    this.update(() => {
-      this.#group.prepend(toastItem);
-    });
+    this.update(() => this.#group.prepend(toastItem));
 
     return toastRef;
   }

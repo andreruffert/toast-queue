@@ -88,7 +88,7 @@
 
     <script type="module">
       import { ToastQueue } from './src/index.js';
-      // import stackPreset from './src/presets/stack/index.js';
+      import stackPreset from './src/presets/stack/index.js';
 
       const toastPosition = localStorage.getItem('toast-position') || 'top center';
 
@@ -96,7 +96,7 @@
         // timeout: 6000,
         position: toastPosition,
         root: document.body,
-        // ...stackPreset
+        ...stackPreset
       });
 
       window.setToastPosition = (value) => {
