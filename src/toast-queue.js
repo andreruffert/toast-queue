@@ -144,8 +144,8 @@ export class ToastQueue {
   set position(value) {
     this.#toastPosition = value;
     this.#swipeable.direction = getSwipeableDirection(value);
-    for (const element of this.#group.childNodes) {
-      element.style.setProperty(
+    for (const toast of this.#group.querySelectorAll(partSelectors.toast)) {
+      toast.style.setProperty(
         'view-transition-class',
         `toast ${getPositionViewTransitionClass(this.#toastPosition)}`,
       );
