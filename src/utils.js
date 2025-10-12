@@ -1,6 +1,8 @@
 export function wrapInViewTransition(fn) {
   if ('startViewTransition' in document) {
-    document.startViewTransition(fn).ready.catch(() => {});
+    document.startViewTransition(fn).ready.catch(() => {
+      console.log('vt catch');
+    });
   } else {
     fn();
   }

@@ -30,6 +30,10 @@ export class Swipeable {
     return this.#direction;
   }
 
+  set direction(value) {
+    this.#direction = value;
+  }
+
   addEventListeners() {
     document.addEventListener('pointerdown', this.onStart);
     document.addEventListener('pointermove', this.onMove);

@@ -13,11 +13,11 @@
     opacity: 1;
   }
 
-  [data-toastq-part="region"] {
+  [data-toastq-part="group"] {
     transition: all ease-in-out 0.25s;
   }
 
-  [data-toastq-minimized] [data-toastq-part="region"] {
+  [data-toastq-view-mode="stacked"] [data-toastq-part="group"] {
     display: grid;
     grid-auto-flow: row;
   }
@@ -32,39 +32,47 @@
     z-index: 1;
   }
 
-  [data-toastq-minimized]
+  [data-toastq-view-mode="stacked"]
     [data-toastq-part="item"]:not(:first-child)
     [data-toastq-part="close-button"] {
     display: none;
   }
 
-  [data-toastq-position^="top"][data-toastq-minimized] [data-toastq-part="item"]:nth-child(2) {
+  [data-toastq-position^="top"][data-toastq-view-mode="stacked"]
+    [data-toastq-part="item"]:nth-child(2) {
     margin-block-start: 10px;
   }
-  [data-toastq-position^="top"][data-toastq-minimized] [data-toastq-part="item"]:nth-child(3) {
+  [data-toastq-position^="top"][data-toastq-view-mode="stacked"]
+    [data-toastq-part="item"]:nth-child(3) {
     margin-block-start: 19px;
   }
 
-  [data-toastq-position^="bottom"][data-toastq-minimized] [data-toastq-part="item"]:nth-child(2) {
+  [data-toastq-position^="bottom"][data-toastq-view-mode="stacked"]
+    [data-toastq-part="item"]:nth-child(2) {
     margin-block-start: -10px;
   }
-  [data-toastq-position^="bottom"][data-toastq-minimized] [data-toastq-part="item"]:nth-child(3) {
+  [data-toastq-position^="bottom"][data-toastq-view-mode="stacked"]
+    [data-toastq-part="item"]:nth-child(3) {
     margin-block-start: -19px;
   }
 
-  [data-toastq-part="popover"][data-toastq-minimized] [data-toastq-part="item"]:not(:first-child) {
+  [data-toastq-part="popover"][data-toastq-view-mode="stacked"]
+    [data-toastq-part="item"]:not(:first-child) {
     pointer-events: none;
   }
-  [data-toastq-part="popover"][data-toastq-minimized] [data-toastq-part="item"] {
+  [data-toastq-part="popover"][data-toastq-view-mode="stacked"] [data-toastq-part="item"] {
     grid-area: 1 / 1;
   }
-  [data-toastq-part="popover"][data-toastq-minimized] [data-toastq-part="item"]:nth-child(2) {
+  [data-toastq-part="popover"][data-toastq-view-mode="stacked"]
+    [data-toastq-part="item"]:nth-child(2) {
     scale: 0.95;
   }
-  [data-toastq-part="popover"][data-toastq-minimized] [data-toastq-part="item"]:nth-child(3) {
+  [data-toastq-part="popover"][data-toastq-view-mode="stacked"]
+    [data-toastq-part="item"]:nth-child(3) {
     scale: 0.9;
   }
-  [data-toastq-part="popover"][data-toastq-minimized] [data-toastq-part="item"]:nth-child(n + 4) {
+  [data-toastq-part="popover"][data-toastq-view-mode="stacked"]
+    [data-toastq-part="item"]:nth-child(n + 4) {
     scale: 0.85;
     opacity: 0;
     block-size: 0;
@@ -86,7 +94,7 @@
         animation-name: slide-in;
       }
 
-      [data-toastq-part="popover"]:not([data-toastq-minimized]) [data-toastq="menubar"] {
+      [data-toastq-part="popover"]:not([data-toastq-view-mode="stacked"]) [data-toastq="menubar"] {
         display: flex;
         justify-content: flex-end;
         gap: .5rem;

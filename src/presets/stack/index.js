@@ -1,5 +1,5 @@
 const options = {
-  minimized: true,
+  viewMode: 'stacked',
 };
 
 export default options;

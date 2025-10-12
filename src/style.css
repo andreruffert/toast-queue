@@ -39,7 +39,7 @@
     margin-inline: auto;
   }
 
-  [data-toastq-part="region"] {
+  [data-toastq-part="group"] {
     list-style: none;
     margin: unset;
     padding: unset;
@@ -47,7 +47,7 @@
     flex-direction: column;
   }
 
-  [data-toastq-position^="bottom"] [data-toastq-part="region"] {
+  [data-toastq-position^="bottom"] [data-toastq-part="group"] {
     flex-direction: column-reverse;
   }
 
@@ -55,7 +55,7 @@
     display: none;
   }
 
-  [data-toastq-part="notification"] {
+  [data-toastq-part="toast"] {
     background-color: Canvas;
 
     /* Prevent selection relevant for touch devices */

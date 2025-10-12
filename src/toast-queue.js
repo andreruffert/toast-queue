@@ -1,15 +1,16 @@
 import { Swipeable } from './swipeable';
 import { Timer, inflect, wrapInViewTransition } from './utils';
 
-const TOAST_REGION_TEMPLATE = document.createElement('template');
-TOAST_REGION_TEMPLATE.innerHTML = `<section popover="manual" data-toastq-part="popover">
-  <ol data-toastq-part="region"></ol>
-</section>`;
+const ROOT_TEMPLATE = document.createElement('template');
+ROOT_TEMPLATE.innerHTML = `<section data-toastq-part="popover"><ol data-toastq-part="group"></ol></section>`;
 
-const TOAST_ITEM_TEMPLATE = document.createElement('template');
-TOAST_ITEM_TEMPLATE.innerHTML = `<li data-toastq-part="item">
-  <div data-toastq-part="notification" role="alertdialog" aria-modal="false">
-    <div data-toastq-part="content" role="alert" aria-atomic="true"></div>
+const ITEM_TEMPLATE = document.createElement('template');
+ITEM_TEMPLATE.innerHTML = `<li data-toastq-part="item">
+  <div data-toastq-part="toast">
+    <div data-toastq-part="content" role="alert" aria-atomic="true">
+      <span slot="title"></span>
+      <span slot="description"></span>
+    </div>
     <div data-toastq-part="actions"></div>
     <button type="button" data-toastq-part="close-button" data-toastq-command="close" aria-label="Close">&times;</button>
   </div>
@@ -17,9 +18,9 @@ TOAST_ITEM_TEMPLATE.innerHTML = `<li data-toastq-part="item">
 
 const partSelectors = {
   popover: '[data-toastq-part="popover"]',
-  region: '[data-toastq-part="region"]',
+  group: '[data-toastq-part="group"]',
   item: '[data-toastq-part="item"]',
-  notification: '[data-toastq-part="notification"]',
+  toast: '[data-toastq-part="toast"]',
   content: '[data-toastq-part="content"]',
   actions: '[data-toastq-part="actions"]',
 };
@@ -28,52 +29,55 @@ const notificationInflection = inflect('notification')('notifications');
 
 export class ToastQueue {
   #queue = new Set();
-  #displayDuration = null;
+  #timeout = null;
   /** @typedef ToastPosition 'top start' | 'top center' | 'top end' | 'bottom start' | 'bottom center' | 'bottom end' */
   #toastPosition = 'top end';
-  #minimized = false;
+  #viewMode = null;
   #popover;
-  #region;
+  #group;
   #swipeable;
 
   /**
    * @typedef {Object} ToastQueueOptions
-   * @property {number} displayDuration -
+   * @property {number} timeout - A timeout to automatically close the toast after, in milliseconds.
    * @property {ToastPosition} position -
-   * @property {boolean} minimized -
-   * @property {string} root -
+   * @property {string} viewMode -
+   * @property {HTMLElement} root -
    */
   constructor(options) {
     const root = options?.root || document.body;
-    const template = options?.toastRegionTemplate || TOAST_REGION_TEMPLATE;
-    const toastRegion = template.content.cloneNode(true);
+    const rootTemplate = options?.rootTemplate || ROOT_TEMPLATE;
+    const template = rootTemplate.content.cloneNode(true);
 
-    this.#displayDuration =
-      options?.displayDuration !== undefined ? options.displayDuration : this.#displayDuration;
+    this.#timeout = options.timeout || this.#timeout;
     this.#toastPosition = options?.position || this.#toastPosition;
-    this.#minimized = options?.minimized || this.#minimized;
-    this.#popover = toastRegion.querySelector(partSelectors.popover);
+    this.#viewMode = options?.viewMode || this.#viewMode;
+    this.#popover = template.querySelector(partSelectors.popover);
+    this.#popover.setAttribute('popover', 'manual');
+    this.#popover.setAttribute('role', 'region');
+    this.#popover.setAttribute('aria-label', 'Notifications');
+    this.#popover.setAttribute('tabindex', '-1');
     this.#popover.dataset.toastqPosition = this.#toastPosition;
-    if (this.#minimized) this.#popover.dataset.toastqMinimized = '';
-    this.#region = toastRegion.querySelector(partSelectors.region);
+    if (this.#viewMode) this.#popover.dataset.toastqViewMode = this.#viewMode;
+    this.#group = template.querySelector(partSelectors.group);
 
-    root.appendChild(toastRegion);
+    root.appendChild(template);
 
     this.#swipeable = new Swipeable({
       selector: '[data-toastq-id]',
       direction: getSwipeableDirection(this.#toastPosition),
       removeFunction: (target) => {
-        const id = target.dataset.toastqId;
-        this.delete(id);
+        const toastId = target.dataset.toastqId;
+        this.close(toastId);
       },
     });
 
-    this.#region.addEventListener('pointerover', (event) => {
-      if (!event.target.closest(partSelectors.region)) return;
+    this.#group.addEventListener('pointerover', (event) => {
+      if (!event.target.closest(partSelectors.group)) return;
       this.pauseAll();
     });
 
-    this.#region.addEventListener('pointerout', (event) => {
+    this.#group.addEventListener('pointerout', (event) => {
       this.resumeAll();
     });
 
@@ -85,50 +89,29 @@ export class ToastQueue {
       }
     });
 
-    document.addEventListener('click', (event) => {
+    this.#popover.addEventListener('click', (event) => {
       if (event.target.dataset.toastqCommand === 'close') {
-        const toastId = event.target.closest(partSelectors.item).dataset.toastqId;
-        this.delete(toastId);
+        const toastId = event.target.closest(partSelectors.toast).dataset.toastqId;
+        this.close(toastId);
         return;
       }
 
       if (event.target.dataset.toastqCommand === 'action') {
-        const toastId = event.target.closest(partSelectors.item).dataset.toastqId;
+        const toastId = event.target.closest(partSelectors.toast).dataset.toastqId;
         const toast = this.get(toastId);
         toast?.actionButton?.onClick();
-        return;
-      }
-
-      if (!options.minimized) return;
-
-      // Backdrop minimize
-      if (!event.target.closest(partSelectors.popover) && !this.#minimized) {
-        this.minimized = true;
-        return;
-      }
-
-      // Maximize
-      if (event.target.closest('[data-toastq-minimized]')) {
-        if (event.target.closest('[data-toastq-dragging]')) return;
-        this.minimized = false;
-        return;
-      }
-
-      // Minimize
-      if (event.target.dataset.toastqCommand === 'minimize') {
-        this.minimized = true;
         return;
       }
     });
   }
 
   #createToastRef(options) {
-    const displayDuration = options?.displayDuration || this.#displayDuration;
+    const timeout = options?.timeout || this.#timeout;
     const toastId = Math.random().toString(36).slice(2);
     return {
       id: toastId,
       index: this.#queue.size + 1,
-      timer: displayDuration ? new Timer(() => this.delete(toastId), displayDuration) : undefined,
+      timer: timeout ? new Timer(() => this.close(toastId), timeout) : undefined,
       dismissible: options?.dismissible !== false,
       content: options?.content,
       actionButton: options?.actionButton || undefined,
@@ -136,20 +119,20 @@ export class ToastQueue {
     };
   }
 
-  set minimized(value) {
-    if (value === false && this.#queue.size <= 1) return;
-    this.#minimized = value;
+  set viewMode(value) {
+    if (value === null && this.#queue.size <= 1) return;
+    this.#viewMode = value;
     wrapInViewTransition(() => {
-      if (this.#minimized) {
-        this.#popover.dataset.toastqMinimized = '';
+      if (this.#viewMode) {
+        this.#popover.dataset.toastqViewMode = this.#viewMode;
       } else {
-        delete this.#popover.dataset.toastqMinimized;
+        delete this.#popover.dataset.toastqViewMode;
       }
     });
   }
 
-  get minimized() {
-    return this.#minimized;
+  get viewMode() {
+    return this.#viewMode;
   }
 
   get position() {
@@ -162,7 +145,7 @@ export class ToastQueue {
   set position(value) {
     this.#toastPosition = value;
     this.#swipeable.direction = getSwipeableDirection(value);
-    for (const element of this.#region.childNodes) {
+    for (const element of this.#group.childNodes) {
       element.style.setProperty(
         'view-transition-class',
         `toast ${getPositionViewTransitionClass(this.#toastPosition)}`,
@@ -178,7 +161,7 @@ export class ToastQueue {
     if (this.#queue.size === 0) this.#popover.hidePopover();
     if (typeof fn === 'function') wrapInViewTransition(fn); // DOM mutations
 
-    this.#region.setAttribute(
+    this.#popover.setAttribute(
       'aria-label',
       `${this.#queue.size} ${notificationInflection(this.#queue.size)}`,
     );
@@ -196,7 +179,7 @@ export class ToastQueue {
   /**
    * @param {string} content - HTML content
    * @param {object} options
-   * @param {number} options.displayDuration
+   * @param {number} options.timeout
    * @param {number} options.dismissible
    * @param {object} options.actionButton
    * @param {function} options.onClose
@@ -204,25 +187,41 @@ export class ToastQueue {
    */
   add(content, options) {
     const toastRef = this.#createToastRef({ content, ...options });
-    const template = TOAST_ITEM_TEMPLATE.content.cloneNode(true);
+    const template = ITEM_TEMPLATE.content.cloneNode(true);
     const ariaLabelId = `aria-label-${toastRef.id}`;
+    const ariaDescId = `aria-desc-${toastRef.id}`;
 
     const toastItem = template.querySelector(partSelectors.item);
-    toastItem.dataset.toastqId = toastRef.id;
-    toastItem.dataset.toastqDismissible = toastRef.dismissible;
-    toastItem.setAttribute('tabindex', '0');
-    toastItem.setAttribute('aria-labelledby', ariaLabelId);
-    toastItem.style.setProperty('view-transition-name', `toast-${toastRef.id}`);
-    toastItem.style.setProperty(
+    const toastPart = toastItem.querySelector(partSelectors.toast);
+
+    toastPart.dataset.toastqId = toastRef.id;
+    toastPart.dataset.toastqDismissible = toastRef.dismissible;
+    toastPart.setAttribute('tabindex', '0');
+    toastPart.setAttribute('role', 'alertdialog');
+    toastPart.setAttribute('aria-modal', 'false');
+    toastPart.setAttribute('aria-labelledby', ariaLabelId);
+    toastPart.setAttribute('aria-describedby', ariaDescId);
+    toastPart.style.setProperty('view-transition-name', `toast-${toastRef.id}`);
+    toastPart.style.setProperty(
       'view-transition-class',
       `toast ${getPositionViewTransitionClass(this.#toastPosition)}`,
     );
     // Ensure capture pointer events will work properly on touch devices
-    toastItem.style.setProperty('touch-action', 'none');
+    toastPart.style.setProperty('touch-action', 'none');
 
-    const toastContent = template.querySelector(partSelectors.content);
-    toastContent.innerHTML = `${toastRef.content}`;
-    toastContent.setAttribute('id', ariaLabelId);
+    const contentPart = template.querySelector(partSelectors.content);
+
+    if (typeof content === 'string') {
+      contentPart.setAttribute('id', ariaLabelId);
+      contentPart.innerHTML = `${toastRef.content}`;
+    } else {
+      const titleSlot = template.querySelector('[slot="title"]');
+      const descSlot = template.querySelector('[slot="description"]');
+      titleSlot.id = ariaLabelId;
+      titleSlot.textContent = content?.title;
+      descSlot.id = ariaDescId;
+      descSlot.textContent = content?.description;
+    }
 
     const toastActions = template.querySelector(partSelectors.actions);
     if (toastRef.actionButton) {
@@ -233,14 +232,14 @@ export class ToastQueue {
     this.#queue.add(toastRef);
 
     this.update(() => {
-      this.#region.prepend(toastItem);
+      this.#group.prepend(toastItem);
     });
 
     return toastRef;
   }
 
-  /* Delete toast by ID */
-  delete(id) {
+  /* Closes a toast by ID */
+  close(id) {
     for (const toast of this.#queue) {
       if (toast.id === id) {
         if (typeof toast.onClose === 'function') toast.onClose();
@@ -248,19 +247,19 @@ export class ToastQueue {
       }
     }
     this.update(() => {
-      this.#region.querySelector(`[data-toastq-id="${id}"]`).remove();
+      this.#group.querySelector(`li:has([data-toastq-id="${id}"])`).remove();
     });
   }
 
-  /** Clear all toasts. */
-  clearAll() {
+  /** Clears all toasts. */
+  clear() {
     this.#queue.clear();
     this.update(() => {
-      this.#region.innerHTML = '';
+      this.#group.innerHTML = '';
     });
   }
 
-  /** Pause the timer for all toasts. */
+  /** Pauses the timers for all toasts. */
   pauseAll() {
     for (const toast of this.#queue) {
       if (toast.timer) {
@@ -269,7 +268,7 @@ export class ToastQueue {
     }
   }
 
-  /** Resume the timer for all toasts. */
+  /** Resumes the timers for all toasts. */
   resumeAll() {
     for (const toast of this.#queue) {
       if (toast.timer) {

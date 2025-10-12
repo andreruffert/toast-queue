@@ -30,11 +30,11 @@
         max-height: 100dvh;
       }
 
-      [data-toastq-part="region"] {
+      [data-toastq-part="group"] {
         gap: .6rem;
       }
 
-      [data-toastq-part="notification"] {
+      [data-toastq-part="toast"] {
         display: flex;
         justify-content: space-between;
         padding: 1rem;
@@ -93,7 +93,7 @@
       const toastPosition = localStorage.getItem('toast-position') || 'top center';
 
       window.toastQueue = new ToastQueue({
-        // displayDuration: 6000,
+        // timeout: 6000,
         position: toastPosition,
         root: document.body,
         // ...stackPreset
@@ -112,13 +112,33 @@
 
       document.addEventListener('click', event => {
         if (event.target.dataset.action === 'add-toast') {
-          toastQueue.add(`<span>Title</span><span>${Date.now()}</span>`, {
+          event.preventDefault();
+
+          toastQueue.add({
+            title: 'Title',
+            description: Date.now()
+          }, {
             // dismissible: false,
             actionButton: {
               label: 'action 1',
               onClick: () => console.log(Date.now())
             }
           });
+          return;
+        }
+      });
+
+      document.addEventListener('click', event => {
+        if (event.target.closest('[data-toastq-dragging]')) return;
+        if (event.target.closest('[data-toastq-command]')) return;
+
+        if (!event.target.closest('[data-toastq-part="popover"]') && !toastQueue.viewMode) {
+          toastQueue.viewMode = 'stacked';
+          return;
+        }
+
+        if (event.target.closest('[data-toastq-view-mode="stacked"]')) {
+          toastQueue.viewMode = null;
           return;
         }
       })
