@@ -51,7 +51,7 @@
     flex-direction: column-reverse;
   }
 
-  [data-toastq-part="item"]:not(:nth-child(-n + 5)) {
+  [data-toastq-part="item"]:not(:nth-child(-n + 3)) {
     display: none;
   }
 

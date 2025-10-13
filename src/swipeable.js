@@ -77,10 +77,8 @@ export class Swipeable {
       // Acceleration in px/ms²
       const acceleration = (speed - this.#prevSpeed) / deltaTime;
 
+      // console.log({acceleration, speed});
       this.#prevSpeed = speed;
-
-      // console.log('Acceleration:', acceleration);
-      // console.log('speed:', speed);
     }
 
     this.#prevEvent = event;
@@ -108,7 +106,9 @@ export class Swipeable {
       this.targetY = screenY > 0 ? this.targetBCR.height : -this.targetBCR.height;
     }
 
+    // Reset
     this.#prevEvent = null;
+    this.#prevSpeed = 0;
     this.isDragging = false;
     delete this.target.dataset.toastqDragging;
   };
@@ -150,8 +150,7 @@ export class Swipeable {
     // User has finished dragging.
     if (this.isDragging) return;
 
-    const isNearlyAtStart =
-      Math.abs(this.#direction.includes('inline') ? this.screenX : this.screenY) < 0.1;
+    const isNearlyAtStart = Math.abs(this.#direction.includes('inline') ? this.screenX : this.screenY) < 0.1;
     const isNearlyInvisible = opacity < 0.01 || this.#prevSpeed > 2;
 
     // If the target is nearly gone.

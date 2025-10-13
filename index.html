@@ -93,7 +93,7 @@
       const toastPosition = localStorage.getItem('toast-position') || 'top center';
 
       window.toastQueue = new ToastQueue({
-        // timeout: 6000,
+        duration: 6000,
         position: toastPosition,
         root: document.body,
         ...stackPreset
@@ -119,10 +119,8 @@
             description: Date.now()
           }, {
             // dismissible: false,
-            actionButton: {
-              label: 'action 1',
-              onClick: () => console.log(Date.now())
-            }
+            actionLabel: 'Action',
+            onAction: () => console.log(Date.now())
           });
           return;
         }

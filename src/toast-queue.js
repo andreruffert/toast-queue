@@ -29,7 +29,7 @@ const notificationInflection = inflect('notification')('notifications');
 
 export class ToastQueue {
   #queue = new Set();
-  #timeout = null;
+  #duration = null;
   /** @typedef ToastPosition 'top start' | 'top center' | 'top end' | 'bottom start' | 'bottom center' | 'bottom end' */
   #toastPosition = 'top end';
   #viewMode = null;
@@ -39,7 +39,7 @@ export class ToastQueue {
 
   /**
    * @typedef {Object} ToastQueueOptions
-   * @property {number} timeout - A timeout to automatically close the toast after, in milliseconds.
+   * @property {number} duration - The amount of time, in milliseconds, that the toast will remain open before closing automatically.
    * @property {ToastPosition} position -
    * @property {string} viewMode -
    * @property {HTMLElement} root -
@@ -49,7 +49,7 @@ export class ToastQueue {
     const rootTemplate = options?.rootTemplate || ROOT_TEMPLATE;
     const template = rootTemplate.content.cloneNode(true);
 
-    this.#timeout = options.timeout || this.#timeout;
+    this.#duration = options.duration || this.#duration;
     this.#toastPosition = options?.position || this.#toastPosition;
     this.#viewMode = options?.viewMode || this.#viewMode;
     this.#popover = template.querySelector(partSelectors.popover);
@@ -105,15 +105,16 @@ export class ToastQueue {
   }
 
   #createToastRef(options) {
-    const timeout = options?.timeout || this.#timeout;
+    const duration = options?.duration || this.#duration;
     const toastId = Math.random().toString(36).slice(2);
     return {
       id: toastId,
       index: this.#queue.size + 1,
-      timer: timeout ? new Timer(() => this.close(toastId), timeout) : undefined,
+      timer: duration ? new Timer(() => this.close(toastId), duration) : undefined,
       dismissible: options?.dismissible !== false,
       content: options?.content,
-      actionButton: options?.actionButton || undefined,
+      actionLabel: options?.actionLabel || undefined,
+      onAction: options?.onAction || undefined,
       onClose: options?.onClose || undefined,
     };
   }
@@ -178,9 +179,10 @@ export class ToastQueue {
   /**
    * @param {string} content - HTML content
    * @param {object} options
-   * @param {number} options.timeout
+   * @param {number} options.duration
    * @param {number} options.dismissible
-   * @param {object} options.actionButton
+   * @param {string} options.actionLabel
+   * @param {function} options.onAction
    * @param {function} options.onClose
    * @returns
    */
@@ -222,10 +224,9 @@ export class ToastQueue {
       descSlot.textContent = content?.description;
     }
 
-    const toastActions = template.querySelector(partSelectors.actions);
-    if (toastRef.actionButton) {
-      // TODO: Add support for multiple action buttons passing an array of objects.
-      toastActions.innerHTML = `<button type="button" data-toastq-part="action-button" data-toastq-command="action">${toastRef.actionButton.label}</button>`;
+    if (toastRef.actionLabel) {
+      const toastActions = template.querySelector(partSelectors.actions);
+      toastActions.innerHTML = `<button type="button" data-toastq-part="action-button" data-toastq-command="action">${toastRef.actionLabel}</button>`;
     }
 
     this.#queue.add(toastRef);
