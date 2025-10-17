@@ -20,21 +20,21 @@
       }
 
       /* toast-queue customization */
-      [data-toastq-part="popover"] {
+      [data-tq-part="popover"] {
         --toast-width: 380px;
         padding: 1.5rem;
       }
 
-      [data-toastq-part="popover"]:popover-open {
+      [data-tq-part="popover"]:popover-open {
         overflow-block: auto;
         max-height: 100dvh;
       }
 
-      [data-toastq-part="group"] {
+      [data-tq-part="group"] {
         gap: .6rem;
       }
 
-      [data-toastq-part="toast"] {
+      [data-tq-part="toast"] {
         display: flex;
         justify-content: space-between;
         padding: 1rem;
@@ -45,7 +45,7 @@
         position: relative;
       }
 
-      [data-toastq-part="content"] {
+      [data-tq-part="content"] {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
@@ -53,7 +53,7 @@
         gap: .5rem;
       }
 
-      [data-toastq-part="close-button"] {
+      [data-tq-part="close-button"] {
         position: absolute;
         right: 100%;
         bottom: 100%;
@@ -67,9 +67,13 @@
         transition: opacity .3s ease-in-out;
       }
 
-      [data-toastq-part="item"]:hover [data-toastq-part="close-button"],
-      [data-toastq-part="item"]:focus-within [data-toastq-part="close-button"] {
+      [data-tq-part="item"]:hover [data-tq-part="close-button"],
+      [data-tq-part="item"]:focus-within [data-tq-part="close-button"] {
         opacity: 1;
+      }
+
+      .toast--error {
+        background-color: hotpink;
       }
     </style>
   </head>
@@ -92,8 +96,18 @@
 
       const toastPosition = localStorage.getItem('toast-position') || 'top center';
 
+      const rootTemplate = document.createElement('template');
+      rootTemplate.innerHTML = `<section data-tq-part="popover">
+        <div data-tq-part="menu">
+          <button type="button">View less</button>
+          <button type="button">Clear all</button>
+        </div>
+        <ol data-tq-part="group"></ol>
+      </section>`;
+
       window.toastQueue = new ToastQueue({
-        duration: 6000,
+        rootTemplate,
+        // duration: 6000,
         position: toastPosition,
         root: document.body,
         ...stackPreset
@@ -112,30 +126,31 @@
 
       document.addEventListener('click', event => {
         if (event.target.dataset.action === 'add-toast') {
-          event.preventDefault();
+          // event.preventDefault();
 
           toastQueue.add({
             title: 'Title',
             description: Date.now()
           }, {
+            // className: 'toast toast--error',
             // dismissible: false,
-            actionLabel: 'Action',
-            onAction: () => console.log(Date.now())
+            // actionLabel: 'Action',
+            // onAction: () => console.log(Date.now())
           });
           return;
         }
       });
 
       document.addEventListener('click', event => {
-        if (event.target.closest('[data-toastq-dragging]')) return;
-        if (event.target.closest('[data-toastq-command]')) return;
+        if (event.target.closest('[data-tq-dragging]')) return;
+        if (event.target.closest('[data-tq-command]')) return;
 
-        if (!event.target.closest('[data-toastq-part="popover"]') && !toastQueue.viewMode) {
+        if (!event.target.closest('[data-tq-part="popover"]') && !toastQueue.viewMode) {
           toastQueue.viewMode = 'stacked';
           return;
         }
 
-        if (event.target.closest('[data-toastq-view-mode="stacked"]')) {
+        if (event.target.closest('[data-tq-view-mode="stacked"]')) {
           toastQueue.viewMode = null;
           return;
         }

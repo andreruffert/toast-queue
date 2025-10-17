@@ -42,8 +42,8 @@ export class Swipeable {
 
   onStart = (event) => {
     if (this.target) return;
-    if (!event.target.closest('[data-toastq-id]')) return;
-    if (event.target.closest('[data-toastq-dismissible="false"]')) return;
+    if (!event.target.closest('[data-tq-id]')) return;
+    if (event.target.closest('[data-tq-dismissible="false"]')) return;
 
     event.preventDefault();
 
@@ -82,7 +82,7 @@ export class Swipeable {
     }
 
     this.#prevEvent = event;
-    this.target.dataset.toastqDragging = '';
+    this.target.dataset.tqDragging = '';
     this.currentX = event.pageX;
     this.currentY = event.pageY;
   };
@@ -96,7 +96,7 @@ export class Swipeable {
     const screenX = this.currentX - this.startX;
     const screenY = this.currentY - this.startY;
     const threshold = this.#direction.includes('inline')
-      ? this.targetBCR.width * 0.3
+      ? this.targetBCR.width * 0.4
       : this.targetBCR.height * 0.6;
 
     if (this.#direction.includes('inline') && Math.abs(screenX) > threshold) {
@@ -110,7 +110,7 @@ export class Swipeable {
     this.#prevEvent = null;
     this.#prevSpeed = 0;
     this.isDragging = false;
-    delete this.target.dataset.toastqDragging;
+    delete this.target.dataset.tqDragging;
   };
 
   update = () => {
@@ -150,7 +150,8 @@ export class Swipeable {
     // User has finished dragging.
     if (this.isDragging) return;
 
-    const isNearlyAtStart = Math.abs(this.#direction.includes('inline') ? this.screenX : this.screenY) < 0.1;
+    const isNearlyAtStart =
+      Math.abs(this.#direction.includes('inline') ? this.screenX : this.screenY) < 0.1;
     const isNearlyInvisible = opacity < 0.01 || this.#prevSpeed > 2;
 
     // If the target is nearly gone.

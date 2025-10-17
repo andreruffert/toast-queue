@@ -1,5 +1,5 @@
 @layer toast-queue {
-  [data-toastq-part="popover"] {
+  [data-tq-part="popover"] {
     --toast-width: 200px;
 
     box-sizing: border-box;
@@ -14,48 +14,48 @@
     border: unset;
   }
 
-  [data-toastq-part="popover"]:popover-open {
+  [data-tq-part="popover"]:popover-open {
     display: initial;
   }
 
-  [data-toastq-part="popover"][data-toastq-position^="top"] {
+  [data-tq-part="popover"][data-tq-position^="top"] {
     inset-block-start: env(safe-area-inset-top, 0);
   }
-  [data-toastq-part="popover"][data-toastq-position^="bottom"] {
+  [data-tq-part="popover"][data-tq-position^="bottom"] {
     inset-block-end: env(safe-area-inset-bottom, 0);
     /* flex-direction: column-reverse; */
   }
-  [data-toastq-part="popover"][data-toastq-position="top start"],
-  [data-toastq-part="popover"][data-toastq-position="bottom start"] {
+  [data-tq-part="popover"][data-tq-position="top start"],
+  [data-tq-part="popover"][data-tq-position="bottom start"] {
     inset-inline-start: env(safe-area-inset-left, 0);
   }
-  [data-toastq-part="popover"][data-toastq-position="top end"],
-  [data-toastq-part="popover"][data-toastq-position="bottom end"] {
+  [data-tq-part="popover"][data-tq-position="top end"],
+  [data-tq-part="popover"][data-tq-position="bottom end"] {
     inset-inline-end: env(safe-area-inset-right, 0);
   }
-  [data-toastq-part="popover"][data-toastq-position="top center"],
-  [data-toastq-part="popover"][data-toastq-position="bottom center"] {
+  [data-tq-part="popover"][data-tq-position="top center"],
+  [data-tq-part="popover"][data-tq-position="bottom center"] {
     inset-inline: env(safe-area-inset-left, 0);
     margin-inline: auto;
   }
 
-  [data-toastq-part="group"] {
+  [data-tq-part="group"] {
     list-style: none;
     margin: unset;
     padding: unset;
-    display: flex;
-    flex-direction: column;
+    /* display: flex;
+    flex-direction: column; */
   }
 
-  [data-toastq-position^="bottom"] [data-toastq-part="group"] {
+  /* [data-tq-position^="bottom"] [data-tq-part="group"] {
     flex-direction: column-reverse;
-  }
+  } */
 
-  [data-toastq-part="item"]:not(:nth-child(-n + 3)) {
+  /* [data-tq-part="item"]:not(:nth-child(-n + 3)) {
     display: none;
-  }
+  } */
 
-  [data-toastq-part="toast"] {
+  [data-tq-part="toast"] {
     background-color: Canvas;
 
     /* Prevent selection relevant for touch devices */
@@ -64,6 +64,6 @@
   }
 }
 
-[data-toastq-dismissible="false"] [data-toastq-part="close-button"] {
+[data-tq-dismissible="false"] [data-tq-part="close-button"] {
   display: none;
 }

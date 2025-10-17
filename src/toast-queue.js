@@ -1,28 +1,28 @@
 import { Swipeable } from './swipeable';
-import { Timer, inflect, wrapInViewTransition } from './utils';
+import { inflect, Timer, wrapInViewTransition } from './utils';
 
 const ROOT_TEMPLATE = document.createElement('template');
-ROOT_TEMPLATE.innerHTML = `<section data-toastq-part="popover"><ol data-toastq-part="group"></ol></section>`;
+ROOT_TEMPLATE.innerHTML = `<section data-tq-part="popover"><ol data-tq-part="group"></ol></section>`;
 
 const ITEM_TEMPLATE = document.createElement('template');
-ITEM_TEMPLATE.innerHTML = `<li data-toastq-part="item">
-  <div data-toastq-part="toast">
-    <div data-toastq-part="content">
+ITEM_TEMPLATE.innerHTML = `<li data-tq-part="item">
+  <div data-tq-part="toast">
+    <div data-tq-part="content">
       <span slot="title"></span>
       <span slot="description"></span>
     </div>
-    <div data-toastq-part="actions"></div>
-    <button type="button" data-toastq-part="close-button" data-toastq-command="close" aria-label="Close">&times;</button>
+    <div data-tq-part="actions"></div>
+    <button type="button" data-tq-part="close-button" data-tq-command="close" aria-label="Close">&times;</button>
   </div>
 </li>`;
 
 const partSelectors = {
-  popover: '[data-toastq-part="popover"]',
-  group: '[data-toastq-part="group"]',
-  item: '[data-toastq-part="item"]',
-  toast: '[data-toastq-part="toast"]',
-  content: '[data-toastq-part="content"]',
-  actions: '[data-toastq-part="actions"]',
+  popover: '[data-tq-part="popover"]',
+  group: '[data-tq-part="group"]',
+  item: '[data-tq-part="item"]',
+  toast: '[data-tq-part="toast"]',
+  content: '[data-tq-part="content"]',
+  actions: '[data-tq-part="actions"]',
 };
 
 const notificationInflection = inflect('notification')('notifications');
@@ -57,17 +57,17 @@ export class ToastQueue {
     this.#popover.setAttribute('role', 'region');
     this.#popover.setAttribute('aria-label', 'Notifications');
     this.#popover.setAttribute('tabindex', '-1');
-    this.#popover.dataset.toastqPosition = this.#toastPosition;
-    if (this.#viewMode) this.#popover.dataset.toastqViewMode = this.#viewMode;
+    this.#popover.dataset.tqPosition = this.#toastPosition;
+    if (this.#viewMode) this.#popover.dataset.tqViewMode = this.#viewMode;
     this.#group = template.querySelector(partSelectors.group);
 
     root.appendChild(template);
 
     this.#swipeable = new Swipeable({
-      selector: '[data-toastq-id]',
+      selector: '[data-tq-id]',
       direction: getSwipeableDirection(this.#toastPosition),
       removeFunction: (target) => {
-        this.close(target.dataset.toastqId);
+        this.close(target.dataset.tqId);
       },
     });
 
@@ -89,14 +89,14 @@ export class ToastQueue {
     });
 
     this.#popover.addEventListener('click', (event) => {
-      if (event.target.dataset.toastqCommand === 'close') {
-        const toastId = event.target.closest(partSelectors.toast).dataset.toastqId;
+      if (event.target.dataset.tqCommand === 'close') {
+        const toastId = event.target.closest(partSelectors.toast).dataset.tqId;
         this.close(toastId);
         return;
       }
 
-      if (event.target.dataset.toastqCommand === 'action') {
-        const toastId = event.target.closest(partSelectors.toast).dataset.toastqId;
+      if (event.target.dataset.tqCommand === 'action') {
+        const toastId = event.target.closest(partSelectors.toast).dataset.tqId;
         const toast = this.get(toastId);
         toast?.actionButton?.onClick();
         return;
@@ -124,9 +124,9 @@ export class ToastQueue {
     this.#viewMode = value;
     wrapInViewTransition(() => {
       if (this.#viewMode) {
-        this.#popover.dataset.toastqViewMode = this.#viewMode;
+        this.#popover.dataset.tqViewMode = this.#viewMode;
       } else {
-        delete this.#popover.dataset.toastqViewMode;
+        delete this.#popover.dataset.tqViewMode;
       }
     });
   }
@@ -152,14 +152,14 @@ export class ToastQueue {
       );
     }
     wrapInViewTransition(() => {
-      this.#popover.dataset.toastqPosition = this.#toastPosition;
+      this.#popover.dataset.tqPosition = this.#toastPosition;
     });
   }
 
-  update(fn) {
+  update(fn, skipTransition = false) {
     if (this.#queue.size === 1) this.#popover.showPopover();
     if (this.#queue.size === 0) this.#popover.hidePopover();
-    if (typeof fn === 'function') wrapInViewTransition(fn); // DOM mutations
+    if (typeof fn === 'function' && !skipTransition) wrapInViewTransition(fn); // DOM mutations
 
     this.#popover.setAttribute(
       'aria-label',
@@ -179,6 +179,7 @@ export class ToastQueue {
   /**
    * @param {string} content - HTML content
    * @param {object} options
+   * @param {string} options.className
    * @param {number} options.duration
    * @param {number} options.dismissible
    * @param {string} options.actionLabel
@@ -194,8 +195,8 @@ export class ToastQueue {
     const toastItem = template.querySelector(partSelectors.item);
 
     const toastPart = toastItem.querySelector(partSelectors.toast);
-    toastPart.dataset.toastqId = toastRef.id;
-    toastPart.dataset.toastqDismissible = toastRef.dismissible;
+    toastPart.dataset.tqId = toastRef.id;
+    toastPart.dataset.tqDismissible = toastRef.dismissible;
     toastPart.setAttribute('tabindex', '0');
     toastPart.setAttribute('role', 'alertdialog');
     toastPart.setAttribute('aria-modal', 'false');
@@ -208,6 +209,10 @@ export class ToastQueue {
     );
     // Ensure capture pointer events will work properly on touch devices
     toastPart.style.setProperty('touch-action', 'none');
+
+    if (options?.className) {
+      toastPart.classList.add(...options.className.split(' '));
+    }
 
     const contentPart = template.querySelector(partSelectors.content);
     contentPart.setAttribute('role', 'alert');
@@ -226,7 +231,7 @@ export class ToastQueue {
 
     if (toastRef.actionLabel) {
       const toastActions = template.querySelector(partSelectors.actions);
-      toastActions.innerHTML = `<button type="button" data-toastq-part="action-button" data-toastq-command="action">${toastRef.actionLabel}</button>`;
+      toastActions.innerHTML = `<button type="button" data-tq-part="action-button" data-tq-command="action">${toastRef.actionLabel}</button>`;
     }
 
     this.#queue.add(toastRef);
@@ -243,9 +248,13 @@ export class ToastQueue {
         this.#queue.delete(toast);
       }
     }
-    this.update(() => {
-      this.#group.querySelector(`li:has([data-toastq-id="${id}"])`).remove();
-    });
+    this.update(
+      () => {
+        this.#group.querySelector(`li:has([data-tq-id="${id}"])`).remove();
+      },
+      // Skip view transition for elements not visible in the UI
+      this.#group.querySelector(`li:has([data-tq-id="${id}"])`).offsetParent === null,
+    );
   }
 
   /** Clears all toasts. */
