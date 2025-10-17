@@ -75,9 +75,9 @@ export class Swipeable {
       const speed = deltaTime > 0 ? distance / deltaTime : 0;
 
       // Acceleration in px/ms²
-      const acceleration = (speed - this.#prevSpeed) / deltaTime;
-
+      // const acceleration = (speed - this.#prevSpeed) / deltaTime;
       // console.log({acceleration, speed});
+
       this.#prevSpeed = speed;
     }
 

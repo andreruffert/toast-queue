@@ -76,7 +76,7 @@ export class ToastQueue {
       this.pauseAll();
     });
 
-    this.#group.addEventListener('pointerout', (event) => {
+    this.#group.addEventListener('pointerout', () => {
       this.resumeAll();
     });
 
@@ -148,7 +148,7 @@ export class ToastQueue {
     for (const toast of this.#group.querySelectorAll(partSelectors.toast)) {
       toast.style.setProperty(
         'view-transition-class',
-        `toast ${getPositionViewTransitionClass(this.#toastPosition)}`,
+        `tq-toast ${getPositionViewTransitionClass(this.#toastPosition)}`,
       );
     }
     wrapInViewTransition(() => {
@@ -205,7 +205,7 @@ export class ToastQueue {
     toastPart.style.setProperty('view-transition-name', `toast-${toastRef.id}`);
     toastPart.style.setProperty(
       'view-transition-class',
-      `toast ${getPositionViewTransitionClass(this.#toastPosition)}`,
+      `tq-toast ${getPositionViewTransitionClass(this.#toastPosition)}`,
     );
     // Ensure capture pointer events will work properly on touch devices
     toastPart.style.setProperty('touch-action', 'none');
