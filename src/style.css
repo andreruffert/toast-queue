@@ -14,7 +14,7 @@
     border: unset;
   }
 
-  [data-tq-part="popover"]:popover-open {
+  [data-tq-part="popover"]:is(:popover-open) {
     display: initial;
   }
 

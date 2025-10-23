@@ -49,7 +49,7 @@ export class ToastQueue {
     const rootTemplate = options?.rootTemplate || ROOT_TEMPLATE;
     const template = rootTemplate.content.cloneNode(true);
 
-    this.#duration = options.duration || this.#duration;
+    this.#duration = options?.duration || this.#duration;
     this.#toastPosition = options?.position || this.#toastPosition;
     this.#viewMode = options?.viewMode || this.#viewMode;
     this.#popover = template.querySelector(partSelectors.popover);
@@ -106,7 +106,7 @@ export class ToastQueue {
 
   #createToastRef(options) {
     const duration = options?.duration || this.#duration;
-    const toastId = Math.random().toString(36).slice(2);
+    const toastId = randomId();
     return {
       id: toastId,
       index: this.#queue.size + 1,
@@ -282,6 +282,15 @@ export class ToastQueue {
       }
     }
   }
+
+  unmount() {
+    this.#popover.remove();
+    // TODO remove event listeners cleanup etc.
+  }
+}
+
+function randomId() {
+  return Math.random().toString(36).slice(2);
 }
 
 function getPositionViewTransitionClass(position) {
