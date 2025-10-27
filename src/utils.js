@@ -1,11 +1,17 @@
-export function wrapInViewTransition(fn) {
+export function wrapInViewTransition(updateDOM) {
+  let transition;
+
   if ('startViewTransition' in document) {
-    document.startViewTransition(fn).ready.catch(() => {
-      console.log('vt catch');
-    });
+    transition = document.startViewTransition(updateDOM);
   } else {
-    fn();
+    transition = {
+      ready: Promise.resolve(),
+      finished: Promise.resolve(),
+    };
+    updateDOM();
   }
+
+  return transition;
 }
 
 export class Timer {

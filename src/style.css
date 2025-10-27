@@ -1,5 +1,5 @@
 @layer toast-queue {
-  [data-tq-part="popover"] {
+  toast-queue {
     --toast-width: 200px;
 
     box-sizing: border-box;
@@ -14,56 +14,54 @@
     border: unset;
   }
 
-  [data-tq-part="popover"]:is(:popover-open) {
+  toast-queue:is(:popover-open) {
     display: initial;
   }
 
-  [data-tq-part="popover"][data-tq-position^="top"] {
+  toast-queue[data-placement^="top"] {
     inset-block-start: env(safe-area-inset-top, 0);
   }
-  [data-tq-part="popover"][data-tq-position^="bottom"] {
+  toast-queue[data-placement^="bottom"] {
     inset-block-end: env(safe-area-inset-bottom, 0);
     /* flex-direction: column-reverse; */
   }
-  [data-tq-part="popover"][data-tq-position="top start"],
-  [data-tq-part="popover"][data-tq-position="bottom start"] {
+  toast-queue[data-placement="top start"],
+  toast-queue[data-placement="bottom start"] {
     inset-inline-start: env(safe-area-inset-left, 0);
   }
-  [data-tq-part="popover"][data-tq-position="top end"],
-  [data-tq-part="popover"][data-tq-position="bottom end"] {
+  toast-queue[data-placement="top end"],
+  toast-queue[data-placement="bottom end"] {
     inset-inline-end: env(safe-area-inset-right, 0);
   }
-  [data-tq-part="popover"][data-tq-position="top center"],
-  [data-tq-part="popover"][data-tq-position="bottom center"] {
+  toast-queue[data-placement="top center"],
+  toast-queue[data-placement="bottom center"] {
     inset-inline: env(safe-area-inset-left, 0);
     margin-inline: auto;
   }
 
-  [data-tq-part="group"] {
+  toast-queue [data-part="group"] {
     list-style: none;
     margin: unset;
     padding: unset;
-    /* display: flex;
-    flex-direction: column; */
   }
 
-  /* [data-tq-position^="bottom"] [data-tq-part="group"] {
-    flex-direction: column-reverse;
-  } */
-
-  /* [data-tq-part="item"]:not(:nth-child(-n + 3)) {
-    display: none;
-  } */
-
-  [data-tq-part="toast"] {
+  toast-queue [data-part="toast"] {
     background-color: Canvas;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
     /* Prevent selection relevant for touch devices */
     user-select: none;
     -webkit-user-select: none;
   }
-}
 
-[data-tq-dismissible="false"] [data-tq-part="close-button"] {
-  display: none;
+  toast-queue [data-part="toast"]:is([data-dismissible="false"]) [data-part="close-button"] {
+    display: none;
+  }
+
+  toast-queue [data-part="content"] {
+    display: flex;
+    flex-direction: column;
+  }
 }

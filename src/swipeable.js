@@ -42,8 +42,8 @@ export class Swipeable {
 
   onStart = (event) => {
     if (this.target) return;
-    if (!event.target.closest('[data-tq-id]')) return;
-    if (event.target.closest('[data-tq-dismissible="false"]')) return;
+    if (!event.target.closest('[data-id]')) return;
+    if (event.target.closest('[data-dismissible="false"]')) return;
 
     event.preventDefault();
 
@@ -82,7 +82,7 @@ export class Swipeable {
     }
 
     this.#prevEvent = event;
-    this.target.dataset.tqDragging = '';
+    this.target.dataset.dragging = '';
     this.currentX = event.pageX;
     this.currentY = event.pageY;
   };
@@ -110,7 +110,7 @@ export class Swipeable {
     this.#prevEvent = null;
     this.#prevSpeed = 0;
     this.isDragging = false;
-    delete this.target.dataset.tqDragging;
+    delete this.target.dataset.dragging;
   };
 
   update = () => {

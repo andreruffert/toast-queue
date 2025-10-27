@@ -1,14 +1,14 @@
 const rootTemplate = document.createElement('template');
-rootTemplate.innerHTML = `<section data-tq-part="popover">
-        <div data-tq-part="menu">
+rootTemplate.innerHTML = `<toast-queue>
+        <div data-part="menu">
           <button type="button">View less</button>
           <button type="button">Clear all</button>
         </div>
-        <ol data-tq-part="group"></ol>
-      </section>`;
+        <ol data-part="group"></ol>
+      </toast-queue>`;
 
 const options = {
-  viewMode: 'stacked',
+  mode: 'stacked',
   rootTemplate,
 };
 

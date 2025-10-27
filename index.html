@@ -20,40 +20,35 @@
       }
 
       /* toast-queue customization */
-      [data-tq-part="popover"] {
+      toast-queue {
         --toast-width: 380px;
         padding: 1.5rem;
       }
 
-      [data-tq-part="popover"]:popover-open {
+      toast-queue:is(:popover-open) {
         overflow-block: auto;
         max-height: 100dvh;
       }
 
-      [data-tq-part="group"] {
+      toast-queue [data-part="group"] {
         gap: .6rem;
       }
 
-      [data-tq-part="toast"] {
-        display: flex;
-        justify-content: space-between;
+      toast-queue [data-part="toast"] {
         padding: 1rem;
-        background-color: Canvas;
         border: 1px solid #0000001a;
         border-radius: 1rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.102);
+        box-shadow: 0 4px 12px rgb(0, 0, 0, 0.102);
         position: relative;
       }
 
-      [data-tq-part="content"] {
-        display: flex;
-        flex-direction: column;
+      toast-queue [data-part="content"] {
         align-items: flex-start;
         flex: 1;
         gap: .5rem;
       }
 
-      [data-tq-part="close-button"] {
+      toast-queue [data-part="close-button"] {
         position: absolute;
         right: 100%;
         bottom: 100%;
@@ -67,12 +62,12 @@
         transition: opacity .3s ease-in-out;
       }
 
-      [data-tq-part="item"]:hover [data-tq-part="close-button"],
-      [data-tq-part="item"]:focus-within [data-tq-part="close-button"] {
+      toast-queue [data-part="item"]:hover [data-part="close-button"],
+      toast-queue [data-part="item"]:focus-within [data-part="close-button"] {
         opacity: 1;
       }
 
-      .toast--error {
+      toast-queue .toast--error {
         background-color: hotpink;
       }
     </style>
@@ -80,7 +75,7 @@
   <body>
     <main>
       <button data-action="add-toast">🔔</button>
-      <select id="toastPositionMenu" aria-label="Toast position">
+      <select id="toastPlacementMenu" aria-label="Toast placement">
         <option value="top start">top start</option>
         <option value="top center">top center</option>
         <option value="top end">top end</option>
@@ -92,26 +87,27 @@
 
     <script type="module">
       import { ToastQueue } from './src/index.js';
-      // import stackPreset from './src/presets/stack/index.js';
+      import stackPreset from './src/presets/stack/index.js';
+      import './src/presets/stack/style.css';
 
-      const toastPosition = localStorage.getItem('toast-position') || 'top center';
+      const toastPlacement = localStorage.getItem('tq-placement') || 'top center';
 
       window.toastQueue = new ToastQueue({
         // duration: 6000,
-        position: toastPosition,
-        root: document.body,
-        // ...stackPreset
+        placement: toastPlacement,
+        // root: document.body,
+        ...stackPreset
       });
 
-      window.setToastPosition = (value) => {
-        toastQueue.position = value;
-        localStorage.setItem('toast-position', value);
+      window.setToastPlacement = (value) => {
+        toastQueue.placement = value;
+        localStorage.setItem('tq-placement', value);
       }
 
-      toastPositionMenu.value = toastPosition;
-      toastPositionMenu.addEventListener('change', event => {
+      toastPlacementMenu.value = toastPlacement;
+      toastPlacementMenu.addEventListener('change', event => {
         const selectedValue = event.target.value;
-        setToastPosition(selectedValue);
+        setToastPlacement(selectedValue);
       })
 
       document.addEventListener('click', event => {
@@ -132,16 +128,16 @@
       });
 
       document.addEventListener('click', event => {
-        if (event.target.closest('[data-tq-dragging]')) return;
-        if (event.target.closest('[data-tq-command]')) return;
+        if (event.target.closest('[data-dragging]')) return;
+        if (event.target.closest('[data-command]')) return;
 
-        if (!event.target.closest('[data-tq-part="popover"]') && !toastQueue.viewMode) {
-          toastQueue.viewMode = 'stacked';
+        if (!event.target.closest('toast-queue') && !toastQueue.mode) {
+          toastQueue.mode = 'stacked';
           return;
         }
 
-        if (event.target.closest('[data-tq-view-mode="stacked"]')) {
-          toastQueue.viewMode = null;
+        if (event.target.closest('[data-mode="stacked"]')) {
+          toastQueue.mode = null;
           return;
         }
       })
