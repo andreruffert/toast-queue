@@ -1,3 +1,29 @@
+const viewTransitionPlacementTypes = {
+  'top-start': 'block-start inline-start',
+  'top-center': 'block-start',
+  'top-end': 'block-start inline-end',
+  'bottom-start': 'block-end inline-start',
+  'bottom-center': 'block-end',
+  'bottom-end': 'block-end inline-end',
+};
+
+const swipeableDirectionPlacementTypes = {
+  'top-start': 'inline-start',
+  'top-center': 'block-start',
+  'top-end': 'inline-end',
+  'bottom-start': 'inline-start',
+  'bottom-center': 'block-end',
+  'bottom-end': 'inline-end',
+};
+
+export function getPlacementViewTransitionClass(placement) {
+  return viewTransitionPlacementTypes[placement];
+}
+
+export function getSwipeableDirection(placement) {
+  return swipeableDirectionPlacementTypes[placement];
+}
+
 export function wrapInViewTransition(updateDOM) {
   let transition;
 
@@ -44,6 +70,10 @@ export class Timer {
     clearTimeout(this.#timerId);
     this.#timerId = null;
   }
+}
+
+export function randomId() {
+  return Math.random().toString(36).slice(2);
 }
 
 /**

@@ -43,10 +43,8 @@ export class Swipeable {
   onStart = (event) => {
     if (this.target) return;
     if (!event.target.closest('[data-id]')) return;
-    if (event.target.closest('[data-dismissible="false"]')) return;
 
     event.preventDefault();
-
     this.target = event.target.closest(this.#selector);
     this.targetBCR = this.target.getBoundingClientRect();
     this.startX = event.pageX;

@@ -1,9 +1,7 @@
 @layer toast-queue {
   toast-queue {
-    --toast-width: 200px;
-
     box-sizing: border-box;
-    width: var(--toast-width);
+    min-width: 200px;
     max-width: 100%;
 
     display: none;
@@ -25,16 +23,16 @@
     inset-block-end: env(safe-area-inset-bottom, 0);
     /* flex-direction: column-reverse; */
   }
-  toast-queue[data-placement="top start"],
-  toast-queue[data-placement="bottom start"] {
+  toast-queue[data-placement="top-start"],
+  toast-queue[data-placement="bottom-start"] {
     inset-inline-start: env(safe-area-inset-left, 0);
   }
-  toast-queue[data-placement="top end"],
-  toast-queue[data-placement="bottom end"] {
+  toast-queue[data-placement="top-end"],
+  toast-queue[data-placement="bottom-end"] {
     inset-inline-end: env(safe-area-inset-right, 0);
   }
-  toast-queue[data-placement="top center"],
-  toast-queue[data-placement="bottom center"] {
+  toast-queue[data-placement="top-center"],
+  toast-queue[data-placement="bottom-center"] {
     inset-inline: env(safe-area-inset-left, 0);
     margin-inline: auto;
   }

@@ -13,6 +13,10 @@
         justify-items: center;
       }
 
+      * {
+        box-sizing: border-box;
+      }
+
       button {
         touch-action: manipulation;
         user-select: none;
@@ -21,7 +25,7 @@
 
       /* toast-queue customization */
       toast-queue {
-        --toast-width: 380px;
+        width: 300px;
         padding: 1.5rem;
       }
 
@@ -76,12 +80,12 @@
     <main>
       <button data-action="add-toast">🔔</button>
       <select id="toastPlacementMenu" aria-label="Toast placement">
-        <option value="top start">top start</option>
-        <option value="top center">top center</option>
-        <option value="top end">top end</option>
-        <option value="bottom start">bottom start</option>
-        <option value="bottom center">bottom center</option>
-        <option value="bottom end">bottom end</option>
+        <option value="top-start">top start</option>
+        <option value="top-center">top center</option>
+        <option value="top-end">top end</option>
+        <option value="bottom-start">bottom start</option>
+        <option value="bottom-center">bottom center</option>
+        <option value="bottom-end">bottom end</option>
       </select>
     </main>
 
@@ -90,7 +94,7 @@
       import stackPreset from './src/presets/stack/index.js';
       import './src/presets/stack/style.css';
 
-      const toastPlacement = localStorage.getItem('tq-placement') || 'top center';
+      const toastPlacement = localStorage.getItem('tq-placement') || 'top-center';
 
       window.toastQueue = new ToastQueue({
         // duration: 6000,
@@ -120,17 +124,16 @@
           }, {
             // className: 'toast toast--error',
             // dismissible: false,
-            // actionLabel: 'Action',
-            // onAction: () => console.log(Date.now())
+            action: {
+              label: 'Action',
+              onClick: () => console.log(Date.now())
+            },
           });
           return;
         }
       });
 
-      document.addEventListener('click', event => {
-        if (event.target.closest('[data-dragging]')) return;
-        if (event.target.closest('[data-command]')) return;
-
+      document.addEventListener('click', (event) => {
         if (!event.target.closest('toast-queue') && !toastQueue.mode) {
           toastQueue.mode = 'stacked';
           return;
@@ -140,7 +143,7 @@
           toastQueue.mode = null;
           return;
         }
-      })
+      });
     </script>
   </body>
 </html>

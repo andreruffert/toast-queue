@@ -19,7 +19,7 @@ test('defaults', async () => {
   // expect(rootElement).toHaveAccessibleName('Notifications');
   expect(rootElement).toHaveAttribute('aria-label', 'Notifications');
 
-  toastQueue.unmount();
+  toastQueue.destroy();
 });
 
 test('renders a toast message', async () => {
@@ -69,5 +69,5 @@ test('renders a toast message', async () => {
   // expect(popoverElement).toHaveAccessibleName('0 notifications');
   // expect(popoverElement).toHaveAttribute('aria-label', '0 notifications');
 
-  toastQueue.unmount();
+  toastQueue.destroy();
 });

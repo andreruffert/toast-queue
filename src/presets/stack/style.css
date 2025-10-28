@@ -1,19 +1,5 @@
 @layer toast-queue {
-  toast-queue {
-    transition:
-      opacity 0.3s ease-in-out,
-      display 0.3s linear;
-    transition-behavior: allow-discrete;
-    opacity: 0.8;
-
-    @starting-style {
-      opacity: 0.8;
-    }
-  }
-
   toast-queue:is(:popover-open) {
-    opacity: 1;
-
     /* [data-part="menu"] related */
     display: flex;
     flex-direction: column;
@@ -85,7 +71,8 @@
     view-transition-class: tq-menu;
   }
 
-  toast-queue[data-mode="stacked"] [data-part="menu"] {
+  toast-queue[data-mode="stacked"] [data-part="menu"],
+  toast-queue:has([data-part="group"]:empty) [data-part="menu"] {
     display: none;
   }
 
@@ -113,26 +100,22 @@
   ::view-transition-group(.tq-item.block-end) {
     --slideX: 0;
     --slideY: calc(100%);
-    /* object-position: bottom; */
   }
   ::view-transition-group(.tq-item.block-start) {
     --slideX: 0;
     --slideY: calc(-100%);
-    /* object-position: top; */
   }
   ::view-transition-group(.tq-item.inline-start) {
     --slideX: calc(-100%);
     --slideY: 0;
-    /* object-position: left; */
   }
   ::view-transition-group(.tq-item.inline-end) {
     --slideX: calc(100%);
     --slideY: 0;
-    /* object-position: right; */
   }
 
-  /* ::view-transition-new(.toast):only-child,
-  ::view-transition-old(.toast):only-child {
+  /* ::view-transition-new(.tq-item):only-child,
+  ::view-transition-old(.tq-item):only-child {
     animation-duration: 0.3s;
     animation-timing-function: unset;
   } */
