@@ -5,7 +5,7 @@ import { ToastQueue } from './index.js';
 test('defaults', async () => {
   const toastQueue = new ToastQueue();
 
-  // const popoverElement = page.getByRole('region', { name: 'Notifications' }).element();
+  // const rootElement = page.getByRole('region', { name: 'Notifications' }).element();
   const rootElement = document.querySelector('toast-queue');
   const groupElement = document.querySelector('[data-part="group"]');
 
@@ -15,7 +15,7 @@ test('defaults', async () => {
   expect(rootElement).toHaveAttribute('role', 'region');
   expect(rootElement).toHaveAttribute('tabindex', '-1');
   expect(rootElement).toHaveAttribute('popover', 'manual');
-  expect(rootElement).toHaveAttribute('data-placement', 'top end');
+  expect(rootElement).toHaveAttribute('data-placement', 'top-end');
   // expect(rootElement).toHaveAccessibleName('Notifications');
   expect(rootElement).toHaveAttribute('aria-label', 'Notifications');
 
