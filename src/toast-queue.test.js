@@ -2,7 +2,7 @@ import { expect, test, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { ToastQueue } from './index.js';
 
-test('defaults', async () => {
+test('renders an accessible toast message', async () => {
   const toastQueue = new ToastQueue();
 
   // const rootElement = page.getByRole('region', { name: 'Notifications' }).element();
@@ -19,11 +19,6 @@ test('defaults', async () => {
   // expect(rootElement).toHaveAccessibleName('Notifications');
   expect(rootElement).toHaveAttribute('aria-label', 'Notifications');
 
-  toastQueue.destroy();
-});
-
-test('renders a toast message', async () => {
-  const toastQueue = new ToastQueue();
   const onCloseCallback = vi.fn();
   const toastRef = toastQueue.add(
     {
@@ -36,7 +31,7 @@ test('renders a toast message', async () => {
   );
 
   // const rootElement = page.getByRole('region', { name: '1 notification' }).element();
-  // const popoverElement = document.querySelector('[data-toast-queue]');
+  // const rootElement = document.querySelector('toast-queue');
   const toastElement = page.getByRole('alertdialog');
   // const toastElement = document.querySelector('[data-part="toast"]');
   const toastContent = page.getByRole('alert');
@@ -48,7 +43,7 @@ test('renders a toast message', async () => {
   await expect.element(toastContent).toBeInTheDocument();
   await expect.element(closeButton).toBeInTheDocument();
 
-  // expect(popoverElement).toHaveAttribute('aria-label', '1 notification');
+  // expect(rootElement).toHaveAttribute('aria-label', '1 notification');
   expect(toastElement).toHaveAttribute('tabindex', '0');
   // expect(toastElement).toHaveAttribute('role', 'alertdialog');
   expect(toastElement).toHaveAttribute('aria-modal', 'false');
@@ -66,8 +61,8 @@ test('renders a toast message', async () => {
 
   await closeButton.click();
   expect(onCloseCallback).toHaveBeenCalled();
-  // expect(popoverElement).toHaveAccessibleName('0 notifications');
-  // expect(popoverElement).toHaveAttribute('aria-label', '0 notifications');
+  // expect(rootElement).toHaveAccessibleName('0 notifications');
+  // expect(rootElement).toHaveAttribute('aria-label', '0 notifications');
 
   toastQueue.destroy();
 });
