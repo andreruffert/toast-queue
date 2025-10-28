@@ -9,7 +9,7 @@ export default defineConfig({
     lib: {
       formats: ['es'],
       entry: resolve(__dirname, 'src/index.js'),
-      name: 'Toast Queue',
+      name: 'toast-queue',
       fileName: 'toast-queue',
     },
   },
