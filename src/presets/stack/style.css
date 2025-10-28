@@ -12,10 +12,6 @@
   }
 
   toast-queue [data-part="group"] {
-    transition: all ease-in-out 0.25s;
-  }
-
-  toast-queue [data-part="group"] {
     display: grid;
     grid-auto-flow: row;
   }
@@ -114,26 +110,21 @@
     --slideY: 0;
   }
 
-  /* ::view-transition-new(.tq-item):only-child,
-  ::view-transition-old(.tq-item):only-child {
-    animation-duration: 0.3s;
-    animation-timing-function: unset;
-  } */
   ::view-transition-new(.tq-item):only-child {
-    animation-name: slide-in;
+    animation-name: enter;
   }
   ::view-transition-old(.tq-item):only-child {
-    animation-name: slide-out;
+    animation-name: exit;
   }
 
-  @keyframes slide-in {
+  @keyframes enter {
     from {
       translate: var(--slideX) var(--slideY);
       opacity: 0.4;
     }
   }
 
-  @keyframes slide-out {
+  @keyframes exit {
     to {
       translate: var(--slideX) var(--slideY);
       opacity: 0;

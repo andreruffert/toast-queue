@@ -79,7 +79,8 @@ export class ToastQueue {
     rootTarget.appendChild(rootPart);
 
     this.#swipeable = new Swipeable({
-      selector: 'toast-queue [data-part="item"]:not([data-part="toast"][data-dismissible="false"])',
+      selector:
+        'toast-queue [data-part="item"]:not(:has([data-part="toast"][data-dismissible="false"]))',
       direction: getSwipeableDirection(this.#placement),
       removeFunction: (target) => {
         const toastId = target.querySelector('[data-part="toast"]')?.dataset?.id;

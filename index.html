@@ -91,8 +91,9 @@
 
     <script type="module">
       import { ToastQueue } from './src/index.js';
-      import stackPreset from './src/presets/stack/index.js';
-      import './src/presets/stack/style.css';
+      // import preset from './src/presets/stack/index.js';
+      // import './src/presets/stack/style.css';
+      import './src/presets/minimal/style.css';
 
       const toastPlacement = localStorage.getItem('tq-placement') || 'top-center';
 
@@ -100,7 +101,7 @@
         // duration: 6000,
         placement: toastPlacement,
         // root: document.body,
-        ...stackPreset
+        // ...preset
       });
 
       window.setToastPlacement = (value) => {
@@ -124,26 +125,26 @@
           }, {
             // className: 'toast toast--error',
             // dismissible: false,
-            action: {
-              label: 'Action',
-              onClick: () => console.log(Date.now())
-            },
+            // action: {
+            //   label: 'Action',
+            //   onClick: () => console.log(Date.now())
+            // },
           });
           return;
         }
       });
 
-      document.addEventListener('click', (event) => {
-        if (!event.target.closest('toast-queue') && !toastQueue.mode) {
-          toastQueue.mode = 'stacked';
-          return;
-        }
+      // document.addEventListener('click', (event) => {
+      //   if (!event.target.closest('toast-queue') && !toastQueue.mode) {
+      //     toastQueue.mode = 'stacked';
+      //     return;
+      //   }
 
-        if (event.target.closest('[data-mode="stacked"]')) {
-          toastQueue.mode = null;
-          return;
-        }
-      });
+      //   if (event.target.closest('[data-mode="stacked"]')) {
+      //     toastQueue.mode = null;
+      //     return;
+      //   }
+      // });
     </script>
   </body>
 </html>
