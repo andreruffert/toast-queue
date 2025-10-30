@@ -66,3 +66,32 @@ test('renders an accessible toast message', async () => {
 
   toastQueue.destroy();
 });
+
+test('toast actions', async () => {
+  const toastQueue = new ToastQueue();
+
+  const actionCallback = vi.fn();
+  const toastRef = toastQueue.add(
+    {
+      title: 'Toast notification',
+      description: '...',
+    },
+    {
+      action: {
+        label: 'Action',
+        onClick: actionCallback,
+      },
+    },
+  );
+
+  const actionTrigger = page.getByRole('button', { name: 'Action' });
+  const toastElement = page.getByRole('alertdialog', { name: toastRef.content.title });
+
+  // Triggers the action callback
+  await actionTrigger.click();
+  expect(actionCallback).toHaveBeenCalled();
+
+  // Ensure actions close the toast
+  expect(toastQueue.get(toastRef.id)).toBeUndefined();
+  await expect.element(toastElement).not.toBeInTheDocument();
+});
