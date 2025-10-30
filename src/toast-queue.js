@@ -43,8 +43,8 @@ const notificationInflection = inflect('notification')('notifications');
 export class ToastQueue {
   #options = null;
   #queue = new Set();
-  #duration = null;
-  /** @typedef ToastQueuePlacement 'top start' | 'top center' | 'top end' | 'bottom start' | 'bottom center' | 'bottom end' */
+  #duration = 6000;
+  /** @typedef ToastQueuePlacement 'top-start' | 'top-center' | 'top-end' | 'bottom-start' | 'bottom-center' | 'bottom-end' | center */
   #placement = 'top-end';
   #mode = null;
   #root;
@@ -64,7 +64,7 @@ export class ToastQueue {
     const rootPart = rootTemplate.content.cloneNode(true);
 
     this.#options = options;
-    this.#duration = options?.duration || this.#duration;
+    this.#duration = typeof options?.duration !== 'undefined' ? options.duration : this.#duration;
     this.#placement = options?.placement || this.#placement;
     this.#mode = options?.mode || this.#mode;
     this.#root = rootPart.querySelector(partSelectors.root);
@@ -124,6 +124,7 @@ export class ToastQueue {
         const toastId = event.target.closest(partSelectors.toast).dataset.id;
         const toast = this.get(toastId);
         toast?.action?.onClick();
+        this.close(toast.id);
         return;
       }
 

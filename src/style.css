@@ -34,6 +34,10 @@
     inset-inline: env(safe-area-inset-left, 0);
     margin-inline: auto;
   }
+  toast-queue[data-placement="center"] {
+    inset: 0;
+    margin: auto;
+  }
 
   toast-queue [data-part="group"] {
     list-style: none;

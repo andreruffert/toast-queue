@@ -37,10 +37,12 @@
     margin-block-start: 19px;
   }
 
-  toast-queue[data-placement^="bottom"][data-mode="stacked"] [data-part="item"]:nth-child(2) {
+  toast-queue[data-placement^="bottom"][data-mode="stacked"] [data-part="item"]:nth-child(2),
+  toast-queue[data-placement="center"][data-mode="stacked"] [data-part="item"]:nth-child(2) {
     margin-block-start: -10px;
   }
-  toast-queue[data-placement^="bottom"][data-mode="stacked"] [data-part="item"]:nth-child(3) {
+  toast-queue[data-placement^="bottom"][data-mode="stacked"] [data-part="item"]:nth-child(3),
+  toast-queue[data-placement="center"][data-mode="stacked"] [data-part="item"]:nth-child(3) {
     margin-block-start: -19px;
   }
 

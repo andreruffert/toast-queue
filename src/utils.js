@@ -5,6 +5,7 @@ const viewTransitionPlacementTypes = {
   'bottom-start': 'block-end inline-start',
   'bottom-center': 'block-end',
   'bottom-end': 'block-end inline-end',
+  center: 'block-end',
 };
 
 const swipeableDirectionPlacementTypes = {
@@ -14,6 +15,7 @@ const swipeableDirectionPlacementTypes = {
   'bottom-start': 'inline-start',
   'bottom-center': 'block-end',
   'bottom-end': 'inline-end',
+  center: 'block',
 };
 
 export function getPlacementViewTransitionClass(placement) {
