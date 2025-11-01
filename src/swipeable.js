@@ -7,6 +7,7 @@ export class Swipeable {
   #dragFrame = null;
   #startX = null;
   #startY = null;
+  #selector = '[data-swipeable]';
   #direction = 'inline';
   #timeStamp = null;
   #distance = null;
@@ -15,6 +16,7 @@ export class Swipeable {
   #onSwipe = () => {};
 
   constructor(options) {
+    this.#selector = options?.selector || this.#selector;
     this.#onSwipe = options?.onSwipe || this.#onSwipe;
     document.addEventListener('pointerdown', this.startDrag);
     document.addEventListener('pointermove', this.drag);
@@ -23,7 +25,7 @@ export class Swipeable {
   }
 
   startDrag = (event) => {
-    const target = event.target.closest('[data-swipeable]');
+    const target = event.target.closest(this.#selector);
     if (!target) return;
 
     this.#target = target;
@@ -49,18 +51,21 @@ export class Swipeable {
     const dx = inlineDirections.includes(this.#direction) ? event.clientX - this.#startX : 0;
     const dy = blockDirections.includes(this.#direction) ? event.clientY - this.#startY : 0;
     const dt = event.timeStamp - this.#timeStamp;
-    const velocityX = dx / dt;
-    const velocityY = dy / dt;
-    const distance = inlineDirections.includes(this.#direction)
-      ? Math.abs(dx) / this.#target.offsetWidth
-      : Math.abs(dy) / this.#target.offsetHeight;
-    const velocity = Math.hypot(velocityX, velocityY); // px/ms
-    const acceleration = (velocity - this.#velocity) / dt; // (px/ms)/ms
 
-    this.#timeStamp = event.timeStamp;
-    this.#velocity = velocity;
-    this.#acceleration = acceleration;
-    this.#distance = distance;
+    if (dt > 0) {
+      const velocityX = dx / dt;
+      const velocityY = dy / dt;
+      const distance = inlineDirections.includes(this.#direction)
+        ? Math.abs(dx) / this.#target.offsetWidth
+        : Math.abs(dy) / this.#target.offsetHeight;
+      const velocity = Math.hypot(velocityX, velocityY); // px/ms
+      const acceleration = (velocity - this.#velocity) / dt; // (px/ms)/ms
+
+      this.#timeStamp = event.timeStamp;
+      this.#velocity = velocity;
+      this.#acceleration = acceleration;
+      this.#distance = distance;
+    }
 
     // Cancel previous frame to avoid multiple calls
     if (this.#dragFrame) cancelAnimationFrame(this.#dragFrame);
@@ -75,25 +80,9 @@ export class Swipeable {
   endDrag = async (event) => {
     if (!this.#isDragging) return;
 
-    const dx = event.clientX - this.#startX;
-    const dy = event.clientY - this.#startY;
-    const isNearlyInvisible = this.#distance >= 0.5;
-
-    if (isNearlyInvisible || this.#acceleration >= 0.1) {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const exitX = inlineDirections.includes(this.#direction) ? (dx > 0 ? vw : -vw) : 0;
-      const exitY = blockDirections.includes(this.#direction) ? (dy > 0 ? vh : -vh) : 0;
-      const onTransitionEnd = (event) => {
-        const target = event.currentTarget;
-        if (!target) return;
-        target.style.removeProperty('transition');
-        this.#onSwipe({ target });
-      };
+    if (this.#distance > 0.5 || (this.#distance > 0.01 && this.#acceleration > 0.1)) {
       this.#dragFrame = requestAnimationFrame(() => {
-        this.#target.addEventListener('transitionend', onTransitionEnd, { once: true });
-        this.#target.style.setProperty('transition', 'transform 0.3s');
-        this.#target.style.setProperty('transform', `translate(${exitX}px, ${exitY}px)`);
+        this.#onSwipe({ target: this.#target });
       });
     }
     // Restore initial position
@@ -106,18 +95,26 @@ export class Swipeable {
         this.#target.style.setProperty('transition', 'transform 0.3s');
         this.#target.style.removeProperty('transform');
         this.#target.style.removeProperty('--distance');
+        this.#target.style.removeProperty('will-change');
+        this.#target.style.removeProperty('touch-action');
+        delete this.#target.dataset.dragging;
       });
     }
 
     // Reset state
-    this.#target.style.removeProperty('will-change');
-    this.#target.style.removeProperty('touch-action');
-    delete this.#target.dataset.dragging;
     this.#isDragging = false;
     this.#startX = 0;
     this.#startY = 0;
+    this.#timeStamp = null;
     this.#distance = 0;
     this.#velocity = 0;
     this.#acceleration = 0;
   };
+
+  destroy() {
+    document.removeEventListener('pointerdown', this.startDrag);
+    document.removeEventListener('pointermove', this.drag);
+    document.removeEventListener('pointerup', this.endDrag);
+    document.removeEventListener('pointercancel', this.endDrag);
+  }
 }

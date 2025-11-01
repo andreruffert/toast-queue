@@ -94,16 +94,15 @@
     <script type="module">
       import { ToastQueue } from './src/index.js';
       import preset from './src/presets/stack/index.js';
-      // import './src/presets/stack/style.css';
-      import './src/presets/minimal/style.css';
+      import './src/presets/stack/style.css';
+      // import './src/presets/minimal/style.css';
 
       const toastPlacement = localStorage.getItem('tq-placement') || 'top-center';
 
       window.toastQueue = new ToastQueue({
         duration: null,
         placement: toastPlacement,
-        // root: document.body,
-        // ...preset
+        ...preset
       });
 
       window.setToastPlacement = (value) => {
@@ -136,17 +135,17 @@
         }
       });
 
-      // document.addEventListener('click', (event) => {
-      //   if (!event.target.closest('toast-queue') && !toastQueue.mode) {
-      //     toastQueue.mode = 'stacked';
-      //     return;
-      //   }
+      document.addEventListener('click', (event) => {
+        if (!event.target.closest('toast-queue') && !toastQueue.mode) {
+          toastQueue.mode = 'stacked';
+          return;
+        }
 
-      //   if (event.target.closest('[data-mode="stacked"]')) {
-      //     toastQueue.mode = null;
-      //     return;
-      //   }
-      // });
+        if (event.target.closest('[data-mode="stacked"]')) {
+          toastQueue.mode = null;
+          return;
+        }
+      });
     </script>
   </body>
 </html>

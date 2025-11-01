@@ -26,6 +26,10 @@
     z-index: 1;
   }
 
+  toast-queue:not([data-mode="stacked"]) [data-part="item"]:nth-child(n + 4) {
+    display: none;
+  }
+
   toast-queue[data-mode="stacked"] [data-part="item"]:not(:first-child) [data-part="close-button"] {
     display: none;
   }
@@ -74,15 +78,15 @@
     display: none;
   }
 
-  ::view-transition-old(.tq-menu):only-child {
-    --slideX: 0;
-    --slideY: calc(-100%);
-    animation-name: slide-out;
-  }
   ::view-transition-new(.tq-menu):only-child {
     --slideX: 0;
     --slideY: calc(-100%);
-    animation-name: slide-in;
+    animation-name: enter;
+  }
+  ::view-transition-old(.tq-menu):only-child {
+    --slideX: 0;
+    --slideY: calc(-100%);
+    animation-name: exit;
   }
 
   toast-queue:not([data-mode="stacked"]) [data-part="menu"] {

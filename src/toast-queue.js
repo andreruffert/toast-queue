@@ -90,15 +90,6 @@ export class ToastQueue {
   }
 
   #addEventListeners() {
-    this.#group.addEventListener('pointerover', (event) => {
-      if (!event.target.closest(partSelectors.group)) return;
-      this.pauseAll();
-    });
-
-    this.#group.addEventListener('pointerout', () => {
-      this.resumeAll();
-    });
-
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') {
         this.pauseAll();
@@ -135,6 +126,15 @@ export class ToastQueue {
         if (this.#options?.mode) this.mode = this.#options.mode;
         return;
       }
+    });
+
+    this.#root.addEventListener('pointerover', (event) => {
+      if (!event.target.closest(partSelectors.group)) return;
+      this.pauseAll();
+    });
+
+    this.#root.addEventListener('pointerout', () => {
+      this.resumeAll();
     });
   }
 
@@ -337,6 +337,7 @@ export class ToastQueue {
 
   destroy() {
     this.#root.remove();
+    this.#swipeable.destroy();
     // TODO remove event listeners cleanup etc.
   }
 }
