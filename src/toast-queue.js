@@ -79,11 +79,9 @@ export class ToastQueue {
     rootTarget.appendChild(rootPart);
 
     this.#swipeable = new Swipeable({
-      selector:
-        'toast-queue [data-part="item"]:not(:has([data-part="toast"][data-dismissible="false"]))',
-      direction: getSwipeableDirection(this.#placement),
-      removeFunction: (target) => {
+      onSwipe: ({ target }) => {
         const toastId = target.querySelector('[data-part="toast"]')?.dataset?.id;
+        if (!toastId) return;
         this.close(toastId);
       },
     });
@@ -156,6 +154,7 @@ export class ToastQueue {
 
   set mode(value) {
     if (value === null && this.#queue.size <= 1) return;
+    if (this.#mode === value) return;
     this.#mode = value;
     wrapInViewTransition(() => {
       if (this.#mode) {
@@ -179,8 +178,9 @@ export class ToastQueue {
    */
   set placement(value) {
     this.#placement = value;
-    this.#swipeable.direction = getSwipeableDirection(value);
+    // this.#swipeable.direction = getSwipeableDirection(value);
     for (const toast of this.#queue) {
+      toast.el.dataset.swipeable = getSwipeableDirection(value);
       toast.el.style.setProperty(
         'view-transition-class',
         `tq-item ${getPlacementViewTransitionClass(this.#placement)}`,
@@ -242,8 +242,9 @@ export class ToastQueue {
       `tq-item ${getPlacementViewTransitionClass(this.#placement)}`,
     );
 
+    newItem.dataset.swipeable = getSwipeableDirection(this.#placement);
     // Swipeable: Ensure capture pointer events will work properly on touch devices
-    newItem.style.setProperty('touch-action', 'none');
+    // newItem.style.setProperty('touch-action', 'none');
 
     const toastPart = newItem.querySelector(partSelectors.toast);
     toastPart.dataset.id = toastRef.id;

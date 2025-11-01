@@ -9,8 +9,8 @@
   }
 
   ::view-transition-group(.tq-item) {
-    animation-duration: 0.6s;
-    animation-timing-function: linear(
+    animation-duration: 0.3s;
+    /* animation-timing-function: linear(
       0,
       0.402 7.4%,
       0.711 15.3%,
@@ -25,7 +25,7 @@
       1.019 83.2%,
       1.004 91.3%,
       1
-    );
+    ); */
   }
 
   ::view-transition-new(.tq-item):only-child {

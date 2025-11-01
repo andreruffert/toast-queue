@@ -9,13 +9,13 @@ const viewTransitionPlacementTypes = {
 };
 
 const swipeableDirectionPlacementTypes = {
-  'top-start': 'inline-start',
-  'top-center': 'block-start',
-  'top-end': 'inline-end',
-  'bottom-start': 'inline-start',
-  'bottom-center': 'block-end',
-  'bottom-end': 'inline-end',
-  center: 'block',
+  'top-start': 'left',
+  'top-center': 'up',
+  'top-end': 'right',
+  'bottom-start': 'left',
+  'bottom-center': 'down',
+  'bottom-end': 'right',
+  center: 'inline',
 };
 
 export function getPlacementViewTransitionClass(placement) {

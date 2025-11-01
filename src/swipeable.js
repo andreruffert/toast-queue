@@ -1,175 +1,123 @@
+const inlineDirections = ['inline', 'horizontal', 'left', 'right'];
+const blockDirections = ['block', 'vertical', 'up', 'down'];
+
 export class Swipeable {
-  #selector = '[data-swipeable]';
+  #target = null;
+  #isDragging = null;
+  #dragFrame = null;
+  #startX = null;
+  #startY = null;
   #direction = 'inline';
-  #removeFunctionRef = (target) => target.parentNode.removeChild(target);
-  #prevEvent = null;
-  #prevSpeed = 0;
+  #timeStamp = null;
+  #distance = null;
+  #velocity = null;
+  #acceleration = null;
+  #onSwipe = () => {};
 
   constructor(options) {
-    this.targetBCR = null;
-    this.target = null;
-    this.startX = 0;
-    this.startY = 0;
-    this.currentX = 0;
-    this.currentY = 0;
-    this.screenX = 0;
-    this.screenY = 0;
-    this.targetX = 0;
-    this.targetY = 0;
-    this.isDragging = false;
-
-    this.#selector = options?.selector ?? this.#selector;
-    this.#direction = options?.direction ?? this.#direction;
-    this.#removeFunctionRef = options?.removeFunction ?? this.#removeFunctionRef;
-
-    this.addEventListeners();
-    requestAnimationFrame(this.update);
+    this.#onSwipe = options?.onSwipe || this.#onSwipe;
+    document.addEventListener('pointerdown', this.startDrag);
+    document.addEventListener('pointermove', this.drag);
+    document.addEventListener('pointerup', this.endDrag);
+    document.addEventListener('pointercancel', this.endDrag);
   }
 
-  get direction() {
-    return this.#direction;
-  }
+  startDrag = (event) => {
+    const target = event.target.closest('[data-swipeable]');
+    if (!target) return;
 
-  set direction(value) {
-    this.#direction = value;
-  }
+    this.#target = target;
+    this.#target.dataset.dragging = '';
+    this.#target.style.setProperty('touch-action', 'none');
+    this.#target.style.setProperty('will-change', 'transform');
+    this.#isDragging = true;
+    this.#startX = event.clientX;
+    this.#startY = event.clientY;
+    this.#direction = this.#target.dataset.swipeable || this.#direction;
+    this.#timeStamp = event.timeStamp;
+  };
 
-  addEventListeners() {
-    document.addEventListener('pointerdown', this.onStart);
-    document.addEventListener('pointermove', this.onMove);
-    document.addEventListener('pointerup', this.onEnd);
-  }
-
-  onStart = (event) => {
-    if (this.target) return;
-    if (!event.target.closest('[data-id]')) return;
+  drag = (event) => {
+    if (!this.#isDragging) return;
+    if (this.#direction === 'left' && event.clientX - 10 > this.#startX) return;
+    if (this.#direction === 'right' && event.clientX + 10 < this.#startX) return;
+    if (this.#direction === 'up' && event.clientY - 10 > this.#startY) return;
+    if (this.#direction === 'down' && event.clientY + 10 < this.#startY) return;
 
     event.preventDefault();
-    this.target = event.target.closest(this.#selector);
-    this.targetBCR = this.target.getBoundingClientRect();
-    this.startX = event.pageX;
-    this.startY = event.pageY;
-    this.currentX = this.startX;
-    this.currentY = this.startY;
-    this.isDragging = true;
-    this.target.style.willChange = 'transform';
-    this.target.style.zIndex = 'calc(infinity)';
+
+    const dx = inlineDirections.includes(this.#direction) ? event.clientX - this.#startX : 0;
+    const dy = blockDirections.includes(this.#direction) ? event.clientY - this.#startY : 0;
+    const dt = event.timeStamp - this.#timeStamp;
+    const velocityX = dx / dt;
+    const velocityY = dy / dt;
+    const distance = inlineDirections.includes(this.#direction)
+      ? Math.abs(dx) / this.#target.offsetWidth
+      : Math.abs(dy) / this.#target.offsetHeight;
+    const velocity = Math.hypot(velocityX, velocityY); // px/ms
+    const acceleration = (velocity - this.#velocity) / dt; // (px/ms)/ms
+
+    this.#timeStamp = event.timeStamp;
+    this.#velocity = velocity;
+    this.#acceleration = acceleration;
+    this.#distance = distance;
+
+    // Cancel previous frame to avoid multiple calls
+    if (this.#dragFrame) cancelAnimationFrame(this.#dragFrame);
+
+    this.#dragFrame = requestAnimationFrame(() => {
+      if (!this.#target) return;
+      this.#target.style.setProperty('transform', `translate(${dx}px, ${dy}px)`); // rotate(${dx * 0.1}deg)
+      this.#target.style.setProperty('--distance', this.#distance);
+    });
   };
 
-  onMove = (event) => {
-    if (!this.target) return;
-    if (this.#direction === 'inline-start' && event.pageX - 10 > this.startX) return;
-    if (this.#direction === 'inline-end' && event.pageX + 10 < this.startX) return;
-    if (this.#direction === 'block-start' && event.pageY - 10 > this.startY) return;
-    if (this.#direction === 'block-end' && event.pageY + 10 < this.startY) return;
+  endDrag = async (event) => {
+    if (!this.#isDragging) return;
 
-    if (this.#prevEvent) {
-      const dx = event.clientX - this.#prevEvent.clientX;
-      const dy = event.clientY - this.#prevEvent.clientY;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      const deltaTime = event.timeStamp - this.#prevEvent.timeStamp; // in ms
+    const dx = event.clientX - this.#startX;
+    const dy = event.clientY - this.#startY;
+    const isNearlyInvisible = this.#distance >= 0.5;
 
-      // Speed in px/ms
-      const speed = deltaTime > 0 ? distance / deltaTime : 0;
-
-      // Acceleration in px/ms²
-      // const acceleration = (speed - this.#prevSpeed) / deltaTime;
-      // console.log({acceleration, speed});
-
-      this.#prevSpeed = speed;
+    if (isNearlyInvisible || this.#acceleration >= 0.1) {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const exitX = inlineDirections.includes(this.#direction) ? (dx > 0 ? vw : -vw) : 0;
+      const exitY = blockDirections.includes(this.#direction) ? (dy > 0 ? vh : -vh) : 0;
+      const onTransitionEnd = (event) => {
+        const target = event.currentTarget;
+        if (!target) return;
+        target.style.removeProperty('transition');
+        this.#onSwipe({ target });
+      };
+      this.#dragFrame = requestAnimationFrame(() => {
+        this.#target.addEventListener('transitionend', onTransitionEnd, { once: true });
+        this.#target.style.setProperty('transition', 'transform 0.3s');
+        this.#target.style.setProperty('transform', `translate(${exitX}px, ${exitY}px)`);
+      });
+    }
+    // Restore initial position
+    else {
+      const onTransitionEnd = (event) => {
+        event.currentTarget.style.removeProperty('transition');
+      };
+      this.#dragFrame = requestAnimationFrame(() => {
+        this.#target.addEventListener('transitionend', onTransitionEnd, { once: true });
+        this.#target.style.setProperty('transition', 'transform 0.3s');
+        this.#target.style.removeProperty('transform');
+        this.#target.style.removeProperty('--distance');
+      });
     }
 
-    this.#prevEvent = event;
-    this.target.dataset.dragging = '';
-    this.currentX = event.pageX;
-    this.currentY = event.pageY;
+    // Reset state
+    this.#target.style.removeProperty('will-change');
+    this.#target.style.removeProperty('touch-action');
+    delete this.#target.dataset.dragging;
+    this.#isDragging = false;
+    this.#startX = 0;
+    this.#startY = 0;
+    this.#distance = 0;
+    this.#velocity = 0;
+    this.#acceleration = 0;
   };
-
-  onEnd = () => {
-    if (!this.target) return;
-
-    this.targetX = 0;
-    this.targetY = 0;
-
-    const screenX = this.currentX - this.startX;
-    const screenY = this.currentY - this.startY;
-    const threshold = this.#direction.includes('inline')
-      ? this.targetBCR.width * 0.4
-      : this.targetBCR.height * 0.6;
-
-    if (this.#direction.includes('inline') && Math.abs(screenX) > threshold) {
-      this.targetX = screenX > 0 ? this.targetBCR.width : -this.targetBCR.width;
-    }
-    if (this.#direction.includes('block') && Math.abs(screenY) > threshold) {
-      this.targetY = screenY > 0 ? this.targetBCR.height : -this.targetBCR.height;
-    }
-
-    // Reset
-    this.#prevEvent = null;
-    this.#prevSpeed = 0;
-    this.isDragging = false;
-    delete this.target.dataset.dragging;
-  };
-
-  update = () => {
-    requestAnimationFrame(this.update);
-
-    if (!this.target) return;
-
-    if (this.isDragging) {
-      if (this.#direction.includes('inline')) {
-        this.screenX = this.currentX - this.startX;
-      }
-      if (this.#direction.includes('block')) {
-        this.screenY = this.currentY - this.startY;
-      }
-    } else {
-      if (this.#direction.includes('inline')) {
-        this.screenX += (this.targetX - this.screenX) / 4;
-      }
-      if (this.#direction.includes('block')) {
-        this.screenY += (this.targetY - this.screenY) / 4;
-      }
-    }
-
-    const normalizedDragDistance = this.#direction.includes('inline')
-      ? Math.abs(this.screenX) / this.targetBCR.width
-      : Math.abs(this.screenY) / this.targetBCR.height;
-    const opacity = 1 - normalizedDragDistance ** 3;
-
-    this.target.style.setProperty(
-      'transform',
-      this.#direction.includes('inline')
-        ? `translateX(${this.screenX}px)`
-        : `translateY(${this.screenY}px)`,
-    );
-    this.target.style.setProperty('opacity', opacity);
-
-    // User has finished dragging.
-    if (this.isDragging) return;
-
-    const isNearlyAtStart =
-      Math.abs(this.#direction.includes('inline') ? this.screenX : this.screenY) < 0.1;
-    const isNearlyInvisible = opacity < 0.01 || this.#prevSpeed > 2;
-
-    // If the target is nearly gone.
-    if (isNearlyInvisible) {
-      // Bail if there's no target or it's not attached to a parent anymore.
-      if (!this.target || !this.target.parentNode) return;
-      this.#removeFunctionRef(this.target);
-      this.target = null;
-    } else if (isNearlyAtStart) {
-      this.resetTarget();
-    }
-  };
-
-  resetTarget() {
-    if (!this.target) return;
-
-    this.target.style.removeProperty('will-change');
-    this.target.style.removeProperty('z-index');
-    this.target.style.removeProperty('transform');
-    this.target.style.removeProperty('opacity');
-    this.target = null;
-  }
 }
