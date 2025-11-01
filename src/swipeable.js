@@ -77,10 +77,10 @@ export class Swipeable {
     });
   };
 
-  endDrag = async (event) => {
+  endDrag = async () => {
     if (!this.#isDragging) return;
 
-    if (this.#distance > 0.5 || (this.#distance > 0.01 && this.#acceleration > 0.1)) {
+    if (this.#distance > 0.5 || (this.#distance > 0.1 && this.#acceleration > 0.1)) {
       this.#dragFrame = requestAnimationFrame(() => {
         this.#onSwipe({ target: this.#target });
       });

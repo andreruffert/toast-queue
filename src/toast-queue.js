@@ -242,9 +242,11 @@ export class ToastQueue {
       `tq-item ${getPlacementViewTransitionClass(this.#placement)}`,
     );
 
-    newItem.dataset.swipeable = getSwipeableDirection(this.#placement);
-    // Swipeable: Ensure capture pointer events will work properly on touch devices
-    // newItem.style.setProperty('touch-action', 'none');
+    if (toastRef.dismissible) {
+      newItem.dataset.swipeable = getSwipeableDirection(this.#placement);
+      // Swipeable: Ensure capture pointer events will work properly on touch devices
+      // newItem.style.setProperty('touch-action', 'none');
+    }
 
     const toastPart = newItem.querySelector(partSelectors.toast);
     toastPart.dataset.id = toastRef.id;
