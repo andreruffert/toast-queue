@@ -7,7 +7,6 @@ export class Swipeable {
   #dragFrame = null;
   #startX = null;
   #startY = null;
-  #selector = '[data-swipeable]';
   #direction = 'inline';
   #timeStamp = null;
   #distance = null;
@@ -15,8 +14,12 @@ export class Swipeable {
   #acceleration = null;
   #onSwipe = () => {};
 
+  /**
+   *
+   * @param {Object} [options={}]
+   * @param {function} [options.onSwipe=null] - Swipe callback
+   */
   constructor(options) {
-    this.#selector = options?.selector || this.#selector;
     this.#onSwipe = options?.onSwipe || this.#onSwipe;
     document.addEventListener('pointerdown', this.startDrag);
     document.addEventListener('pointermove', this.drag);
@@ -25,12 +28,12 @@ export class Swipeable {
   }
 
   startDrag = (event) => {
-    const target = event.target.closest(this.#selector);
+    const target = event.target.closest('[data-swipeable]');
     if (!target) return;
 
     this.#target = target;
     this.#target.dataset.dragging = '';
-    this.#target.style.setProperty('touch-action', 'none');
+    this.#target.style.setProperty('touch-action', 'none'); // Ensure capture pointer events will work properly on touch devices.
     this.#target.style.setProperty('will-change', 'transform');
     this.#isDragging = true;
     this.#startX = event.clientX;
@@ -73,7 +76,7 @@ export class Swipeable {
     this.#dragFrame = requestAnimationFrame(() => {
       if (!this.#target) return;
       this.#target.style.setProperty('transform', `translate(${dx}px, ${dy}px)`); // rotate(${dx * 0.1}deg)
-      this.#target.style.setProperty('--distance', this.#distance);
+      this.#target.style.setProperty('--tq-distance', this.#distance);
     });
   };
 
@@ -94,7 +97,7 @@ export class Swipeable {
         this.#target.addEventListener('transitionend', onTransitionEnd, { once: true });
         this.#target.style.setProperty('transition', 'transform 0.3s');
         this.#target.style.removeProperty('transform');
-        this.#target.style.removeProperty('--distance');
+        this.#target.style.removeProperty('--tq-distance');
         this.#target.style.removeProperty('will-change');
         this.#target.style.removeProperty('touch-action');
         delete this.#target.dataset.dragging;

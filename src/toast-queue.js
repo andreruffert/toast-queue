@@ -52,11 +52,13 @@ export class ToastQueue {
   #swipeable;
 
   /**
-   * @typedef {Object} ToastQueueOptions
+   * @typedef {object} ToastQueueOptions
    * @property {number} duration - The amount of time, in milliseconds, that the toast will remain open before closing automatically.
    * @property {ToastQueuePlacement} placement -
    * @property {string} mode -
    * @property {HTMLElement} root -
+   *
+   * @param {ToastQueueOptions} [options={}]
    */
   constructor(options) {
     const rootTarget = options?.root || document.body;
@@ -144,11 +146,13 @@ export class ToastQueue {
     return {
       id: toastId,
       index: this.#queue.size + 1,
+      timestamp: Date.now(),
       timer: duration ? new Timer(() => this.close(toastId), duration) : undefined,
       dismissible: options?.dismissible !== false,
       content: options?.content,
       onClose: options?.onClose,
       action: options?.action,
+      ref: null,
     };
   }
 
@@ -174,14 +178,14 @@ export class ToastQueue {
   }
 
   /**
-   * @param {string} Placement - toast-queue placement
+   * @param {ToastQueuePlacement} value - toast-queue placement
    */
   set placement(value) {
     this.#placement = value;
     // this.#swipeable.direction = getSwipeableDirection(value);
     for (const toast of this.#queue) {
-      toast.el.dataset.swipeable = getSwipeableDirection(value);
-      toast.el.style.setProperty(
+      toast.ref.dataset.swipeable = getSwipeableDirection(value);
+      toast.ref.style.setProperty(
         'view-transition-class',
         `tq-item ${getPlacementViewTransitionClass(this.#placement)}`,
       );
@@ -191,6 +195,11 @@ export class ToastQueue {
     });
   }
 
+  /**
+   *
+   * @param {function} updateDOM
+   * @param {boolean} skipTransition
+   */
   async update(updateDOM, skipTransition = false) {
     if (this.#queue.size === 1) this.#root.showPopover();
     if (typeof updateDOM === 'function' && !skipTransition)
@@ -210,6 +219,12 @@ export class ToastQueue {
     );
   }
 
+  /**
+   * Get a toast from the queue
+   *
+   * @param {string} toastId
+   * @returns
+   */
   get(toastId) {
     for (const toast of this.#queue) {
       if (toast.id === toastId) {
@@ -220,13 +235,16 @@ export class ToastQueue {
   }
 
   /**
-   * @param {string} content - HTML content
+   * Creates a new toast
+   *
+   * @param {object|string} content - Message
    * @param {object} options
    * @param {string} options.className
    * @param {number} options.duration
-   * @param {number} options.dismissible
-   * @param {string} options.actionLabel
-   * @param {function} options.onAction
+   * @param {boolean} options.dismissible
+   * @param {object|string} options.action
+   * @param {string} options.action.label
+   * @param {function} options.action.onClick
    * @param {function} options.onClose
    * @returns
    */
@@ -244,8 +262,6 @@ export class ToastQueue {
 
     if (toastRef.dismissible) {
       newItem.dataset.swipeable = getSwipeableDirection(this.#placement);
-      // Swipeable: Ensure capture pointer events will work properly on touch devices
-      // newItem.style.setProperty('touch-action', 'none');
     }
 
     const toastPart = newItem.querySelector(partSelectors.toast);
@@ -287,14 +303,18 @@ export class ToastQueue {
       actionsPart.appendChild(actionButton);
     }
 
-    toastRef.el = newItem;
+    toastRef.ref = newItem;
     this.#queue.add(toastRef);
     this.update(() => this.#group.prepend(newItem));
 
     return toastRef;
   }
 
-  /* Closes a toast by ID */
+  /**
+   * Closes a toast by ID
+   *
+   * @param {string} id
+   */
   close(id) {
     for (const toast of this.#queue) {
       if (toast.id === id) {
@@ -302,10 +322,10 @@ export class ToastQueue {
         if (typeof toast.onClose === 'function') toast.onClose();
         this.update(
           () => {
-            toast.el.remove();
+            toast.ref.remove();
           },
           // Skip view transition for elements not visible in the UI
-          toast.el.offsetParent === null,
+          toast.ref.offsetParent === null,
         );
       }
     }
@@ -338,8 +358,8 @@ export class ToastQueue {
   }
 
   destroy() {
+    // TODO: Remove event listeners cleanup etc.
     this.#root.remove();
     this.#swipeable.destroy();
-    // TODO remove event listeners cleanup etc.
   }
 }
