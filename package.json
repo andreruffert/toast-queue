@@ -22,9 +22,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.6",
-    "@vitest/browser-playwright": "4.0.0",
+    "@vitest/browser-playwright": "4.0.4",
     "vite": "7.1.12",
-    "vitest": "4.0.0"
+    "vitest": "4.0.4"
   },
   "volta": {
     "node": "22.13.1",
