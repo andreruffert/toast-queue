@@ -14,12 +14,12 @@
     display: initial;
   }
 
+  /** Placement **/
   toast-queue[data-placement^="top"] {
     inset-block-start: env(safe-area-inset-top, 0);
   }
   toast-queue[data-placement^="bottom"] {
     inset-block-end: env(safe-area-inset-bottom, 0);
-    /* flex-direction: column-reverse; */
   }
   toast-queue[data-placement="top-start"],
   toast-queue[data-placement="bottom-start"] {
@@ -39,12 +39,14 @@
     margin: auto;
   }
 
+  /** Group */
   toast-queue [data-part="group"] {
     list-style: none;
     margin: unset;
     padding: unset;
   }
 
+  /** Toast **/
   toast-queue [data-part="toast"] {
     background-color: Canvas;
     display: flex;

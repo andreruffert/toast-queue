@@ -202,9 +202,15 @@ export class ToastQueue {
    * @param {boolean} skipTransition
    */
   async update(updateDOM, skipTransition = false) {
+    this.#root.setAttribute(
+      'aria-label',
+      `${this.#queue.size} ${notificationInflection(this.#queue.size)}`,
+    );
+
     if (this.#queue.size === 1) this.#root.showPopover();
-    if (typeof updateDOM === 'function' && !skipTransition)
-      await wrapInViewTransition(updateDOM).finished;
+    if (typeof updateDOM === 'function') {
+      skipTransition ? updateDOM() : await wrapInViewTransition(updateDOM).finished;
+    }
 
     if (this.#queue.size === 0) {
       this.#root.hidePopover();
@@ -213,11 +219,6 @@ export class ToastQueue {
         this.mode = this.#options.mode;
       }
     }
-
-    this.#root.setAttribute(
-      'aria-label',
-      `${this.#queue.size} ${notificationInflection(this.#queue.size)}`,
-    );
   }
 
   /**

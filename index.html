@@ -145,7 +145,7 @@
           return;
         }
 
-        if (event.target.closest('[data-mode="stacked"]')) {
+        if (event.target.closest('toast-queue[data-mode="stacked"]')) {
           toastQueue.mode = null;
           toastQueue.pause();
           return;
