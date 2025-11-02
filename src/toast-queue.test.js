@@ -109,7 +109,7 @@ test('toast content - string', async () => {
 
 test('toast content - object', async () => {
   const toastQueue = new ToastQueue();
-  const toastRef = toastQueue.add({ title: 'Title', description: 'Description ...'});
+  const toastRef = toastQueue.add({ title: 'Title', description: 'Description ...' });
   const toastElement = page.getByRole('alertdialog', { name: toastRef.content.title });
   const toastContent = page.getByRole('alert');
   const toastTitle = page.getByText(toastRef.content.title);
