@@ -4,73 +4,67 @@ import { ToastQueue } from './index.js';
 
 test('renders an accessible toast message', async () => {
   const toastQueue = new ToastQueue();
-
-  // const rootElement = page.getByRole('region', { name: 'Notifications' }).element();
-  const rootElement = document.querySelector('toast-queue');
+  const rootElement = page.getByLabelText('Notifications');
   const groupElement = document.querySelector('[data-part="group"]');
 
   await expect.element(rootElement).toBeInTheDocument();
-  await expect.element(groupElement).toBeInTheDocument();
+  expect(groupElement).toBeInTheDocument();
+  await expect.element(rootElement).toHaveAttribute('role', 'region');
+  await expect.element(rootElement).toHaveAttribute('tabindex', '-1');
+  await expect.element(rootElement).toHaveAttribute('popover', 'manual');
+  await expect.element(rootElement).toHaveAttribute('data-placement', 'top-end');
 
-  expect(rootElement).toHaveAttribute('role', 'region');
-  expect(rootElement).toHaveAttribute('tabindex', '-1');
-  expect(rootElement).toHaveAttribute('popover', 'manual');
-  expect(rootElement).toHaveAttribute('data-placement', 'top-end');
-  // expect(rootElement).toHaveAccessibleName('Notifications');
-  expect(rootElement).toHaveAttribute('aria-label', 'Notifications');
-
-  const onCloseCallback = vi.fn();
   const toastRef = toastQueue.add(
     {
       title: 'Toast notification',
       description: '...',
     },
     {
-      onClose: onCloseCallback,
+      onClose: vi.fn(),
     },
   );
 
-  // const rootElement = page.getByRole('region', { name: '1 notification' }).element();
-  // const rootElement = document.querySelector('toast-queue');
-  const toastElement = page.getByRole('alertdialog');
-  // const toastElement = document.querySelector('[data-part="toast"]');
+  const toastElement = page.getByRole('alertdialog', { name: toastRef.content.title });
   const toastContent = page.getByRole('alert');
-  // const toastContent = document.querySelector('[data-part="content"]');
+  const toastTitle = page.getByText(toastRef.content.title);
+  const toastDescription = page.getByText(toastRef.content.description);
   const closeButton = page.getByRole('button', { name: 'Close' });
-  // const closeButton = document.querySelector('[data-part="close-button"]');
+
+  // Updates the region label when adding a toast
+  await expect.element(page.getByLabelText('1 notification')).not.toBeUndefined();
 
   await expect.element(toastElement).toBeInTheDocument();
+  await expect.element(toastElement).toHaveAttribute('tabindex', '0');
+  await expect.element(toastElement).toHaveAttribute('aria-modal', 'false');
+  await expect.element(toastElement).toHaveAccessibleDescription(toastRef.content.description);
+  await expect.element(toastElement).toHaveAttribute('data-id', toastRef.id);
+  await expect.element(toastElement).toHaveAttribute('data-part', 'toast');
+  await expect.element(toastElement).toHaveAttribute('data-dismissible', 'true');
+  await expect.element(toastElement).toHaveAttribute('data-part', 'toast');
+
   await expect.element(toastContent).toBeInTheDocument();
+  await expect.element(toastContent).toHaveAttribute('data-part', 'content');
+  await expect.element(toastContent).toHaveAttribute('aria-atomic', 'true');
+
+  await expect.element(toastTitle).toBeInTheDocument();
+  await expect.element(toastTitle).toHaveAttribute('data-part', 'title');
+
+  await expect.element(toastDescription).toBeInTheDocument();
+  await expect.element(toastDescription).toHaveAttribute('data-part', 'description');
+
   await expect.element(closeButton).toBeInTheDocument();
-
-  // expect(rootElement).toHaveAttribute('aria-label', '1 notification');
-  expect(toastElement).toHaveAttribute('tabindex', '0');
-  // expect(toastElement).toHaveAttribute('role', 'alertdialog');
-  expect(toastElement).toHaveAttribute('aria-modal', 'false');
-  // expect(toastElement).toHaveAttribute('aria-labelledby', `aria-label-${toastRef.id}`);
-  expect(toastElement).toHaveAccessibleName(toastRef.content?.title || toastRef.content);
-  expect(toastElement).toHaveAccessibleDescription(toastRef.content?.description || '');
-  expect(toastElement).toHaveAttribute('data-id', toastRef.id);
-  expect(toastElement).toHaveAttribute('data-part', 'toast');
-  expect(toastElement).toHaveAttribute('data-dismissible', 'true');
-
-  // expect(toastContent).toHaveAttribute('role', 'alert');
-  expect(toastContent).toHaveAttribute('aria-atomic', 'true');
-
-  // expect(closeButton).toHaveAttribute('aria-label', 'Close');
-
   await closeButton.click();
-  expect(onCloseCallback).toHaveBeenCalled();
-  // expect(rootElement).toHaveAccessibleName('0 notifications');
-  // expect(rootElement).toHaveAttribute('aria-label', '0 notifications');
+  expect(toastRef.onClose).toHaveBeenCalled();
 
+  // Updates the region label when removing a toast
+  await expect.element(page.getByLabelText('0 notifications')).not.toBeUndefined();
+
+  // Destroy instance
   toastQueue.destroy();
 });
 
-test('toast actions', async () => {
+test('toast action', async () => {
   const toastQueue = new ToastQueue();
-
-  const actionCallback = vi.fn();
   const toastRef = toastQueue.add(
     {
       title: 'Toast notification',
@@ -79,7 +73,7 @@ test('toast actions', async () => {
     {
       action: {
         label: 'Action',
-        onClick: actionCallback,
+        onClick: vi.fn(),
       },
     },
   );
@@ -89,9 +83,43 @@ test('toast actions', async () => {
 
   // Triggers the action callback
   await actionTrigger.click();
-  expect(actionCallback).toHaveBeenCalled();
+  expect(toastRef.action.onClick).toHaveBeenCalled();
 
-  // Ensure actions close the toast
+  // Ation triggers should close the toast
   expect(toastQueue.get(toastRef.id)).toBeUndefined();
   await expect.element(toastElement).not.toBeInTheDocument();
+
+  // Destroy instance
+  toastQueue.destroy();
+});
+
+test('toast content - string', async () => {
+  const toastQueue = new ToastQueue();
+  const toastRef = toastQueue.add('Toast content');
+  const toastElement = page.getByRole('alertdialog', { name: toastRef.content });
+  const toastContent = page.getByRole('alert', { atomic: 'true' });
+
+  await expect.element(toastElement).toBeInTheDocument();
+  await expect.element(toastContent).toBeInTheDocument();
+  await expect.element(toastContent).toHaveTextContent(toastRef.content);
+
+  // Destroy instance
+  toastQueue.destroy();
+});
+
+test('toast content - object', async () => {
+  const toastQueue = new ToastQueue();
+  const toastRef = toastQueue.add({ title: 'Title', description: 'Description ...'});
+  const toastElement = page.getByRole('alertdialog', { name: toastRef.content.title });
+  const toastContent = page.getByRole('alert');
+  const toastTitle = page.getByText(toastRef.content.title);
+  const toastDescription = page.getByText(toastRef.content.description);
+
+  await expect.element(toastElement).toBeInTheDocument();
+  await expect.element(toastContent).toBeInTheDocument();
+  await expect.element(toastTitle).toBeInTheDocument();
+  await expect.element(toastDescription).toBeInTheDocument();
+
+  // Destroy instance
+  toastQueue.destroy();
 });

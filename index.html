@@ -120,10 +120,13 @@
         if (event.target.dataset.action === 'add-toast') {
           // event.preventDefault();
 
-          toastQueue.add({
-            title: 'Title',
-            description: Date.now()
-          }, {
+          toastQueue.add(
+            // 'Desc...',
+            {
+              title: 'Title',
+              description: Date.now()
+            },
+            {
             // className: 'toast toast--error',
             // dismissible: false,
             action: {

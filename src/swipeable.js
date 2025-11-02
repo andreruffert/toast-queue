@@ -16,8 +16,8 @@ export class Swipeable {
 
   /**
    *
-   * @param {Object} [options={}]
-   * @param {function} [options.onSwipe=null] - Swipe callback
+   * @param {Object} options
+   * @param {function} options.onSwipe - Swipe callback
    */
   constructor(options) {
     this.#onSwipe = options?.onSwipe || this.#onSwipe;

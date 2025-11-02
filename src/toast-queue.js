@@ -58,7 +58,7 @@ export class ToastQueue {
    * @property {string} mode -
    * @property {HTMLElement} root -
    *
-   * @param {ToastQueueOptions} [options={}]
+   * @param {ToastQueueOptions} options
    */
   constructor(options) {
     const rootTarget = options?.root || document.body;
@@ -220,7 +220,7 @@ export class ToastQueue {
   }
 
   /**
-   * Get a toast from the queue
+   * Receive a toast from the queue.
    *
    * @param {string} toastId
    * @returns
@@ -235,7 +235,7 @@ export class ToastQueue {
   }
 
   /**
-   * Creates a new toast
+   * Creates a new toast.
    *
    * @param {object|string} content - Message
    * @param {object} options
@@ -281,14 +281,16 @@ export class ToastQueue {
     }
 
     const contentPart = template.querySelector(partSelectors.content);
+    const titlePart = template.querySelector(partSelectors.title);
+    const descPart = template.querySelector(partSelectors.desc);
+
     contentPart.setAttribute('role', 'alert');
     contentPart.setAttribute('aria-atomic', 'true');
+
     if (typeof content === 'string') {
-      contentPart.setAttribute('id', ariaLabelId);
-      contentPart.innerHTML = `${toastRef.content}`;
+      contentPart.id = ariaLabelId;
+      contentPart.textContent = content;
     } else {
-      const titlePart = template.querySelector(partSelectors.title);
-      const descPart = template.querySelector(partSelectors.desc);
       titlePart.id = ariaLabelId;
       titlePart.textContent = content?.title;
       descPart.id = ariaDescId;
@@ -311,7 +313,7 @@ export class ToastQueue {
   }
 
   /**
-   * Closes a toast by ID
+   * Closes a toast by ID.
    *
    * @param {string} id
    */
