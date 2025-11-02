@@ -34,7 +34,7 @@ export class Swipeable {
     this.#target = target;
     this.#target.dataset.dragging = '';
     this.#target.style.setProperty('touch-action', 'none'); // Ensure capture pointer events will work properly on touch devices.
-    this.#target.style.setProperty('will-change', 'transform');
+    this.#target.style.setProperty('will-change', 'translate');
     this.#isDragging = true;
     this.#startX = event.clientX;
     this.#startY = event.clientY;
@@ -75,7 +75,7 @@ export class Swipeable {
 
     this.#dragFrame = requestAnimationFrame(() => {
       if (!this.#target) return;
-      this.#target.style.setProperty('transform', `translate(${dx}px, ${dy}px)`); // rotate(${dx * 0.1}deg)
+      this.#target.style.setProperty('translate', `${dx}px ${dy}px`);
       this.#target.style.setProperty('--tq-distance', this.#distance);
     });
   };
@@ -95,8 +95,8 @@ export class Swipeable {
       };
       this.#dragFrame = requestAnimationFrame(() => {
         this.#target.addEventListener('transitionend', onTransitionEnd, { once: true });
-        this.#target.style.setProperty('transition', 'transform 0.3s');
-        this.#target.style.removeProperty('transform');
+        this.#target.style.setProperty('transition', 'translate 0.3s');
+        this.#target.style.removeProperty('translate');
         this.#target.style.removeProperty('--tq-distance');
         this.#target.style.removeProperty('will-change');
         this.#target.style.removeProperty('touch-action');

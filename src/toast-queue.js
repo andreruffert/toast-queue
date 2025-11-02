@@ -94,9 +94,9 @@ export class ToastQueue {
   #addEventListeners() {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') {
-        this.pauseAll();
+        this.pause();
       } else {
-        this.resumeAll();
+        this.resume();
       }
     });
 
@@ -132,11 +132,11 @@ export class ToastQueue {
 
     this.#root.addEventListener('pointerover', (event) => {
       if (!event.target.closest(partSelectors.group)) return;
-      this.pauseAll();
+      this.pause();
     });
 
     this.#root.addEventListener('pointerout', () => {
-      this.resumeAll();
+      this.resume();
     });
   }
 
@@ -327,7 +327,7 @@ export class ToastQueue {
             toast.ref.remove();
           },
           // Skip view transition for elements not visible in the UI
-          toast.ref.offsetParent === null,
+          !toast.ref.checkVisibility(),
         );
       }
     }
@@ -342,7 +342,7 @@ export class ToastQueue {
   }
 
   /** Pauses the timers for all toasts. */
-  pauseAll() {
+  pause() {
     for (const toast of this.#queue) {
       if (toast.timer) {
         toast.timer.pause();
@@ -351,7 +351,7 @@ export class ToastQueue {
   }
 
   /** Resumes the timers for all toasts. */
-  resumeAll() {
+  resume() {
     for (const toast of this.#queue) {
       if (toast.timer) {
         toast.timer.resume();

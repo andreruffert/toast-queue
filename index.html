@@ -72,7 +72,7 @@
         opacity: 1;
       }
 
-      toast-queue .toast--error {
+      toast-queue .toast-error {
         background-color: hotpink;
       }
     </style>
@@ -100,7 +100,7 @@
       const toastPlacement = localStorage.getItem('tq-placement') || 'top-center';
 
       window.toastQueue = new ToastQueue({
-        duration: null,
+        // duration: null,
         placement: toastPlacement,
         ...preset
       });
@@ -127,7 +127,7 @@
               description: Date.now()
             },
             {
-            // className: 'toast toast--error',
+            // className: 'toast-error',
             // dismissible: false,
             action: {
               label: 'Action',
@@ -141,11 +141,13 @@
       document.addEventListener('click', (event) => {
         if (!event.target.closest('toast-queue') && !toastQueue.mode) {
           toastQueue.mode = 'stacked';
+          toastQueue.resume();
           return;
         }
 
         if (event.target.closest('[data-mode="stacked"]')) {
           toastQueue.mode = null;
+          toastQueue.pause();
           return;
         }
       });
