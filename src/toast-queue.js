@@ -34,6 +34,7 @@ const partSelectors = {
   content: '[data-part="content"]',
   title: '[data-part="title"]',
   desc: '[data-part="description"]',
+  closeButton: '[data-part="close-button"]',
   actions: '[data-part="actions"]',
   actionButton: '[data-part="action-button"]',
 };
@@ -272,13 +273,9 @@ export class ToastQueue {
     toastPart.setAttribute('aria-modal', 'false');
     toastPart.setAttribute('aria-labelledby', ariaLabelId);
 
-    if (content?.description) {
-      toastPart.setAttribute('aria-describedby', ariaDescId);
-    }
-
-    if (options?.className) {
-      toastPart.classList.add(...options.className.split(' '));
-    }
+    if (content?.description) toastPart.setAttribute('aria-describedby', ariaDescId);
+    if (options?.className) toastPart.classList.add(...options.className.split(' '));
+    if (options?.dismissible === false) toastPart.querySelector(partSelectors.closeButton).remove();
 
     const contentPart = template.querySelector(partSelectors.content);
     const titlePart = template.querySelector(partSelectors.title);
