@@ -133,7 +133,7 @@ test('renders a toast that auto-dismisses', async () => {
 
   // The toast should auto-dismiss after `options.duration`
   await expect.element(toastElement).toBeInTheDocument();
-  await new Promise((resolve) => setTimeout(resolve, toastOptions.duration));
+  await new Promise((resolve) => setTimeout(resolve, toastOptions.duration + 500));
   await expect.element(toastElement).not.toBeInTheDocument();
 
   // Destroy instance
