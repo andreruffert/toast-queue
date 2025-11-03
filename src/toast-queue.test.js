@@ -126,16 +126,14 @@ test('renders a toast with title and description', async () => {
 });
 
 test('renders a toast that auto-dismisses', async () => {
-  const toastQueue = new ToastQueue();
-  const toastOptions = { duration: 3000 };
+  const toastQueue = new ToastQueue({ pauseOnPageIdle: false });
+  const toastOptions = { duration: 1000 };
   const toastRef = toastQueue.add('Toast message', toastOptions);
   const toastElement = page.getByRole('alertdialog', { name: toastRef.content });
 
   await expect.element(toastElement).toBeInTheDocument();
   await new Promise((resolve) => setTimeout(resolve, toastOptions.duration));
-  await expect
-    .element(page.getByRole('alertdialog', { name: toastRef.content }))
-    .not.toBeInTheDocument();
+  await expect.element(toastElement).not.toBeInTheDocument();
 
   // Destroy instance
   toastQueue.destroy();

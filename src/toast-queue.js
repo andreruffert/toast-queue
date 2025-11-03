@@ -59,6 +59,7 @@ export class ToastQueue {
    * @property {ToastQueuePlacement} placement -
    * @property {string} mode -
    * @property {HTMLElement} root -
+   * @property {boolean} pauseOnPageIdle -
    *
    * @param {ToastQueueOptions} options
    */
@@ -95,6 +96,7 @@ export class ToastQueue {
 
   #addEventListeners() {
     document.addEventListener('visibilitychange', () => {
+      if (this.#options?.pauseOnPageIdle === false) return;
       if (document.visibilityState === 'hidden') {
         this.pause();
       } else {
