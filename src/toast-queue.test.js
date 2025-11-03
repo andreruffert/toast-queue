@@ -1,6 +1,7 @@
 import { expect, test, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { ToastQueue } from './index.js';
+import { getSwipeableDirection } from './utils.js';
 
 test('renders a toast that is fully accessible', async () => {
   const toastQueue = new ToastQueue();
@@ -153,16 +154,19 @@ test('renders a toast that is not dismissible', async () => {
   toastQueue.destroy();
 });
 
-// test('toast placement', async () => {
-//   const toastQueue = new ToastQueue();
-//   const toastRef = toastQueue.add('Toast message', { dismissible: false });
-//   const toastElement = page.getByRole('alertdialog', { name: toastRef.content });
-//   const closeButton = page.getByRole('button', { name: 'Close' });
+test('toast placement', async () => {
+  const placement = 'top-center';
+  const toastQueue = new ToastQueue({ duration: null, placement });
+  const toastRef = toastQueue.add('Toast message');
+  const rootElement = page.getByLabelText('1 notification');
+  const toastElement = page.getByRole('alertdialog', { name: toastRef.content });
 
-//   await expect.element(toastElement).toHaveAttribute('data-dismissible', 'false');
-//   await expect.element(toastElement).not.toHaveAttribute('data-swipeable');
-//   await expect.element(closeButton).not.toBeInTheDocument();
+  await expect.element(rootElement).toBeInTheDocument();
+  await expect.element(rootElement).toHaveAttribute('data-placement', 'top-center');
+  await expect
+    .element(toastElement)
+    .toHaveAttribute('data-swipeable', getSwipeableDirection(placement));
 
-//   // Destroy instance
-//   toastQueue.destroy();
-// });
+  // Destroy instance
+  toastQueue.destroy();
+});
