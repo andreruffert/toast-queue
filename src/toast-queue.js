@@ -95,14 +95,14 @@ export class ToastQueue {
   }
 
   #addEventListeners() {
-    document.addEventListener('visibilitychange', () => {
-      if (this.#options?.pauseOnPageIdle === false) return;
-      if (document.visibilityState === 'hidden') {
-        this.pause();
-      } else {
-        this.resume();
-      }
-    });
+    // document.addEventListener('visibilitychange', () => {
+    //   if (this.#options?.pauseOnPageIdle === false) return;
+    //   if (document.visibilityState === 'hidden') {
+    //     this.pause();
+    //   } else {
+    //     this.resume();
+    //   }
+    // });
 
     this.#root.addEventListener('click', (event) => {
       const cmd = event.target.dataset.command;
@@ -346,20 +346,20 @@ export class ToastQueue {
 
   /** Pauses the timers for all toasts. */
   pause() {
-    for (const toast of this.#queue) {
-      if (toast.timer) {
-        toast.timer.pause();
-      }
-    }
+    // for (const toast of this.#queue) {
+    //   if (toast.timer) {
+    //     toast.timer.pause();
+    //   }
+    // }
   }
 
   /** Resumes the timers for all toasts. */
   resume() {
-    for (const toast of this.#queue) {
-      if (toast.timer) {
-        toast.timer.resume();
-      }
-    }
+    // for (const toast of this.#queue) {
+    //   if (toast.timer) {
+    //     toast.timer.resume();
+    //   }
+    // }
   }
 
   destroy() {
