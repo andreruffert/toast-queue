@@ -8,26 +8,23 @@ import {
   wrapInViewTransition,
 } from './utils';
 
-const ROOT_TEMPLATE = document.createElement('template');
-ROOT_TEMPLATE.innerHTML = `<toast-queue><ol data-part="group"></ol></toast-queue>`;
-
-const ITEM_TEMPLATE = document.createElement('template');
-ITEM_TEMPLATE.innerHTML = `<li data-part="item">
-  <div data-part="toast">
-    <div data-part="icon"></div>
-    <div data-part="content">
-      <span data-part="title"></span>
-      <span data-part="description"></span>
+const TEMPLATE = {
+  root: `<toast-queue><ol data-part="group"></ol></toast-queue>`,
+  item: `<li data-part="item">
+    <div data-part="toast">
+      <div data-part="icon"></div>
+      <div data-part="content">
+        <span data-part="title"></span>
+        <span data-part="description"></span>
+      </div>
+      <div data-part="actions"></div>
+      <button type="button" data-part="close-button" data-command="close" aria-label="Close">&times;</button>
     </div>
-    <div data-part="actions"></div>
-    <button type="button" data-part="close-button" data-command="close" aria-label="Close">&times;</button>
-  </div>
-</li>`;
+  </li>`,
+  actionButton: `<button type="button" data-part="action-button" data-command="action"></button>`,
+};
 
-const ACTION_BUTTON_TEMPLATE = document.createElement('template');
-ACTION_BUTTON_TEMPLATE.innerHTML = `<button type="button" data-part="action-button" data-command="action"></button>`;
-
-const partSelectors = {
+const SELECTORS = {
   root: 'toast-queue',
   group: '[data-part="group"]',
   item: '[data-part="item"]',
@@ -49,8 +46,13 @@ export class ToastQueue {
   /** @typedef ToastQueuePlacement 'top-start' | 'top-center' | 'top-end' | 'bottom-start' | 'bottom-center' | 'bottom-end' | center */
   #placement = 'top-end';
   #mode = null;
-  #root;
-  #group;
+  #template = {
+    root: document.createElement('template'),
+    item: document.createElement('template'),
+    actionButton: document.createElement('template'),
+  };
+  #rootPart;
+  #groupPart;
   #swipeable;
 
   /**
@@ -60,28 +62,35 @@ export class ToastQueue {
    * @property {string} mode -
    * @property {HTMLElement} root -
    * @property {boolean} pauseOnPageIdle -
+   * @property {object} template - HTML templates
+   * @property {string} template.root -
+   * @property {string} template.item -
+   * @property {string} template.actionButton -
    *
    * @param {ToastQueueOptions} options
    */
   constructor(options) {
-    const rootTarget = options?.root || document.body;
-    const rootTemplate = options?.rootTemplate || ROOT_TEMPLATE;
-    const rootPart = rootTemplate.content.cloneNode(true);
-
     this.#options = options;
     this.#duration = typeof options?.duration !== 'undefined' ? options.duration : this.#duration;
     this.#placement = options?.placement || this.#placement;
     this.#mode = options?.mode || this.#mode;
-    this.#root = rootPart.querySelector(partSelectors.root);
-    this.#root.setAttribute('popover', 'manual');
-    this.#root.setAttribute('role', 'region');
-    this.#root.setAttribute('aria-label', 'Notifications');
-    this.#root.setAttribute('tabindex', '-1');
-    this.#root.dataset.placement = this.#placement;
-    if (this.#mode) this.#root.dataset.mode = this.#mode;
-    this.#group = rootPart.querySelector(partSelectors.group);
 
-    rootTarget.appendChild(rootPart);
+    this.#template.root.innerHTML = options?.template?.root || TEMPLATE.root;
+    this.#template.item.innerHTML = options?.template?.item || TEMPLATE.item;
+    this.#template.actionButton.innerHTML =
+      options?.template?.actionButton || TEMPLATE.actionButton;
+
+    const rootPart = this.#template.root.content.cloneNode(true);
+    this.#rootPart = rootPart.querySelector(SELECTORS.root);
+    this.#rootPart.setAttribute('popover', 'manual');
+    this.#rootPart.setAttribute('role', 'region');
+    this.#rootPart.setAttribute('aria-label', 'Notifications');
+    this.#rootPart.setAttribute('tabindex', '-1');
+    this.#rootPart.dataset.placement = this.#placement;
+    if (this.#mode) this.#rootPart.dataset.mode = this.#mode;
+    this.#groupPart = rootPart.querySelector(SELECTORS.group);
+
+    (options?.root || document.body).appendChild(rootPart);
 
     this.#swipeable = new Swipeable({
       onSwipe: ({ target }) => {
@@ -91,58 +100,55 @@ export class ToastQueue {
       },
     });
 
-    this.#addEventListeners();
+    // Attach event listeners
+    document.addEventListener('visibilitychange', this.#onPageIdle);
+    this.#rootPart.addEventListener('click', this.#onCommand);
+    this.#rootPart.addEventListener('pointerover', this.#onActive);
+    this.#rootPart.addEventListener('pointerout', this.#onInactive);
   }
 
-  #addEventListeners() {
-    // document.addEventListener('visibilitychange', () => {
-    //   if (this.#options?.pauseOnPageIdle === false) return;
-    //   if (document.visibilityState === 'hidden') {
-    //     this.pause();
-    //   } else {
-    //     this.resume();
-    //   }
-    // });
-
-    this.#root.addEventListener('click', (event) => {
-      const cmd = event.target.dataset.command;
-
-      if (cmd === 'close') {
-        event.stopPropagation();
-        const toastId = event.target.closest(partSelectors.toast).dataset.id;
-        this.close(toastId);
-        return;
-      }
-
-      if (cmd === 'action') {
-        event.stopPropagation();
-        const toastId = event.target.closest(partSelectors.toast).dataset.id;
-        const toast = this.get(toastId);
-        toast?.action?.onClick();
-        this.close(toast.id);
-        return;
-      }
-
-      if (cmd === 'clear') {
-        this.clear();
-        return;
-      }
-
-      if (cmd === 'toggle-mode') {
-        if (this.#options?.mode) this.mode = this.#options.mode;
-        return;
-      }
-    });
-
-    this.#root.addEventListener('pointerover', (event) => {
-      if (!event.target.closest(partSelectors.group)) return;
+  #onPageIdle = () => {
+    if (this.#options?.pauseOnPageIdle === false) return;
+    if (document.visibilityState === 'hidden') {
       this.pause();
-    });
-
-    this.#root.addEventListener('pointerout', () => {
+    } else {
       this.resume();
-    });
-  }
+    }
+  };
+
+  #onCommand = (event) => {
+    const cmd = event.target.dataset.command;
+    if (cmd === 'close') {
+      event.stopPropagation();
+      const toastId = event.target.closest(SELECTORS.toast).dataset.id;
+      this.close(toastId);
+      return;
+    }
+    if (cmd === 'action') {
+      event.stopPropagation();
+      const toastId = event.target.closest(SELECTORS.toast).dataset.id;
+      const toast = this.get(toastId);
+      toast?.action?.onClick();
+      this.close(toast.id);
+      return;
+    }
+    if (cmd === 'clear') {
+      this.clear();
+      return;
+    }
+    if (cmd === 'toggle-mode') {
+      if (this.#options?.mode) this.mode = this.#options.mode;
+      return;
+    }
+  };
+
+  #onActive = () => {
+    this.pause();
+  };
+
+  #onInactive = () => {
+    this.resume();
+  };
 
   #createToastRef(options) {
     const duration = options?.duration || this.#duration;
@@ -156,7 +162,7 @@ export class ToastQueue {
       content: options?.content,
       onClose: options?.onClose,
       action: options?.action,
-      ref: null,
+      itemRef: null,
     };
   }
 
@@ -166,9 +172,9 @@ export class ToastQueue {
     this.#mode = value;
     wrapInViewTransition(() => {
       if (this.#mode) {
-        this.#root.dataset.mode = this.#mode;
+        this.#rootPart.dataset.mode = this.#mode;
       } else {
-        delete this.#root.dataset.mode;
+        delete this.#rootPart.dataset.mode;
       }
     });
   }
@@ -187,7 +193,7 @@ export class ToastQueue {
   set placement(value) {
     this.#placement = value;
     for (const toast of this.#queue) {
-      const toastPart = toast.ref.querySelector(partSelectors.toast);
+      const toastPart = toast.itemRef.querySelector(SELECTORS.toast);
       toastPart.style.setProperty(
         'view-transition-class',
         `tq-toast ${getPlacementViewTransitionClass(this.#placement)}`,
@@ -197,7 +203,7 @@ export class ToastQueue {
       }
     }
     wrapInViewTransition(() => {
-      this.#root.dataset.placement = this.#placement;
+      this.#rootPart.dataset.placement = this.#placement;
     });
   }
 
@@ -207,18 +213,17 @@ export class ToastQueue {
    * @param {boolean} skipTransition
    */
   async update(updateDOM, skipTransition = false) {
-    this.#root.setAttribute(
+    this.#rootPart.setAttribute(
       'aria-label',
       `${this.#queue.size} ${notificationInflection(this.#queue.size)}`,
     );
 
-    if (this.#queue.size === 1) this.#root.showPopover();
+    if (this.#queue.size === 1) this.#rootPart.showPopover();
     if (typeof updateDOM === 'function') {
       skipTransition ? updateDOM() : await wrapInViewTransition(updateDOM).finished;
     }
-
     if (this.#queue.size === 0) {
-      this.#root.hidePopover();
+      this.#rootPart.hidePopover();
       // Reset initial `mode`
       if (this.#options?.mode) {
         this.mode = this.#options.mode;
@@ -259,10 +264,9 @@ export class ToastQueue {
     const toastRef = this.#createToastRef({ content, ...options });
     const ariaLabelId = `${toastRef.id}-label`;
     const ariaDescId = `${toastRef.id}-desc`;
-    const template = ITEM_TEMPLATE.content.cloneNode(true);
-    const newItem = template.querySelector(partSelectors.item);
-
-    const toastPart = newItem.querySelector(partSelectors.toast);
+    const template = this.#template.item.content.cloneNode(true);
+    const newItem = template.querySelector(SELECTORS.item);
+    const toastPart = newItem.querySelector(SELECTORS.toast);
     toastPart.dataset.id = toastRef.id;
     toastPart.dataset.dismissible = toastRef.dismissible;
     toastPart.setAttribute('tabindex', '0');
@@ -275,42 +279,41 @@ export class ToastQueue {
       `tq-toast ${getPlacementViewTransitionClass(this.#placement)}`,
     );
 
-    if (toastRef.dismissible) {
-      toastPart.dataset.swipeable = getSwipeableDirection(this.#placement);
-    }
-
-    if (content?.description) toastPart.setAttribute('aria-describedby', ariaDescId);
+    if (toastRef.dismissible) toastPart.dataset.swipeable = getSwipeableDirection(this.#placement);
     if (options?.className) toastPart.classList.add(...options.className.split(' '));
-    if (options?.dismissible === false) toastPart.querySelector(partSelectors.closeButton).remove();
+    if (options?.dismissible === false) toastPart.querySelector(SELECTORS.closeButton).remove();
+    if (content?.description) toastPart.setAttribute('aria-describedby', ariaDescId);
 
-    const contentPart = template.querySelector(partSelectors.content);
-    const titlePart = template.querySelector(partSelectors.title);
-    const descPart = template.querySelector(partSelectors.desc);
-
+    /** Toast content */
+    const contentPart = template.querySelector(SELECTORS.content);
     contentPart.setAttribute('role', 'alert');
     contentPart.setAttribute('aria-atomic', 'true');
-
     if (typeof content === 'string') {
       contentPart.id = ariaLabelId;
       contentPart.textContent = content;
     } else {
+      const titlePart = template.querySelector(SELECTORS.title);
+      const descPart = template.querySelector(SELECTORS.desc);
       titlePart.id = ariaLabelId;
       titlePart.textContent = content?.title;
       descPart.id = ariaDescId;
       descPart.textContent = content?.description;
     }
 
+    /** Toast actions */
+    const actionsPart = template.querySelector(SELECTORS.actions);
     if (toastRef?.action?.label) {
-      const actionsPart = template.querySelector(partSelectors.actions);
-      const actionButtonTemplate = ACTION_BUTTON_TEMPLATE.content.cloneNode(true);
-      const actionButton = actionButtonTemplate.querySelector(partSelectors.actionButton);
+      const actionButtonTemplate = this.#template.actionButton.content.cloneNode(true);
+      const actionButton = actionButtonTemplate.querySelector(SELECTORS.actionButton);
       actionButton.textContent = toastRef.action.label;
       actionsPart.appendChild(actionButton);
+    } else {
+      actionsPart.remove();
     }
 
-    toastRef.ref = newItem;
+    toastRef.itemRef = newItem;
     this.#queue.add(toastRef);
-    this.update(() => this.#group.prepend(newItem));
+    this.update(() => this.#groupPart.prepend(newItem));
 
     return toastRef;
   }
@@ -327,10 +330,10 @@ export class ToastQueue {
         if (typeof toast.onClose === 'function') toast.onClose();
         this.update(
           () => {
-            toast.ref.remove();
+            toast.itemRef.remove();
           },
           // Skip view transition for elements not visible in the UI
-          !toast.ref.checkVisibility(),
+          !toast.itemRef.checkVisibility(),
         );
       }
     }
@@ -340,31 +343,34 @@ export class ToastQueue {
   clear() {
     this.#queue.clear();
     this.update(() => {
-      this.#group.innerHTML = '';
+      this.#groupPart.innerHTML = '';
     });
   }
 
   /** Pauses the timers for all toasts. */
   pause() {
-    // for (const toast of this.#queue) {
-    //   if (toast.timer) {
-    //     toast.timer.pause();
-    //   }
-    // }
+    for (const toast of this.#queue) {
+      if (toast.timer) {
+        toast.timer.pause();
+      }
+    }
   }
 
   /** Resumes the timers for all toasts. */
   resume() {
-    // for (const toast of this.#queue) {
-    //   if (toast.timer) {
-    //     toast.timer.resume();
-    //   }
-    // }
+    for (const toast of this.#queue) {
+      if (toast.timer) {
+        toast.timer.resume();
+      }
+    }
   }
 
   destroy() {
-    // TODO: Remove event listeners cleanup etc.
-    this.#root.remove();
+    document.removeEventListener('visibilitychange', this.#onPageIdle);
+    this.#rootPart.removeEventListener('click', this.#onCommand);
+    this.#rootPart.removeEventListener('pointerover', this.#onActive);
+    this.#rootPart.removeEventListener('pointerout', this.#onInactive);
+    this.#rootPart.remove();
     this.#swipeable.destroy();
   }
 }

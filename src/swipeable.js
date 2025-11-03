@@ -76,7 +76,7 @@ export class Swipeable {
     this.#dragFrame = requestAnimationFrame(() => {
       if (!this.#target) return;
       this.#target.style.setProperty('translate', `${dx}px ${dy}px`);
-      this.#target.style.setProperty('--tq-distance', this.#distance);
+      this.#target.style.setProperty('--tq-swipe-distance', this.#distance);
     });
   };
 
@@ -97,7 +97,7 @@ export class Swipeable {
         this.#target.addEventListener('transitionend', onTransitionEnd, { once: true });
         this.#target.style.setProperty('transition', 'translate 0.3s');
         this.#target.style.removeProperty('translate');
-        this.#target.style.removeProperty('--tq-distance');
+        this.#target.style.removeProperty('--tq-swipe-distance');
         this.#target.style.removeProperty('will-change');
         this.#target.style.removeProperty('touch-action');
         delete this.#target.dataset.dragging;
