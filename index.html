@@ -100,6 +100,7 @@
       const toastPlacement = localStorage.getItem('tq-placement') || 'top-center';
 
       window.toastQueue = new ToastQueue({
+        pauseOnPageIdle: false,
         duration: null,
         placement: toastPlacement,
         ...preset
