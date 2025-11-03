@@ -1,7 +1,7 @@
 {
   "name": "toast-queue",
   "version": "1.0.0-alpha.7",
-  "description": "A Vanilla JS library to display brief, temporary notifications.",
+  "description": "A unstyled, accessible Vanilla JS library to display brief, temporary toast messages.",
   "type": "module",
   "exports": {
     ".": {

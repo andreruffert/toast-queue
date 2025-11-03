@@ -2,7 +2,7 @@ import { expect, test, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { ToastQueue } from './index.js';
 
-test('renders an accessible toast message', async () => {
+test('renders a toast that is fully accessible', async () => {
   const toastQueue = new ToastQueue();
   const rootElement = page.getByLabelText('Notifications');
   const groupElement = document.querySelector('[data-part="group"]');
@@ -24,6 +24,7 @@ test('renders an accessible toast message', async () => {
     },
   );
 
+  // TODO: const toastItem = page.getByRole('listitem');
   const toastElement = page.getByRole('alertdialog', { name: toastRef.content.title });
   const toastContent = page.getByRole('alert');
   const toastTitle = page.getByText(toastRef.content.title);
@@ -39,8 +40,8 @@ test('renders an accessible toast message', async () => {
   await expect.element(toastElement).toHaveAccessibleDescription(toastRef.content.description);
   await expect.element(toastElement).toHaveAttribute('data-id', toastRef.id);
   await expect.element(toastElement).toHaveAttribute('data-part', 'toast');
+  await expect.element(toastElement).toHaveAttribute('data-swipeable', 'right');
   await expect.element(toastElement).toHaveAttribute('data-dismissible', 'true');
-  await expect.element(toastElement).toHaveAttribute('data-part', 'toast');
 
   await expect.element(toastContent).toBeInTheDocument();
   await expect.element(toastContent).toHaveAttribute('data-part', 'content');
@@ -63,12 +64,12 @@ test('renders an accessible toast message', async () => {
   toastQueue.destroy();
 });
 
-test('toast action', async () => {
+test('renders a toast with action', async () => {
   const toastQueue = new ToastQueue();
   const toastRef = toastQueue.add(
     {
-      title: 'Toast notification',
-      description: '...',
+      title: 'Title',
+      description: 'Description',
     },
     {
       action: {
@@ -81,11 +82,11 @@ test('toast action', async () => {
   const actionTrigger = page.getByRole('button', { name: 'Action' });
   const toastElement = page.getByRole('alertdialog', { name: toastRef.content.title });
 
-  // Triggers the action callback
+  // Calls the action callback
   await actionTrigger.click();
   expect(toastRef.action.onClick).toHaveBeenCalled();
 
-  // Ation triggers should close the toast
+  // Action triggers should close the toast
   expect(toastQueue.get(toastRef.id)).toBeUndefined();
   await expect.element(toastElement).not.toBeInTheDocument();
 
@@ -93,9 +94,9 @@ test('toast action', async () => {
   toastQueue.destroy();
 });
 
-test('toast content - string', async () => {
+test('renders a toast with content string', async () => {
   const toastQueue = new ToastQueue();
-  const toastRef = toastQueue.add('Toast content');
+  const toastRef = toastQueue.add('Toast message');
   const toastElement = page.getByRole('alertdialog', { name: toastRef.content });
   const toastContent = page.getByRole('alert', { atomic: 'true' });
 
@@ -107,9 +108,9 @@ test('toast content - string', async () => {
   toastQueue.destroy();
 });
 
-test('toast content - object', async () => {
+test('renders a toast with title and description', async () => {
   const toastQueue = new ToastQueue();
-  const toastRef = toastQueue.add({ title: 'Title', description: 'Description ...' });
+  const toastRef = toastQueue.add({ title: 'Title', description: 'Description' });
   const toastElement = page.getByRole('alertdialog', { name: toastRef.content.title });
   const toastContent = page.getByRole('alert');
   const toastTitle = page.getByText(toastRef.content.title);
@@ -119,6 +120,49 @@ test('toast content - object', async () => {
   await expect.element(toastContent).toBeInTheDocument();
   await expect.element(toastTitle).toBeInTheDocument();
   await expect.element(toastDescription).toBeInTheDocument();
+
+  // Destroy instance
+  toastQueue.destroy();
+});
+
+test('renders a toast that auto-dismisses', async () => {
+  const toastQueue = new ToastQueue();
+  const toastOptions = { duration: 1000 };
+  const toastRef = toastQueue.add('Toast message', toastOptions);
+  const toastElement = page.getByRole('alertdialog', { name: toastRef.content });
+
+  // The toast should auto-dismiss after `options.duration`
+  await expect.element(toastElement).toBeInTheDocument();
+  await new Promise((resolve) => setTimeout(resolve, toastOptions.duration));
+  await expect.element(toastElement).not.toBeInTheDocument();
+
+  // Destroy instance
+  toastQueue.destroy();
+});
+
+test('renders a toast that is not dismissible', async () => {
+  const toastQueue = new ToastQueue();
+  const toastRef = toastQueue.add('Toast message', { dismissible: false });
+  const toastElement = page.getByRole('alertdialog', { name: toastRef.content });
+  const closeButton = page.getByRole('button', { name: 'Close' });
+
+  await expect.element(toastElement).toHaveAttribute('data-dismissible', 'false');
+  await expect.element(toastElement).not.toHaveAttribute('data-swipeable');
+  await expect.element(closeButton).not.toBeInTheDocument();
+
+  // Destroy instance
+  toastQueue.destroy();
+});
+
+test('toast placement', async () => {
+  const toastQueue = new ToastQueue();
+  const toastRef = toastQueue.add('Toast message', { dismissible: false });
+  const toastElement = page.getByRole('alertdialog', { name: toastRef.content });
+  const closeButton = page.getByRole('button', { name: 'Close' });
+
+  await expect.element(toastElement).toHaveAttribute('data-dismissible', 'false');
+  await expect.element(toastElement).not.toHaveAttribute('data-swipeable');
+  await expect.element(closeButton).not.toBeInTheDocument();
 
   // Destroy instance
   toastQueue.destroy();

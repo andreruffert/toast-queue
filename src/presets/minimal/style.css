@@ -8,7 +8,7 @@
     display: none;
   }
 
-  ::view-transition-group(.tq-item) {
+  ::view-transition-group(.tq-toast) {
     animation-duration: 0.3s;
     /* animation-timing-function: linear(
       0,
@@ -28,11 +28,11 @@
     ); */
   }
 
-  ::view-transition-new(.tq-item):only-child {
+  ::view-transition-new(.tq-toast):only-child {
     animation-name: enter;
     transform-origin: 50% 0%;
   }
-  ::view-transition-old(.tq-item):only-child {
+  ::view-transition-old(.tq-toast):only-child {
     animation-name: exit;
     transform-origin: 50% 50%;
   }

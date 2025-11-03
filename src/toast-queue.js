@@ -14,6 +14,7 @@ ROOT_TEMPLATE.innerHTML = `<toast-queue><ol data-part="group"></ol></toast-queue
 const ITEM_TEMPLATE = document.createElement('template');
 ITEM_TEMPLATE.innerHTML = `<li data-part="item">
   <div data-part="toast">
+    <div data-part="icon"></div>
     <div data-part="content">
       <span data-part="title"></span>
       <span data-part="description"></span>
@@ -83,7 +84,7 @@ export class ToastQueue {
 
     this.#swipeable = new Swipeable({
       onSwipe: ({ target }) => {
-        const toastId = target.querySelector('[data-part="toast"]')?.dataset?.id;
+        const toastId = target?.dataset?.id;
         if (!toastId) return;
         this.close(toastId);
       },
@@ -183,13 +184,15 @@ export class ToastQueue {
    */
   set placement(value) {
     this.#placement = value;
-    // this.#swipeable.direction = getSwipeableDirection(value);
     for (const toast of this.#queue) {
-      toast.ref.dataset.swipeable = getSwipeableDirection(value);
-      toast.ref.style.setProperty(
+      const toastPart = toast.ref.querySelector(partSelectors.toast);
+      toastPart.style.setProperty(
         'view-transition-class',
-        `tq-item ${getPlacementViewTransitionClass(this.#placement)}`,
+        `tq-toast ${getPlacementViewTransitionClass(this.#placement)}`,
       );
+      if (toast.dismissible) {
+        toastPart.dataset.swipeable = getSwipeableDirection(value);
+      }
     }
     wrapInViewTransition(() => {
       this.#root.dataset.placement = this.#placement;
@@ -256,15 +259,6 @@ export class ToastQueue {
     const ariaDescId = `${toastRef.id}-desc`;
     const template = ITEM_TEMPLATE.content.cloneNode(true);
     const newItem = template.querySelector(partSelectors.item);
-    newItem.style.setProperty('view-transition-name', `tq-item-${toastRef.id}`);
-    newItem.style.setProperty(
-      'view-transition-class',
-      `tq-item ${getPlacementViewTransitionClass(this.#placement)}`,
-    );
-
-    if (toastRef.dismissible) {
-      newItem.dataset.swipeable = getSwipeableDirection(this.#placement);
-    }
 
     const toastPart = newItem.querySelector(partSelectors.toast);
     toastPart.dataset.id = toastRef.id;
@@ -273,6 +267,15 @@ export class ToastQueue {
     toastPart.setAttribute('role', 'alertdialog');
     toastPart.setAttribute('aria-modal', 'false');
     toastPart.setAttribute('aria-labelledby', ariaLabelId);
+    toastPart.style.setProperty('view-transition-name', `tq-toast-${toastRef.id}`);
+    toastPart.style.setProperty(
+      'view-transition-class',
+      `tq-toast ${getPlacementViewTransitionClass(this.#placement)}`,
+    );
+
+    if (toastRef.dismissible) {
+      toastPart.dataset.swipeable = getSwipeableDirection(this.#placement);
+    }
 
     if (content?.description) toastPart.setAttribute('aria-describedby', ariaDescId);
     if (options?.className) toastPart.classList.add(...options.className.split(' '));
