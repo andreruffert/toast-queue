@@ -29,6 +29,7 @@ const SELECTORS = {
   group: '[data-part="group"]',
   item: '[data-part="item"]',
   toast: '[data-part="toast"]',
+  icon: '[data-part="icon"]',
   content: '[data-part="content"]',
   title: '[data-part="title"]',
   desc: '[data-part="description"]',
@@ -254,6 +255,7 @@ export class ToastQueue {
    * @param {string} options.className
    * @param {number} options.duration
    * @param {boolean} options.dismissible
+   * @param {string} options.icon
    * @param {object|string} options.action
    * @param {string} options.action.label
    * @param {function} options.action.onClick
@@ -283,6 +285,14 @@ export class ToastQueue {
     if (options?.className) toastPart.classList.add(...options.className.split(' '));
     if (options?.dismissible === false) toastPart.querySelector(SELECTORS.closeButton).remove();
     if (content?.description) toastPart.setAttribute('aria-describedby', ariaDescId);
+
+    /** Toast icon */
+    const iconPart = template.querySelector(SELECTORS.icon);
+    if (options?.icon) {
+      iconPart.innerHTML = options.icon;
+    } else {
+      iconPart.remove();
+    }
 
     /** Toast content */
     const contentPart = template.querySelector(SELECTORS.content);

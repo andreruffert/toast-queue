@@ -50,7 +50,7 @@
   toast-queue [data-part="toast"] {
     background-color: Canvas;
     display: flex;
-    align-items: center;
+
     justify-content: space-between;
 
     /* Prevent selection relevant for touch devices */
