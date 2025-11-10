@@ -152,7 +152,7 @@ export class ToastQueue {
   };
 
   #createToastRef(options) {
-    const duration = options?.duration || this.#duration;
+    const duration = typeof options?.duration !== 'undefined' ? options.duration : this.#duration;
     const toastId = randomId();
     return {
       id: toastId,
