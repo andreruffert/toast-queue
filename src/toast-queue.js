@@ -122,7 +122,7 @@ export class ToastQueue {
    * @typedef {Object} ToastQueueOptions
    * @property {number} [duration=6000] - Auto-dismiss duration in milliseconds.
    * @property {ToastQueuePlacement} [placement='top-end'] - Position on screen.
-   * @property {string} [mode] - Display mode (e.g., 'stacked').
+   * @property {string} [mode] - View mode (e.g., 'stacked').
    * @property {HTMLElement} [root=document.body] - Container element for toasts.
    * @property {boolean} [pauseOnPageIdle=true] - Pause timers when page is hidden.
    * @property {Object} template - HTML templates for toast elements.
@@ -219,7 +219,7 @@ export class ToastQueue {
       return;
     }
     if (cmd === 'toggle-mode') {
-      if (this.#options?.mode) this.mode = this.#options.mode;
+      this.toggleMode();
       return;
     }
   };
@@ -245,16 +245,7 @@ export class ToastQueue {
   /**
    * Creates a toast reference object with the given options and default settings.
    * @private
-   * @param {Object} options - Configuration options for the toast.
-   * @param {number} [options.duration] - Duration in milliseconds before auto-dismissal. Uses default if undefined.
-   * @param {boolean} [options.dismissible=true] - Whether the toast can be manually dismissed. Defaults to true.
-   * @param {string|Object} [options.content] - The content of the toast, either a string or an object with title and description.
-   * @param {string} [options.content.title] - Optional title of the toast.
-   * @param {string} [options.content.description] - Optional description or message of the toast.
-   * @param {Function} [options.onClose] - Callback function to execute when the toast is closed.
-   * @param {Object} [options.action] - Configuration for an optional action button.
-   * @param {string} options.action.label - Label text for the action button.
-   * @param {Function} options.action.callback - Function to call when the action button is clicked.
+   * @param {Object} options - Configuration options for the toast reference.
    * @returns {Object} The created toast reference.
    * @property {string} id - Unique identifier for the toast.
    * @property {number} index - Position in the queue.
@@ -285,30 +276,26 @@ export class ToastQueue {
   }
 
   /**
-   * Sets the mode of the toast queue.
-   * When set, updates the `data-mode` attribute on the root element using a view transition.
-   * If value is null and the queue has more than one item, the mode is not changed.
-   * @param {string|null} value - The mode to set. Used as the value for `data-mode`. Can be any string or null.
+   * Updates the DOM, optionally skipping view transition.
+   *
+   * @private
+   * @param {Function} updateDOM - Function that performs DOM updates.
+   * @param {boolean} [skipTransition=false] - Whether to skip view transition.
    */
-  set mode(value) {
-    if (value === null && this.#queue.size <= 1) return;
-    if (this.#mode === value) return;
-    this.#mode = value;
-    wrapInViewTransition(() => {
-      if (this.#mode) {
-        this.#rootPart.dataset.mode = this.#mode;
-      } else {
-        delete this.#rootPart.dataset.mode;
-      }
-    });
-  }
+  async #update(updateDOM, skipTransition = false) {
+    this.#rootPart.setAttribute(
+      'aria-label',
+      `${this.#queue.size} ${ROOT_LABEL(this.#queue.size)}`,
+    );
 
-  /**
-   * Gets the current mode of the toast queue.
-   * @returns {string|null} The current mode, reflected as `data-mode` on the root element. Can be any string or null. Defaults to ToastQueueOptions.mode.
-   */
-  get mode() {
-    return this.#mode;
+    if (this.#queue.size === 1) this.#rootPart.showPopover();
+    if (typeof updateDOM === 'function') {
+      skipTransition ? updateDOM() : await wrapInViewTransition(updateDOM).finished;
+    }
+    if (this.#queue.size === 0) {
+      this.#rootPart.hidePopover();
+      if (this.#options?.mode) this.toggleMode();
+    }
   }
 
   /**
@@ -343,29 +330,23 @@ export class ToastQueue {
   }
 
   /**
-   * Updates the DOM, optionally skipping view transitions.
-   *
-   * @private
-   * @param {Function} updateDOM - Function that performs DOM updates.
-   * @param {boolean} [skipTransition=false] - Whether to skip view transitions.
+   * Toggles the mode of the toast queue. Defaults to ToastQueueOptions.mode.
+   * Updates the `data-mode` attribute on the root element using a view transition.
+   * If the queue has one or fewer items, the mode is not changed.
+   * @returns {void}
    */
-  async #update(updateDOM, skipTransition = false) {
-    this.#rootPart.setAttribute(
-      'aria-label',
-      `${this.#queue.size} ${ROOT_LABEL(this.#queue.size)}`,
-    );
-
-    if (this.#queue.size === 1) this.#rootPart.showPopover();
-    if (typeof updateDOM === 'function') {
-      skipTransition ? updateDOM() : await wrapInViewTransition(updateDOM).finished;
-    }
-    if (this.#queue.size === 0) {
-      this.#rootPart.hidePopover();
-      // Reset initial `mode`
-      if (this.#options?.mode) {
-        this.mode = this.#options.mode;
+  toggleMode() {
+    if (!this.#options?.mode) return;
+    if (this.#mode && this.#queue.size <= 1) return;
+    wrapInViewTransition(() => {
+      if (this.#mode) {
+        this.#mode = null;
+        delete this.#rootPart.dataset.mode;
+      } else {
+        this.#mode = this.#options.mode;
+        this.#rootPart.dataset.mode = this.#mode;
       }
-    }
+    });
   }
 
   /**
@@ -384,18 +365,32 @@ export class ToastQueue {
   }
 
   /**
-   * Adds a new toast notification to the queue.
+   * @typedef {string|Object} ToastContent
+   * @property {string|Object} content - The toast's content.
+   * @property {string} [content.title] - Optional title of the toast.
+   * @property {string} [content.description] - Optional description or message of the toast.
+   */
+
+  /**
+   * Configuration options for the Toast.
    *
-   * @param {string|Object} content - The message content (text or object).
-   * @param {Object} [options] - Toast-specific options.
-   * @param {string} [options.className] - Additional CSS class.
-   * @param {number} [options.duration] - Override auto-dismiss duration.
-   * @param {boolean} [options.dismissible=true] - Whether toast can be manually closed.
-   * @param {string} [options.icon] - Icon class or URL.
-   * @param {Object|string} [options.action] - Action button configuration.
-   * @param {string} options.action.label - Button label.
-   * @param {Function} options.action.onClick - Click handler.
-   * @param {Function} [options.onClose] - Callback when toast is closed.
+   * @typedef {Object} ToastOptions
+   * @property {Object} [options] - Toast-specific options.
+   * @property {string} [options.className] - Additional CSS class.
+   * @property {number} [options.duration] - Override auto-dismiss duration.
+   * @property {boolean} [options.dismissible=true] - Whether toast can be manually closed.
+   * @property {string} [options.icon] - Icon HTML.
+   * @property {Object|string} [options.action] - Action button configuration.
+   * @property {string} options.action.label - Button label.
+   * @property {Function} options.action.onClick - Click handler.
+   * @property {Function} [options.onClose] - Callback when toast is closed.
+   */
+
+  /**
+   * Adds a new toast notification to the queue and renders it.
+   *
+   * @param {ToastContent} content - The message content (text or object).
+   * @param {ToastOptions} options - Toast configuration options.
    * @returns {string} The generated toast ID.
    */
   add(content, options) {

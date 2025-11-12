@@ -52,7 +52,9 @@
     display: flex;
 
     justify-content: space-between;
+  }
 
+  toast-queue [data-part="toast"]:is([data-dragging]) {
     /* Prevent selection relevant for touch devices */
     user-select: none;
     -webkit-user-select: none;

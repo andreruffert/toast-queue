@@ -63,7 +63,6 @@ export class Swipeable {
     if (!target) return;
 
     this.#target = target;
-    this.#target.dataset.dragging = '';
     this.#target.style.setProperty('touch-action', 'none'); // Ensure capture pointer events will work properly on touch devices.
     this.#target.style.setProperty('will-change', 'translate');
     this.#isDragging = true;
@@ -87,6 +86,8 @@ export class Swipeable {
     if (this.#direction === 'down' && event.clientY + 10 < this.#startY) return;
 
     event.preventDefault();
+
+    this.#target.dataset.dragging = '';
 
     const dx = inlineDirections.includes(this.#direction) ? event.clientX - this.#startX : 0;
     const dy = blockDirections.includes(this.#direction) ? event.clientY - this.#startY : 0;

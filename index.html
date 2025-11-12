@@ -142,16 +142,14 @@
         }
       });
 
-      document.addEventListener('click', (event) => {
-        if (!event.target.closest('toast-queue') && !toastQueue.mode) {
-          toastQueue.mode = 'stacked';
-          toastQueue.resume();
+      document.addEventListener('click',  (event) => {
+        if (!event.target.closest('toast-queue') && document.querySelector('body:has(toast-queue:not([data-mode="stacked"]))')) {
+          toastQueue.toggleMode();
           return;
         }
 
         if (event.target.closest('toast-queue[data-mode="stacked"]')) {
-          toastQueue.mode = null;
-          toastQueue.pause();
+          toastQueue.toggleMode();
           return;
         }
       });
