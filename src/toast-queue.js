@@ -156,6 +156,7 @@ export class ToastQueue {
     this.#rootPart.dataset.placement = this.#placement;
     if (this.#mode) this.#rootPart.dataset.mode = this.#mode;
     this.#groupPart = rootPart.querySelector(SELECTORS.group);
+    this.#groupPart.setAttribute('reversed', '');
 
     (options?.root || document.body).appendChild(rootPart);
 

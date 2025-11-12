@@ -14,16 +14,14 @@
 
   ::view-transition-new(.tq-toast):only-child {
     animation-name: enter;
-    transform-origin: 50% 0%;
   }
   ::view-transition-old(.tq-toast):only-child {
     animation-name: exit;
-    transform-origin: 50% 50%;
   }
 
   @keyframes enter {
     from {
-      filter: blur(10px);
+      filter: blur(12px);
       opacity: 0;
       translate: 0 50%;
       scale: 0.8;
@@ -32,7 +30,7 @@
 
   @keyframes exit {
     to {
-      filter: blur(10px);
+      filter: blur(12px);
       opacity: 0;
       translate: 0 -100%;
       scale: 1.1;
