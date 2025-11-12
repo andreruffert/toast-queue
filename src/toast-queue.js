@@ -8,6 +8,14 @@ import {
   wrapInViewTransition,
 } from './utils';
 
+/**
+ * HTML templates used for toast queue elements.
+ * @type {Object}
+ * @property {string} root - The root element template.
+ * @property {string} item - The individual toast item template.
+ * @property {string} actionButton - The action button template.
+ * @private
+ */
 const TEMPLATE = {
   root: `<toast-queue><ol data-part="group"></ol></toast-queue>`,
   item: `<li data-part="item">
@@ -24,6 +32,22 @@ const TEMPLATE = {
   actionButton: `<button type="button" data-part="action-button" data-command="action"></button>`,
 };
 
+/**
+ * CSS selectors for toast queue parts.
+ * @type {Object}
+ * @property {string} root - Selector for the root element.
+ * @property {string} group - Selector for the group container.
+ * @property {string} item - Selector for toast items.
+ * @property {string} toast - Selector for the toast wrapper.
+ * @property {string} icon - Selector for the icon element.
+ * @property {string} content - Selector for the content wrapper.
+ * @property {string} title - Selector for the title element.
+ * @property {string} desc - Selector for the description element.
+ * @property {string} closeButton - Selector for the close button.
+ * @property {string} actions - Selector for the actions container.
+ * @property {string} actionButton - Selector for the action button.
+ * @private
+ */
 const SELECTORS = {
   root: 'toast-queue',
   group: '[data-part="group"]',
@@ -38,37 +62,79 @@ const SELECTORS = {
   actionButton: '[data-part="action-button"]',
 };
 
-const notificationInflection = inflect('notification')('notifications');
+/**
+ * Inflected label for the toast queue, used for accessibility.
+ * @type {Function}
+ * @returns {string} "notification" (singular) or "notifications" (plural)
+ * @example
+ * ROOT_LABEL(1); // → "notification"
+ * ROOT_LABEL(2); // → "notifications"
+ * @private
+ */
+const ROOT_LABEL = inflect('notification')('notifications');
 
+/**
+ * A queue system for managing toast notifications.
+ *
+ * @class ToastQueue
+ */
 export class ToastQueue {
+  /** @private @type {ToastQueueOptions|null} */
   #options = null;
+
+  /** @private @type {Set} */
   #queue = new Set();
+
+  /** @private @type {number} */
   #duration = 6000;
-  /** @typedef ToastQueuePlacement 'top-start' | 'top-center' | 'top-end' | 'bottom-start' | 'bottom-center' | 'bottom-end' | center */
+
+  /**
+   * Possible placement positions for the toast queue.
+   *
+   * @typedef {('top-start'|'top-center'|'top-end'|'bottom-start'|'bottom-center'|'bottom-end'|'center')} ToastQueuePlacement
+   */
+
+  /** @private @type {ToastQueuePlacement} */
   #placement = 'top-end';
+
+  /** @private @type {string|null} */
   #mode = null;
+
+  /** @private @type {Object.<string, HTMLTemplateElement>} */
   #template = {
     root: document.createElement('template'),
     item: document.createElement('template'),
     actionButton: document.createElement('template'),
   };
+
+  /** @private @type {HTMLElement} */
   #rootPart;
+
+  /** @private @type {HTMLElement} */
   #groupPart;
+
+  /** @private @type {Swipeable} */
   #swipeable;
 
   /**
-   * @typedef {object} ToastQueueOptions
-   * @property {number} duration - The amount of time, in milliseconds, that the toast will remain open before closing automatically.
-   * @property {ToastQueuePlacement} placement -
-   * @property {string} mode -
-   * @property {HTMLElement} root -
-   * @property {boolean} pauseOnPageIdle -
-   * @property {object} template - HTML templates
-   * @property {string} template.root -
-   * @property {string} template.item -
-   * @property {string} template.actionButton -
+   * Configuration options for the ToastQueue.
    *
-   * @param {ToastQueueOptions} options
+   * @typedef {Object} ToastQueueOptions
+   * @property {number} [duration=6000] - Auto-dismiss duration in milliseconds.
+   * @property {ToastQueuePlacement} [placement='top-end'] - Position on screen.
+   * @property {string} [mode] - Display mode (e.g., 'stacked').
+   * @property {HTMLElement} [root=document.body] - Container element for toasts.
+   * @property {boolean} [pauseOnPageIdle=true] - Pause timers when page is hidden.
+   * @property {Object} template - HTML templates for toast elements.
+   * @property {string} template.root - Template HTML for the toast container.
+   * @property {string} template.item - Template HTML for individual toast items.
+   * @property {string} template.actionButton - Template HTML for action buttons.
+   */
+
+  /**
+   * Creates an instance of ToastQueue.
+   *
+   * @param {ToastQueueOptions} options - Configuration options.
    */
   constructor(options) {
     this.#options = options;
@@ -108,6 +174,13 @@ export class ToastQueue {
     this.#rootPart.addEventListener('pointerout', this.#onInactive);
   }
 
+  /**
+   * Handles page visibility changes to pause/resume toast timers.
+   *
+   * @private
+   * @this ToastQueue
+   * @returns {void}
+   */
   #onPageIdle = () => {
     if (this.#options?.pauseOnPageIdle === false) return;
     if (document.visibilityState === 'hidden') {
@@ -117,6 +190,13 @@ export class ToastQueue {
     }
   };
 
+  /**
+   * Event handler for command interactions (e.g., close, action, clear, toggle-mode).
+   * Listens to events delegated from toast elements and triggers appropriate actions.
+   * @private
+   * @param {Event} event - The DOM event object from a command interaction.
+   * @returns {void}
+   */
   #onCommand = (event) => {
     const cmd = event.target.dataset.command;
     if (cmd === 'close') {
@@ -143,14 +223,50 @@ export class ToastQueue {
     }
   };
 
+  /**
+   * Event handler for when the toast queue becomes active. Pauses all active toast timers.
+   * @private
+   * @returns {void}
+   */
   #onActive = () => {
     this.pause();
   };
 
+  /**
+   * Event handler for when the toast queue becomes inactive. Resumes all paused toast timers.
+   * @private
+   * @returns {void}
+   */
   #onInactive = () => {
     this.resume();
   };
 
+  /**
+   * Creates a toast reference object with the given options and default settings.
+   * @private
+   * @param {Object} options - Configuration options for the toast.
+   * @param {number} [options.duration] - Duration in milliseconds before auto-dismissal. Uses default if undefined.
+   * @param {boolean} [options.dismissible=true] - Whether the toast can be manually dismissed. Defaults to true.
+   * @param {string|Object} [options.content] - The content of the toast, either a string or an object with title and description.
+   * @param {string} [options.content.title] - Optional title of the toast.
+   * @param {string} [options.content.description] - Optional description or message of the toast.
+   * @param {Function} [options.onClose] - Callback function to execute when the toast is closed.
+   * @param {Object} [options.action] - Configuration for an optional action button.
+   * @param {string} options.action.label - Label text for the action button.
+   * @param {Function} options.action.callback - Function to call when the action button is clicked.
+   * @returns {Object} The created toast reference.
+   * @property {string} id - Unique identifier for the toast.
+   * @property {number} index - Position in the queue.
+   * @property {number} timestamp - Creation time in milliseconds.
+   * @property {Timer|undefined} timer - Timer for auto-dismissal, if duration is set.
+   * @property {boolean} dismissible - Whether the toast can be dismissed.
+   * @property {string|Object} content - The toast's content.
+   * @property {string} [content.title] - Optional title of the toast.
+   * @property {string} [content.description] - Optional description or message of the toast.
+   * @property {Function|undefined} onClose - Close callback.
+   * @property {Object|null} action - Action button configuration.
+   * @property {Object|null} itemRef - Reference to the DOM element; initially null.
+   */
   #createToastRef(options) {
     const duration = typeof options?.duration !== 'undefined' ? options.duration : this.#duration;
     const toastId = randomId();
@@ -167,6 +283,12 @@ export class ToastQueue {
     };
   }
 
+  /**
+   * Sets the mode of the toast queue.
+   * When set, updates the `data-mode` attribute on the root element using a view transition.
+   * If value is null and the queue has more than one item, the mode is not changed.
+   * @param {string|null} value - The mode to set. Used as the value for `data-mode`. Can be any string or null.
+   */
   set mode(value) {
     if (value === null && this.#queue.size <= 1) return;
     if (this.#mode === value) return;
@@ -180,16 +302,27 @@ export class ToastQueue {
     });
   }
 
+  /**
+   * Gets the current mode of the toast queue.
+   * @returns {string|null} The current mode, reflected as `data-mode` on the root element. Can be any string or null. Defaults to ToastQueueOptions.mode.
+   */
   get mode() {
     return this.#mode;
   }
 
+  /**
+   * Gets the current toast placement.
+   *
+   * @returns {ToastQueuePlacement} The current placement.
+   */
   get placement() {
     return this.#placement;
   }
 
   /**
-   * @param {ToastQueuePlacement} value - toast-queue placement
+   * Sets the toast placement position.
+   *
+   * @param {ToastQueuePlacement} value - The new placement.
    */
   set placement(value) {
     this.#placement = value;
@@ -209,14 +342,16 @@ export class ToastQueue {
   }
 
   /**
+   * Updates the DOM, optionally skipping view transitions.
    *
-   * @param {function} updateDOM
-   * @param {boolean} skipTransition
+   * @private
+   * @param {Function} updateDOM - Function that performs DOM updates.
+   * @param {boolean} [skipTransition=false] - Whether to skip view transitions.
    */
   async #update(updateDOM, skipTransition = false) {
     this.#rootPart.setAttribute(
       'aria-label',
-      `${this.#queue.size} ${notificationInflection(this.#queue.size)}`,
+      `${this.#queue.size} ${ROOT_LABEL(this.#queue.size)}`,
     );
 
     if (this.#queue.size === 1) this.#rootPart.showPopover();
@@ -233,10 +368,10 @@ export class ToastQueue {
   }
 
   /**
-   * Receive a toast from the queue.
+   * Retrieves a toast by its ID.
    *
-   * @param {string} toastId
-   * @returns
+   * @param {string} toastId - The ID of the toast to retrieve.
+   * @returns {Object|undefined} The toast object if found, otherwise undefined.
    */
   get(toastId) {
     for (const toast of this.#queue) {
@@ -248,19 +383,19 @@ export class ToastQueue {
   }
 
   /**
-   * Creates a new toast.
+   * Adds a new toast notification to the queue.
    *
-   * @param {object|string} content - Message
-   * @param {object} options
-   * @param {string} options.className
-   * @param {number} options.duration
-   * @param {boolean} options.dismissible
-   * @param {string} options.icon
-   * @param {object|string} options.action
-   * @param {string} options.action.label
-   * @param {function} options.action.onClick
-   * @param {function} options.onClose
-   * @returns
+   * @param {string|Object} content - The message content (text or object).
+   * @param {Object} [options] - Toast-specific options.
+   * @param {string} [options.className] - Additional CSS class.
+   * @param {number} [options.duration] - Override auto-dismiss duration.
+   * @param {boolean} [options.dismissible=true] - Whether toast can be manually closed.
+   * @param {string} [options.icon] - Icon class or URL.
+   * @param {Object|string} [options.action] - Action button configuration.
+   * @param {string} options.action.label - Button label.
+   * @param {Function} options.action.onClick - Click handler.
+   * @param {Function} [options.onClose] - Callback when toast is closed.
+   * @returns {string} The generated toast ID.
    */
   add(content, options) {
     const toastRef = this.#createToastRef({ content, ...options });
@@ -286,7 +421,7 @@ export class ToastQueue {
     if (options?.dismissible === false) toastPart.querySelector(SELECTORS.closeButton).remove();
     if (content?.description) toastPart.setAttribute('aria-describedby', ariaDescId);
 
-    /** Toast icon */
+    /** Toast icon - Optional */
     const iconPart = template.querySelector(SELECTORS.icon);
     if (options?.icon) {
       iconPart.innerHTML = options.icon;
@@ -310,7 +445,7 @@ export class ToastQueue {
       descPart.textContent = content?.description;
     }
 
-    /** Toast actions */
+    /** Toast actions - Optional */
     const actionsPart = template.querySelector(SELECTORS.actions);
     if (toastRef?.action?.label) {
       const actionButtonTemplate = this.#template.actionButton.content.cloneNode(true);
@@ -329,9 +464,9 @@ export class ToastQueue {
   }
 
   /**
-   * Closes a toast by ID.
+   * Closes a toast by its ID.
    *
-   * @param {string} id
+   * @param {string} id - The ID of the toast to close.
    */
   close(id) {
     for (const toast of this.#queue) {
@@ -349,7 +484,7 @@ export class ToastQueue {
     }
   }
 
-  /** Clears all toasts. */
+  /** Clears all toasts from the queue. */
   clear() {
     this.#queue.clear();
     this.#update(() => {
@@ -357,7 +492,7 @@ export class ToastQueue {
     });
   }
 
-  /** Pauses the timers for all toasts. */
+  /** Pauses all active toast timers. */
   pause() {
     for (const toast of this.#queue) {
       if (toast.timer) {
@@ -366,7 +501,7 @@ export class ToastQueue {
     }
   }
 
-  /** Resumes the timers for all toasts. */
+  /** Resumes all paused toast timers. */
   resume() {
     for (const toast of this.#queue) {
       if (toast.timer) {
@@ -375,12 +510,16 @@ export class ToastQueue {
     }
   }
 
+  /**
+   * Removes event listeners and cleans up resources.
+   * @returns {void}
+   */
   destroy() {
     document.removeEventListener('visibilitychange', this.#onPageIdle);
+    this.#swipeable.destroy();
     this.#rootPart.removeEventListener('click', this.#onCommand);
     this.#rootPart.removeEventListener('pointerover', this.#onActive);
     this.#rootPart.removeEventListener('pointerout', this.#onInactive);
     this.#rootPart.remove();
-    this.#swipeable.destroy();
   }
 }
