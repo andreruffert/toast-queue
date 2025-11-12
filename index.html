@@ -45,12 +45,13 @@
         border-radius: 1rem;
         box-shadow: 0 4px 12px rgb(0, 0, 0, 0.102);
         position: relative;
+        gap: .5rem;
       }
 
       toast-queue [data-part="content"] {
         align-items: flex-start;
         flex: 1;
-        gap: .5rem;
+        gap: .3rem;
       }
 
       toast-queue [data-part="close-button"] {
@@ -72,7 +73,7 @@
         opacity: 1;
       }
 
-      toast-queue .toast-error {
+      toast-queue .my-toast {
         background-color: hotpink;
       }
     </style>
@@ -128,7 +129,8 @@
               description: Date.now()
             },
             {
-            // className: 'toast-error',
+            // icon: 'ℹ️',
+            // className: 'my-toast',
             // dismissible: false,
             // duration: null,
             // action: {

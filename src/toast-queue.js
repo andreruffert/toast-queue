@@ -213,7 +213,7 @@ export class ToastQueue {
    * @param {function} updateDOM
    * @param {boolean} skipTransition
    */
-  async update(updateDOM, skipTransition = false) {
+  async #update(updateDOM, skipTransition = false) {
     this.#rootPart.setAttribute(
       'aria-label',
       `${this.#queue.size} ${notificationInflection(this.#queue.size)}`,
@@ -323,7 +323,7 @@ export class ToastQueue {
 
     toastRef.itemRef = newItem;
     this.#queue.add(toastRef);
-    this.update(() => this.#groupPart.prepend(newItem));
+    this.#update(() => this.#groupPart.prepend(newItem));
 
     return toastRef;
   }
@@ -338,11 +338,11 @@ export class ToastQueue {
       if (toast.id === id) {
         this.#queue.delete(toast);
         if (typeof toast.onClose === 'function') toast.onClose();
-        this.update(
+        this.#update(
           () => {
             toast.itemRef.remove();
           },
-          // Skip view transition for elements not visible in the UI
+          // Skip transition for invisible elements
           !toast.itemRef.checkVisibility(),
         );
       }
@@ -352,7 +352,7 @@ export class ToastQueue {
   /** Clears all toasts. */
   clear() {
     this.#queue.clear();
-    this.update(() => {
+    this.#update(() => {
       this.#groupPart.innerHTML = '';
     });
   }
