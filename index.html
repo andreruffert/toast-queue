@@ -25,6 +25,8 @@
 
       /* toast-queue customization */
       toast-queue {
+        --toast-color: Canvas;
+
         width: 300px;
         padding: 1.5rem;
       }
@@ -40,10 +42,12 @@
       }
 
       toast-queue [data-part="toast"] {
-        padding: 1rem;
-        border: 1px solid #0000001a;
+        color: hsl(from var(--toast-color) h s 15%);
+        border: 1px solid var(--toast-color);
+        background: hsl(from var(--toast-color) h s 90%);
+        box-shadow: 0 12px 12px -8px hsl(from var(--toast-color) h s l / 0.325);
         border-radius: 1rem;
-        box-shadow: 0 4px 12px rgb(0, 0, 0, 0.102);
+        padding: 1rem;
         position: relative;
         gap: .5rem;
       }
@@ -63,13 +67,13 @@
         aspect-ratio: 1;
         border-radius: 100%;
         background-color: Canvas;
-        border: 1px outset #0000001a;
+        border: 1px solid var(--toast-color);
         opacity: 0;
         transition: opacity .3s ease-in-out;
       }
 
       toast-queue [data-part="item"]:hover [data-part="close-button"],
-      toast-queue [data-part="item"]:focus-visible [data-part="close-button"] {
+      toast-queue [data-part="toast"]:focus-within [data-part="close-button"] {
         opacity: 1;
       }
 

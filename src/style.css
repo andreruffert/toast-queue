@@ -14,11 +14,6 @@
     display: initial;
   }
 
-  toast-queue:is(:focus-visible) {
-    outline-offset: 2px;
-    outline: 2px solid #6a5acd;
-  }
-
   /** Placement **/
   toast-queue[data-placement^="top"] {
     inset-block-start: env(safe-area-inset-top, 0);
@@ -56,7 +51,6 @@
   toast-queue [data-part="toast"] {
     background-color: Canvas;
     display: flex;
-
     justify-content: space-between;
   }
 

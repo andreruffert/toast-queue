@@ -252,7 +252,7 @@ export class ToastQueue {
    * @property {number} timestamp - Creation time in milliseconds.
    * @property {Timer|undefined} timer - Timer for auto-dismissal, if duration is set.
    * @property {boolean} dismissible - Whether the toast can be dismissed.
-   * @property {string|Object} content - The toast's content.
+   * @property {string|Object} content - The toast's message content.
    * @property {string} [content.title] - Optional title of the toast.
    * @property {string} [content.description] - Optional description or message of the toast.
    * @property {Function|undefined} onClose - Close callback.
