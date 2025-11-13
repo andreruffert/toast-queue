@@ -16,7 +16,7 @@
     "dev": "vite",
     "format": "biome check --write",
     "lint": "biome ci",
-    "test": "vitest --config=vitest.browser.config.js",
+    "test": "vitest",
     "build": "vite build",
     "prepublishOnly": "npm run build"
   },

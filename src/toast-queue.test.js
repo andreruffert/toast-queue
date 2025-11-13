@@ -3,7 +3,7 @@ import { page } from 'vitest/browser';
 import { ToastQueue } from './index.js';
 import { getSwipeableDirection } from './utils.js';
 
-test('renders a toast that is fully accessible', async () => {
+test('renders a toast that is accessible', async () => {
   const toastQueue = new ToastQueue();
   const rootElement = page.getByLabelText('Notifications');
   const groupElement = document.querySelector('[data-part="group"]');

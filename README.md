@@ -2,8 +2,6 @@
 
 > A unstyled, accessible Vanilla JS library to display brief, temporary toast messages.
 
-There is no built-in way to display toast notifications in HTML. The `toast-queue` library helps you create accessible toasts that can be styled as needed.
-
 - Framework agnostic: Vanilla JavaScript without dependencies.
 - Headless UI: Complete styling control without any pre-defined visual styles.
 - Accessible: Toasts are rendered in a [landmark region](https://www.w3.org/WAI/ARIA/apg/practices/landmark-regions/) and follow the [ARIA alertdialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/alertdialog/).

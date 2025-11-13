@@ -60,7 +60,7 @@ export function wrapInViewTransition(updateDOM) {
     finished: Promise.resolve(),
   };
 
-  // Skip transitions if user prefers reduced motion
+  // Skip transition if user prefers reduced motion
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     updateDOM();
     return immediate;

@@ -1,4 +1,7 @@
+/** @type {string[]} */
 const inlineDirections = ['inline', 'horizontal', 'left', 'right'];
+
+/** @type {string[]} */
 const blockDirections = ['block', 'vertical', 'up', 'down'];
 
 /**

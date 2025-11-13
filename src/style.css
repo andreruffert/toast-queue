@@ -14,6 +14,11 @@
     display: initial;
   }
 
+  toast-queue:is(:focus-visible) {
+    outline-offset: 2px;
+    outline: 2px solid #6a5acd;
+  }
+
   /** Placement **/
   toast-queue[data-placement^="top"] {
     inset-block-start: env(safe-area-inset-top, 0);
@@ -41,6 +46,7 @@
 
   /** Group */
   toast-queue [data-part="group"] {
+    display: contents;
     list-style: none;
     margin: unset;
     padding: unset;
