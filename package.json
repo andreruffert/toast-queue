@@ -17,6 +17,8 @@
     "format": "biome check --write",
     "lint": "biome ci",
     "test": "vitest",
+    "build": "vite build",
+    "prebuild": "npx jsdoc-to-markdown src/toast-queue.js > API.md",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
