@@ -32,6 +32,10 @@ Then, you can use the provided `ToastQueue` API to trigger a toast from anywhere
 <button onclick="toastQueue.add('Toast message...');">Trigger toast</button>
 ```
 
+## Documentation
+
+- [API reference](./API.md)
+
 ## License
 
 Distributed under the MIT license. See LICENSE for details. 

@@ -17,7 +17,6 @@
     "format": "biome check --write",
     "lint": "biome ci",
     "test": "vitest",
-    "build": "vite build",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {

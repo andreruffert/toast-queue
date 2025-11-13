@@ -74,7 +74,7 @@ const SELECTORS = {
 const ROOT_LABEL = inflect('notification')('notifications');
 
 /**
- * A queue system for managing toast notifications.
+ * Create and manage accessible toast messages that can be styled as needed.
  *
  * @class ToastQueue
  */
