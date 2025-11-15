@@ -266,10 +266,9 @@ export class ToastQueue {
 
     if (event.type === 'focusin') {
       if (this.#queue.size === 1) return;
-      if (event.currentTarget.dataset?.active === 'true') return;
+      if (this.#rootPart.dataset?.active === 'true') return;
       if (event.target.dataset?.command) return;
-      if (event.target.dataset?.part === 'close-button') return;
-      if (event.target.dataset?.part === 'action-button') return;
+
       this.pause();
 
       if (!this.#activationMode) return;
@@ -283,8 +282,6 @@ export class ToastQueue {
     if (event.type === 'focusout') {
       if (this.#rootPart.dataset?.active !== 'true') return;
       if (event.target.dataset?.command) return;
-      if (event.target.dataset?.part === 'close-button') return;
-      if (event.target.dataset?.part === 'action-button') return;
 
       // If the document has lost focus, don't remove the toast queue focus just yet.
       // Wait until the document regains focus.
@@ -524,8 +521,12 @@ export class ToastQueue {
         this.#queue.delete(toast);
         if (typeof toast.onClose === 'function') toast.onClose();
 
-        // If focus is already within the toast queue, move focus to the next or previous toast.
-        if (this.#rootPart.contains(document.activeElement)) {
+        // If focus is already within the toast queue (ignore data-command elements),
+        // move focus to the next or previous toast.
+        if (
+          this.#rootPart.contains(document.activeElement) &&
+          !document.activeElement?.dataset?.command
+        ) {
           const item = toast.itemRef?.nextElementSibling || toast.itemRef?.previousElementSibling;
           item?.firstElementChild?.focus();
         }
