@@ -91,7 +91,7 @@ export class ToastQueue {
   /**
    * Possible activation modes for the toast queue.
    *
-   * @typedef {('hover'|'focus')} ToastQueueActivationMode
+   * @typedef {('hover'|'click')} ToastQueueActivationMode
    */
 
   /** @private @type {ToastQueueActivationMode|null} */
@@ -127,11 +127,11 @@ export class ToastQueue {
    *
    * @typedef {Object} ToastQueueOptions
    * @property {number} [duration=6000] - Auto-dismiss duration in milliseconds.
-   * @property {ToastQueueActivationMode|null} [activationMode=null] - Activation mode (e.g., 'hover', 'focus'). Toggles a `data-active` attribute on the root element using a view transition.
-   * @property {ToastQueuePlacement} [placement='top-end'] - Position on screen.
-   * @property {HTMLElement} [root=document.body] - Container element for toasts.
+   * @property {ToastQueueActivationMode|null} [activationMode=null] - Activation mode (e.g., 'hover', 'click'). Toggles a `data-active` attribute on the root part using a view transition.
+   * @property {ToastQueuePlacement|null} [placement='top-end'] - Position on screen.
+   * @property {HTMLElement} [root=document.body] - Container element for the toast queue.
    * @property {boolean} [pauseOnPageIdle=true] - Pause timers when page is hidden.
-   * @property {Object} template - HTML templates for toast elements.
+   * @property {Object} template - HTML templates for toast queue elements.
    * @property {string} template.root - Template HTML for the toast container.
    * @property {string} template.item - Template HTML for individual toast items.
    * @property {string} template.actionButton - Template HTML for action buttons.
@@ -216,6 +216,29 @@ export class ToastQueue {
   #handleEvent = async (event) => {
     if (event.type === 'click') {
       const cmd = event.target.dataset?.command;
+
+      if (!cmd && this.#activationMode === 'click' && event.target.closest(SELECTORS.root)) {
+        if (this.#rootPart.dataset?.active === 'true') return;
+
+        await wrapInViewTransition(() => {
+          this.#rootPart.dataset.active = 'true';
+        }).finished;
+
+        document.addEventListener(
+          'click',
+          (event) => {
+            if (!event.target.closest('toast-queue') && this.#rootPart.dataset?.active === 'true') {
+              wrapInViewTransition(() => {
+                delete this.#rootPart.dataset?.active;
+              });
+            }
+          },
+          { once: true },
+        );
+
+        return;
+      }
+
       if (cmd === 'close') {
         event.stopPropagation();
         const toastId = event.target.closest(SELECTORS.toast).dataset.id;
@@ -243,6 +266,7 @@ export class ToastQueue {
 
       if (this.#queue.size === 1) return;
       if (this.#activationMode !== 'hover') return;
+
       wrapInViewTransition(() => {
         this.#rootPart.dataset.active = 'true';
       });
@@ -256,7 +280,8 @@ export class ToastQueue {
       this.resume();
 
       if (!this.#activationMode) return;
-      if (this.#activationMode === 'focus' && this.#rootPart.dataset?.active !== 'true') return;
+      if (this.#rootPart.dataset?.active !== 'true') return;
+
       wrapInViewTransition(() => {
         delete this.#rootPart.dataset?.active;
       });
@@ -271,6 +296,7 @@ export class ToastQueue {
 
       if (!this.#activationMode) return;
       if (this.#rootPart.dataset?.active === 'true') return;
+
       wrapInViewTransition(() => {
         this.#rootPart.dataset.active = 'true';
       });
@@ -280,6 +306,13 @@ export class ToastQueue {
 
     if (event.type === 'focusout') {
       if (event.target.dataset?.command) return;
+
+      // Focus will stay inside the toast queue.
+      if (this.#rootPart.contains(event.relatedTarget)) return;
+      this.resume();
+
+      if (!this.#activationMode) return;
+      if (this.#rootPart.dataset?.active !== 'true') return;
 
       // If the document has lost focus, don't remove the toast queue focus just yet.
       // Wait until the document regains focus.
@@ -298,12 +331,6 @@ export class ToastQueue {
         return;
       }
 
-      // Focus will stay inside the toast queue.
-      if (this.#rootPart.contains(event.relatedTarget)) return;
-      this.resume();
-
-      if (!this.#activationMode) return;
-      if (this.#activationMode === 'focus' && this.#rootPart.dataset?.active !== 'true') return;
       wrapInViewTransition(() => {
         delete this.#rootPart.dataset?.active;
       });

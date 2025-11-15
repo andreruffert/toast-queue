@@ -5,6 +5,7 @@
 - Framework agnostic: Vanilla JavaScript without dependencies.
 - Headless UI: Complete styling control without any pre-defined visual styles.
 - Accessible: Toasts are rendered in a [landmark region](https://www.w3.org/WAI/ARIA/apg/practices/landmark-regions/) and follow the [ARIA alertdialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/alertdialog/).
+- Focus management: When a toast closes, the focus shifts to the next or previous toast, if available.
 - [View Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API) ready: Smooth animations using modern browser features.
 - Touch-friendly swiping: Native gesture support for dismissing toasts.
 

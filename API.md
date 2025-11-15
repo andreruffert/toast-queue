@@ -8,7 +8,7 @@
 ## Typedefs
 
 <dl>
-<dt><a href="#ToastQueueActivationMode">ToastQueueActivationMode</a> : <code>&#x27;hover&#x27;</code> | <code>&#x27;focus&#x27;</code></dt>
+<dt><a href="#ToastQueueActivationMode">ToastQueueActivationMode</a> : <code>&#x27;hover&#x27;</code> | <code>&#x27;click&#x27;</code></dt>
 <dd><p>Possible activation modes for the toast queue.</p>
 </dd>
 <dt><a href="#ToastQueuePlacement">ToastQueuePlacement</a> : <code>&#x27;top-start&#x27;</code> | <code>&#x27;top-center&#x27;</code> | <code>&#x27;top-end&#x27;</code> | <code>&#x27;bottom-start&#x27;</code> | <code>&#x27;bottom-center&#x27;</code> | <code>&#x27;bottom-end&#x27;</code> | <code>&#x27;center&#x27;</code></dt>
@@ -142,7 +142,7 @@ Removes event listeners and cleans up resources.
 **Kind**: instance method of [<code>ToastQueue</code>](#ToastQueue)  
 <a name="ToastQueueActivationMode"></a>
 
-## ToastQueueActivationMode : <code>&#x27;hover&#x27;</code> \| <code>&#x27;focus&#x27;</code>
+## ToastQueueActivationMode : <code>&#x27;hover&#x27;</code> \| <code>&#x27;click&#x27;</code>
 Possible activation modes for the toast queue.
 
 **Kind**: global typedef  
@@ -163,11 +163,11 @@ Configuration options for the ToastQueue.
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
 | [duration] | <code>number</code> | <code>6000</code> | Auto-dismiss duration in milliseconds. |
-| [activationMode] | [<code>ToastQueueActivationMode</code>](#ToastQueueActivationMode) \| <code>null</code> | <code></code> | Activation mode (e.g., 'hover', 'focus'). Toggles a `data-active` attribute on the root element using a view transition. |
-| [placement] | [<code>ToastQueuePlacement</code>](#ToastQueuePlacement) | <code>&#x27;top-end&#x27;</code> | Position on screen. |
-| [root] | <code>HTMLElement</code> | <code>document.body</code> | Container element for toasts. |
+| [activationMode] | [<code>ToastQueueActivationMode</code>](#ToastQueueActivationMode) \| <code>null</code> | <code></code> | Activation mode (e.g., 'hover', 'click'). Toggles a `data-active` attribute on the root part using a view transition. |
+| [placement] | [<code>ToastQueuePlacement</code>](#ToastQueuePlacement) \| <code>null</code> | <code>&#x27;top-end&#x27;</code> | Position on screen. |
+| [root] | <code>HTMLElement</code> | <code>document.body</code> | Container element for the toast queue. |
 | [pauseOnPageIdle] | <code>boolean</code> | <code>true</code> | Pause timers when page is hidden. |
-| template | <code>Object</code> |  | HTML templates for toast elements. |
+| template | <code>Object</code> |  | HTML templates for toast queue elements. |
 | template.root | <code>string</code> |  | Template HTML for the toast container. |
 | template.item | <code>string</code> |  | Template HTML for individual toast items. |
 | template.actionButton | <code>string</code> |  | Template HTML for action buttons. |
