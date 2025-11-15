@@ -519,16 +519,19 @@ export class ToastQueue {
     for (const toast of this.#queue) {
       if (toast.id === id) {
         this.#queue.delete(toast);
+
+        // Perform `ToastOptions.onClose` callback.
         if (typeof toast.onClose === 'function') toast.onClose();
 
-        // If focus is already within the toast queue (ignore data-command elements),
-        // move focus to the next or previous toast.
-        if (
-          this.#rootPart.contains(document.activeElement) &&
-          !document.activeElement?.dataset?.command
-        ) {
-          const item = toast.itemRef?.nextElementSibling || toast.itemRef?.previousElementSibling;
-          item?.firstElementChild?.focus();
+        // If focus is already within the toast queue, move focus to the next or previous toast.
+        if (this.#queue.size >= 1 && this.#rootPart.contains(document.activeElement)) {
+          if (
+            !this.#activationMode ||
+            (this.#activationMode && this.#rootPart.dataset?.active === 'true')
+          ) {
+            const item = toast.itemRef?.nextElementSibling || toast.itemRef?.previousElementSibling;
+            item?.firstElementChild?.focus();
+          }
         }
 
         this.#update(
