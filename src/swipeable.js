@@ -66,7 +66,6 @@ export class Swipeable {
     if (!target) return;
 
     this.#target = target;
-    this.#target.style.setProperty('touch-action', 'none'); // Ensure capture pointer events will work properly on touch devices.
     this.#target.style.setProperty('will-change', 'translate');
     this.#isDragging = true;
     this.#startX = event.clientX;
@@ -145,7 +144,6 @@ export class Swipeable {
         this.#target.style.removeProperty('translate');
         this.#target.style.removeProperty('--tq-swipe-distance');
         this.#target.style.removeProperty('will-change');
-        this.#target.style.removeProperty('touch-action');
         delete this.#target.dataset.dragging;
       });
     }

@@ -5,6 +5,7 @@
 
     display: none;
     margin: unset;
+    padding: unset;
     inset: unset;
     background-color: unset;
     border: unset;
@@ -39,6 +40,12 @@
     margin: auto;
   }
 
+  toast-queue:has([data-part="toast"][data-dragging]) {
+    /* Prevent content selection relevant for touch devices */
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
   /** Group */
   toast-queue [data-part="group"] {
     display: contents;
@@ -51,19 +58,18 @@
   toast-queue [data-part="toast"] {
     background-color: Canvas;
     display: flex;
-    justify-content: space-between;
+  }
+  toast-queue [data-part="toast"]:is([data-swipeable]) {
+    /* Ensure that pointer events work properly on touch devices. */
+    touch-action: none;
   }
 
-  toast-queue [data-part="toast"]:is([data-dragging]) {
-    /* Prevent selection relevant for touch devices */
-    user-select: none;
-    -webkit-user-select: none;
-  }
-
+  /** Close button */
   toast-queue [data-part="toast"]:is([data-dismissible="false"]) [data-part="close-button"] {
     display: none;
   }
 
+  /** Toast content **/
   toast-queue [data-part="content"] {
     display: flex;
     flex-direction: column;

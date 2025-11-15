@@ -4,14 +4,20 @@ import { defineConfig } from 'vite';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+const presets = [
+  resolve(__dirname, 'src/presets/minimal.css'),
+  resolve(__dirname, 'src/presets/stacked.css'),
+];
+
 export default defineConfig({
   build: {
+    outDir: 'dist/presets',
     cssMinify: false,
-    lib: {
-      formats: ['es'],
-      entry: resolve(__dirname, 'src/index.js'),
-      name: 'toast-queue',
-      fileName: 'toast-queue',
+    rollupOptions: {
+      input: presets,
+      output: {
+        assetFileNames: () => '[name][extname]',
+      },
     },
   },
 });

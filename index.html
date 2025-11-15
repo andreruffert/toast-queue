@@ -28,13 +28,8 @@
         --toast-color: Canvas;
 
         width: 300px;
-        padding: 1.5rem;
-      }
-
-      toast-queue:is(:popover-open) {
+        padding: 1rem;
         overflow: visible;
-        /* overflow-block: auto; */
-        /* max-height: 100dvh; */
       }
 
       toast-queue [data-part="group"] {
@@ -48,8 +43,11 @@
         box-shadow: 0 12px 12px -8px hsl(from var(--toast-color) h s l / 0.325);
         border-radius: 1rem;
         padding: 1rem;
-        position: relative;
         gap: .5rem;
+      }
+
+      toast-queue [data-part="toast"]:is([data-dragging]) {
+        opacity: calc(1 - var(--tq-swipe-distance, 0));
       }
 
       toast-queue [data-part="content"] {
@@ -59,22 +57,20 @@
       }
 
       toast-queue [data-part="close-button"] {
-        position: absolute;
-        right: 100%;
-        bottom: 100%;
-        translate: 50% 50%;
-        z-index: inherit;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
         aspect-ratio: 1;
         border-radius: 100%;
-        background-color: Canvas;
-        border: 1px solid var(--toast-color);
-        opacity: 0;
-        transition: opacity .3s ease-in-out;
+        background-color: unset;
+        border: unset;
+        align-self: center;
+        font-size: 1.4rem;
       }
 
-      toast-queue [data-part="item"]:hover [data-part="close-button"],
-      toast-queue [data-part="toast"]:focus-within [data-part="close-button"] {
-        opacity: 1;
+      toast-queue [data-part="close-button"]:hover {
+        background-color: var(--toast-color);
       }
 
       toast-queue .my-toast {
@@ -97,18 +93,25 @@
     </main>
 
     <script type="module">
-      import { ToastQueue } from './src/index.js';
-      import preset from './src/presets/stacked/index.js';
-      import './src/presets/stacked/style.css';
-      // import './src/presets/minimal/style.css';
+      import ToastQueue from './src/index.js';
+      // import './src/presets/minimal.css';
+      import './src/presets/stacked.css';
 
       const toastPlacement = localStorage.getItem('tq-placement') || 'top-center';
 
       window.toastQueue = new ToastQueue({
-        pauseOnPageIdle: false,
+        // pauseOnPageIdle: false,
         duration: null,
+        activationMode: 'hover',
         placement: toastPlacement,
-        ...preset
+        // template: {
+        //   root: `<toast-queue>
+        //     <div data-part="menu">
+        //       <button type="button" data-command="clear">Clear all</button>
+        //     </div>
+        //     <ol data-part="group"></ol>
+        //   </toast-queue>`,
+        // },
       });
 
       window.setToastPlacement = (value) => {
@@ -142,18 +145,6 @@
             //   onClick: () => console.log(Date.now())
             // },
           });
-          return;
-        }
-      });
-
-      document.addEventListener('click',  (event) => {
-        if (!event.target.closest('toast-queue') && document.querySelector('body:has(toast-queue:not([data-mode="stacked"]))')) {
-          toastQueue.toggleMode();
-          return;
-        }
-
-        if (event.target.closest('toast-queue[data-mode="stacked"]')) {
-          toastQueue.toggleMode();
           return;
         }
       });

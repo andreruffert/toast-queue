@@ -8,6 +8,9 @@
 ## Typedefs
 
 <dl>
+<dt><a href="#ToastQueueActivationMode">ToastQueueActivationMode</a> : <code>&#x27;hover&#x27;</code> | <code>&#x27;focus&#x27;</code></dt>
+<dd><p>Possible activation modes for the toast queue.</p>
+</dd>
 <dt><a href="#ToastQueuePlacement">ToastQueuePlacement</a> : <code>&#x27;top-start&#x27;</code> | <code>&#x27;top-center&#x27;</code> | <code>&#x27;top-end&#x27;</code> | <code>&#x27;bottom-start&#x27;</code> | <code>&#x27;bottom-center&#x27;</code> | <code>&#x27;bottom-end&#x27;</code> | <code>&#x27;center&#x27;</code></dt>
 <dd><p>Possible placement positions for the toast queue.</p>
 </dd>
@@ -32,7 +35,6 @@
         * [new exports.ToastQueue(options)](#new_ToastQueue+ToastQueue_new)
     * [.placement](#ToastQueue+placement) ⇒ [<code>ToastQueuePlacement</code>](#ToastQueuePlacement)
     * [.placement](#ToastQueue+placement)
-    * [.toggleMode()](#ToastQueue+toggleMode) ⇒ <code>void</code>
     * [.get(toastId)](#ToastQueue+get) ⇒ <code>Object</code> \| <code>undefined</code>
     * [.add(content, options)](#ToastQueue+add) ⇒ <code>string</code>
     * [.close(id)](#ToastQueue+close)
@@ -78,14 +80,6 @@ Sets the toast placement position.
 | --- | --- | --- |
 | value | [<code>ToastQueuePlacement</code>](#ToastQueuePlacement) | The new placement. |
 
-<a name="ToastQueue+toggleMode"></a>
-
-### toastQueue.toggleMode() ⇒ <code>void</code>
-Toggles the mode of the toast queue. Defaults to ToastQueueOptions.mode.
-Updates the `data-mode` attribute on the root element using a view transition.
-If the queue has one or fewer items, the mode is not changed.
-
-**Kind**: instance method of [<code>ToastQueue</code>](#ToastQueue)  
 <a name="ToastQueue+get"></a>
 
 ### toastQueue.get(toastId) ⇒ <code>Object</code> \| <code>undefined</code>
@@ -146,6 +140,12 @@ Resumes all paused toast timers.
 Removes event listeners and cleans up resources.
 
 **Kind**: instance method of [<code>ToastQueue</code>](#ToastQueue)  
+<a name="ToastQueueActivationMode"></a>
+
+## ToastQueueActivationMode : <code>&#x27;hover&#x27;</code> \| <code>&#x27;focus&#x27;</code>
+Possible activation modes for the toast queue.
+
+**Kind**: global typedef  
 <a name="ToastQueuePlacement"></a>
 
 ## ToastQueuePlacement : <code>&#x27;top-start&#x27;</code> \| <code>&#x27;top-center&#x27;</code> \| <code>&#x27;top-end&#x27;</code> \| <code>&#x27;bottom-start&#x27;</code> \| <code>&#x27;bottom-center&#x27;</code> \| <code>&#x27;bottom-end&#x27;</code> \| <code>&#x27;center&#x27;</code>
@@ -163,8 +163,8 @@ Configuration options for the ToastQueue.
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
 | [duration] | <code>number</code> | <code>6000</code> | Auto-dismiss duration in milliseconds. |
+| [activationMode] | [<code>ToastQueueActivationMode</code>](#ToastQueueActivationMode) \| <code>null</code> | <code></code> | Activation mode (e.g., 'hover', 'focus'). Toggles a `data-active` attribute on the root element using a view transition. |
 | [placement] | [<code>ToastQueuePlacement</code>](#ToastQueuePlacement) | <code>&#x27;top-end&#x27;</code> | Position on screen. |
-| [mode] | <code>string</code> |  | View mode (e.g., 'stacked'). |
 | [root] | <code>HTMLElement</code> | <code>document.body</code> | Container element for toasts. |
 | [pauseOnPageIdle] | <code>boolean</code> | <code>true</code> | Pause timers when page is hidden. |
 | template | <code>Object</code> |  | HTML templates for toast elements. |

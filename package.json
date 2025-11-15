@@ -7,7 +7,8 @@
     ".": {
       "import": "./dist/toast-queue.js"
     },
-    "./style.css": "./dist/toast-queue.css"
+    "./style.css": "./dist/toast-queue.css",
+    "./presets/*": "./dist/presets/*"
   },
   "files": [
     "dist"
@@ -17,7 +18,7 @@
     "format": "biome check --write",
     "lint": "biome ci",
     "test": "vitest",
-    "build": "vite build",
+    "build": "vite build && vite build --config vite.presets.config.js",
     "prebuild": "npx jsdoc-to-markdown src/toast-queue.js > API.md",
     "prepublishOnly": "npm run build"
   },
