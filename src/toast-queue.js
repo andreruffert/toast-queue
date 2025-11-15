@@ -252,11 +252,11 @@ export class ToastQueue {
 
     if (event.type === 'pointerleave') {
       if (document.activeViewTransition) return; // Debounce invocation
-      if (this.#rootPart.dataset?.active !== 'true') return;
       if (this.#rootPart.contains(document.activeElement)) return;
       this.resume();
 
       if (!this.#activationMode) return;
+      if (this.#activationMode === 'focus' && this.#rootPart.dataset?.active !== 'true') return;
       wrapInViewTransition(() => {
         delete this.#rootPart.dataset?.active;
       });
@@ -266,12 +266,11 @@ export class ToastQueue {
 
     if (event.type === 'focusin') {
       if (this.#queue.size === 1) return;
-      if (this.#rootPart.dataset?.active === 'true') return;
       if (event.target.dataset?.command) return;
-
       this.pause();
 
       if (!this.#activationMode) return;
+      if (this.#rootPart.dataset?.active === 'true') return;
       wrapInViewTransition(() => {
         this.#rootPart.dataset.active = 'true';
       });
@@ -280,7 +279,6 @@ export class ToastQueue {
     }
 
     if (event.type === 'focusout') {
-      if (this.#rootPart.dataset?.active !== 'true') return;
       if (event.target.dataset?.command) return;
 
       // If the document has lost focus, don't remove the toast queue focus just yet.
@@ -302,9 +300,10 @@ export class ToastQueue {
 
       // Focus will stay inside the toast queue.
       if (this.#rootPart.contains(event.relatedTarget)) return;
-
       this.resume();
+
       if (!this.#activationMode) return;
+      if (this.#activationMode === 'focus' && this.#rootPart.dataset?.active !== 'true') return;
       wrapInViewTransition(() => {
         delete this.#rootPart.dataset?.active;
       });
