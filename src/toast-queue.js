@@ -169,11 +169,12 @@ export class ToastQueue {
     (options?.root || document.body).appendChild(rootPart);
 
     document.addEventListener('visibilitychange', this.#onPageIdle);
-    this.#rootPart.addEventListener('click', this.#handleEvent);
+    this.#rootPart.addEventListener('pointerdown', this.#handleEvent);
     this.#rootPart.addEventListener('pointerenter', this.#handleEvent);
     this.#rootPart.addEventListener('pointerleave', this.#handleEvent);
     this.#rootPart.addEventListener('focusin', this.#handleEvent);
     this.#rootPart.addEventListener('focusout', this.#handleEvent);
+    this.#rootPart.addEventListener('click', this.#handleEvent);
 
     this.#swipeable = new Swipeable({
       onSwipe: ({ target }) => {
@@ -201,33 +202,53 @@ export class ToastQueue {
   };
 
   /**
-   * Handles delegated events for the toast queue (click, pointerenter, pointerleave, focusin, focusout).
+   * Handles delegated events for the toast queue (pointerdown, pointerenter, pointerleave, focusin, focusout, click).
    * Processes commands like close, action, and clear from toast elements and manages
    * user interaction states like hover and focus.
    *
    * @private
-   * @param {Event} event - The DOM event object (e.g., click, pointerenter, pointerleave, focusin, focusout).
-   * @listens click
+   * @param {Event} event - The DOM event object (e.g., pointerdown, pointerenter, pointerleave, focusin, focusout, click).
+   * @listens pointerdown
    * @listens pointerenter
    * @listens pointerleave
    * @listens focusin
    * @listens focusout
+   * @listens click
    */
   #handleEvent = async (event) => {
+    if (event.type === 'pointerdown' && this.#activationMode === 'click') {
+      // Flag to determine if focus was triggered by a click.
+      this.isClick = true;
+    }
+
     if (event.type === 'click') {
       const cmd = event.target.dataset?.command;
 
       if (!cmd && this.#activationMode === 'click' && event.target.closest(SELECTORS.root)) {
+        if (this.#queue.size === 1) return;
         if (this.#rootPart.dataset?.active === 'true') return;
+
+        console.debug('[toast-queue] click:activation');
 
         await wrapInViewTransition(() => {
           this.#rootPart.dataset.active = 'true';
         }).finished;
 
         document.addEventListener(
+          'pointerdown',
+          () => {
+            // Flag to determine if focus was triggered by a click.
+            this.isClick = true;
+          },
+          { once: true },
+        );
+
+        document.addEventListener(
           'click',
           (event) => {
             if (!event.target.closest('toast-queue') && this.#rootPart.dataset?.active === 'true') {
+              console.debug('[toast-queue] click:deactivation');
+
               wrapInViewTransition(() => {
                 delete this.#rootPart.dataset?.active;
               });
@@ -257,6 +278,7 @@ export class ToastQueue {
         this.clear();
         return;
       }
+
       return;
     }
 
@@ -266,6 +288,8 @@ export class ToastQueue {
 
       if (this.#queue.size === 1) return;
       if (this.#activationMode !== 'hover') return;
+
+      console.debug('[toast-queue] pointerenter:activation');
 
       wrapInViewTransition(() => {
         this.#rootPart.dataset.active = 'true';
@@ -282,6 +306,8 @@ export class ToastQueue {
       if (!this.#activationMode) return;
       if (this.#rootPart.dataset?.active !== 'true') return;
 
+      console.debug('[toast-queue] pointerleave:deactivation');
+
       wrapInViewTransition(() => {
         delete this.#rootPart.dataset?.active;
       });
@@ -296,6 +322,14 @@ export class ToastQueue {
 
       if (!this.#activationMode) return;
       if (this.#rootPart.dataset?.active === 'true') return;
+
+      // Focus was triggered by a click (reset flag).
+      if (this.isClick) {
+        this.isClick = false;
+        return;
+      }
+
+      console.debug('[toast-queue] focusin:activation');
 
       wrapInViewTransition(() => {
         this.#rootPart.dataset.active = 'true';
@@ -313,6 +347,16 @@ export class ToastQueue {
 
       if (!this.#activationMode) return;
       if (this.#rootPart.dataset?.active !== 'true') return;
+
+      // Focusout was triggered by a click (reset flag).
+      if (this.isClick) {
+        console.log('isClick');
+
+        this.isClick = false;
+        return;
+      }
+
+      console.debug('[toast-queue] focusout:deactivation');
 
       // If the document has lost focus, don't remove the toast queue focus just yet.
       // Wait until the document regains focus.
@@ -533,6 +577,8 @@ export class ToastQueue {
     this.#queue.add(toastRef);
     this.#update(() => this.#groupPart.prepend(newItem));
 
+    console.debug('[toast-queue] add', toastRef);
+
     return toastRef;
   }
 
@@ -566,6 +612,8 @@ export class ToastQueue {
           }, // Skip transition for invisible elements
           !toast.itemRef.checkVisibility(),
         );
+
+        console.debug('[toast-queue] close', id);
       }
     }
   }
@@ -576,24 +624,31 @@ export class ToastQueue {
     this.#update(() => {
       this.#groupPart.innerHTML = '';
     });
+    console.debug('[toast-queue] clear');
   }
 
   /** Pauses all active toast timers. */
   pause() {
+    if (this.isPaused) return;
+    this.isPaused = true;
     for (const toast of this.#queue) {
       if (toast.timer) {
         toast.timer.pause();
       }
     }
+    console.debug('[toast-queue] pause');
   }
 
   /** Resumes all paused toast timers. */
   resume() {
+    if (!this.isPaused) return;
+    this.isPaused = false;
     for (const toast of this.#queue) {
       if (toast.timer) {
         toast.timer.resume();
       }
     }
+    console.debug('[toast-queue] resume');
   }
 
   /**
@@ -602,11 +657,12 @@ export class ToastQueue {
    */
   destroy() {
     document.removeEventListener('visibilitychange', this.#onPageIdle);
-    this.#rootPart.removeEventListener('click', this.#handleEvent);
+    this.#rootPart.removeEventListener('pointerdown', this.#handleEvent);
     this.#rootPart.removeEventListener('pointerenter', this.#handleEvent);
     this.#rootPart.removeEventListener('pointerleave', this.#handleEvent);
     this.#rootPart.removeEventListener('focusin', this.#handleEvent);
     this.#rootPart.removeEventListener('focusout', this.#handleEvent);
+    this.#rootPart.removeEventListener('click', this.#handleEvent);
     this.#rootPart.remove();
     this.#swipeable.destroy();
   }

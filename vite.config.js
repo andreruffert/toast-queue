@@ -14,4 +14,7 @@ export default defineConfig({
       fileName: 'toast-queue',
     },
   },
+  esbuild: {
+    drop: ['console'],
+  },
 });
