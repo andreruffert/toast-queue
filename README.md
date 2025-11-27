@@ -9,6 +9,9 @@
 - [View Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API) ready: Smooth animations using modern browser features.
 - Touch-friendly swiping: Native gesture support for dismissing toasts.
 
+> [!NOTE]  
+> Work in progress.
+
 ## Usage
 
 To start using the library, install it via npm:
