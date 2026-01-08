@@ -89,9 +89,9 @@ export class ToastQueue {
   #duration = 6000;
 
   /**
-   * Possible activation modes for the toast queue.
+   * Enables activation mode for the toast queue.
    *
-   * @typedef {('hover'|'click')} ToastQueueActivationMode
+   * @typedef {boolean} ToastQueueActivationMode
    */
 
   /** @private @type {ToastQueueActivationMode|null} */
@@ -127,7 +127,7 @@ export class ToastQueue {
    *
    * @typedef {Object} ToastQueueOptions
    * @property {number} [duration=6000] - Auto-dismiss duration in milliseconds.
-   * @property {ToastQueueActivationMode|null} [activationMode=null] - Activation mode (e.g., 'hover', 'click'). Toggles a `data-active` attribute on the root part using a view transition.
+   * @property {ToastQueueActivationMode|null} [activationMode=null] - Activation mode. Toggles a `data-active` attribute on the root part using a view transition.
    * @property {ToastQueuePlacement|null} [placement='top-end'] - Position on screen.
    * @property {HTMLElement} [root=document.body] - Container element for the toast queue.
    * @property {boolean} [pauseOnPageIdle=true] - Pause timers when page is hidden.
@@ -170,8 +170,6 @@ export class ToastQueue {
 
     document.addEventListener('visibilitychange', this.#onPageIdle);
     this.#rootPart.addEventListener('pointerdown', this.#handleEvent);
-    this.#rootPart.addEventListener('pointerenter', this.#handleEvent);
-    this.#rootPart.addEventListener('pointerleave', this.#handleEvent);
     this.#rootPart.addEventListener('focusin', this.#handleEvent);
     this.#rootPart.addEventListener('focusout', this.#handleEvent);
     this.#rootPart.addEventListener('click', this.#handleEvent);
@@ -202,21 +200,19 @@ export class ToastQueue {
   };
 
   /**
-   * Handles delegated events for the toast queue (pointerdown, pointerenter, pointerleave, focusin, focusout, click).
+   * Handles delegated events for the toast queue (pointerdown, focusin, focusout, click).
    * Processes commands like close, action, and clear from toast elements and manages
    * user interaction states like hover and focus.
    *
    * @private
-   * @param {Event} event - The DOM event object (e.g., pointerdown, pointerenter, pointerleave, focusin, focusout, click).
+   * @param {Event} event - The DOM event object (e.g., pointerdown, focusin, focusout, click).
    * @listens pointerdown
-   * @listens pointerenter
-   * @listens pointerleave
    * @listens focusin
    * @listens focusout
    * @listens click
    */
   #handleEvent = async (event) => {
-    if (event.type === 'pointerdown' && this.#activationMode === 'click') {
+    if (event.type === 'pointerdown' && this.#activationMode) {
       // Flag to determine if focus was triggered by a click.
       this.isClick = true;
     }
@@ -224,7 +220,7 @@ export class ToastQueue {
     if (event.type === 'click') {
       const cmd = event.target.dataset?.command;
 
-      if (!cmd && this.#activationMode === 'click' && event.target.closest(SELECTORS.root)) {
+      if (!cmd && this.#activationMode && event.target.closest(SELECTORS.root)) {
         if (this.#queue.size === 1) return;
         if (this.#rootPart.dataset?.active === 'true') return;
 
@@ -282,39 +278,6 @@ export class ToastQueue {
       return;
     }
 
-    if (event.type === 'pointerenter') {
-      if (this.#rootPart.dataset?.active === 'true') return;
-      this.pause();
-
-      if (this.#queue.size === 1) return;
-      if (this.#activationMode !== 'hover') return;
-
-      console.debug('[toast-queue] pointerenter:activation');
-
-      wrapInViewTransition(() => {
-        this.#rootPart.dataset.active = 'true';
-      });
-
-      return;
-    }
-
-    if (event.type === 'pointerleave') {
-      if (document.activeViewTransition) return; // Debounce invocation
-      if (this.#rootPart.contains(document.activeElement)) return;
-      this.resume();
-
-      if (!this.#activationMode) return;
-      if (this.#rootPart.dataset?.active !== 'true') return;
-
-      console.debug('[toast-queue] pointerleave:deactivation');
-
-      wrapInViewTransition(() => {
-        delete this.#rootPart.dataset?.active;
-      });
-
-      return;
-    }
-
     if (event.type === 'focusin') {
       if (this.#queue.size === 1) return;
       if (event.target.dataset?.command) return;
@@ -339,8 +302,6 @@ export class ToastQueue {
     }
 
     if (event.type === 'focusout') {
-      if (event.target.dataset?.command) return;
-
       // Focus will stay inside the toast queue.
       if (this.#rootPart.contains(event.relatedTarget)) return;
       this.resume();
@@ -658,8 +619,6 @@ export class ToastQueue {
   destroy() {
     document.removeEventListener('visibilitychange', this.#onPageIdle);
     this.#rootPart.removeEventListener('pointerdown', this.#handleEvent);
-    this.#rootPart.removeEventListener('pointerenter', this.#handleEvent);
-    this.#rootPart.removeEventListener('pointerleave', this.#handleEvent);
     this.#rootPart.removeEventListener('focusin', this.#handleEvent);
     this.#rootPart.removeEventListener('focusout', this.#handleEvent);
     this.#rootPart.removeEventListener('click', this.#handleEvent);
