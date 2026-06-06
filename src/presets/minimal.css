@@ -8,14 +8,14 @@
     display: none;
   }
 
-  ::view-transition-group(.tq-toast) {
+  ::view-transition-group(.tq-item) {
     animation-duration: 0.3s;
   }
 
-  ::view-transition-new(.tq-toast):only-child {
+  ::view-transition-new(.tq-item):only-child {
     animation-name: enter;
   }
-  ::view-transition-old(.tq-toast):only-child {
+  ::view-transition-old(.tq-item):only-child {
     animation-name: exit;
   }
 

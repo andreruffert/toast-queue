@@ -69,6 +69,7 @@ export function wrapInViewTransition(updateDOM) {
   // Skip if View Transition API is not supported
   if (!('startViewTransition' in document)) {
     updateDOM();
+    console.debug('[toast-queue] skipping transition');
     return immediate;
   }
 

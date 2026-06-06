@@ -9,11 +9,69 @@ import {
 } from './utils';
 
 /**
- * HTML templates used for toast queue elements.
- * @type {Object}
- * @property {string} root - The root element template.
- * @property {string} item - The individual toast item template.
- * @property {string} actionButton - The action button template.
+ * @typedef {Object} ToastAction
+ * @property {string} label
+ * @property {function(): void} [onClick]
+ */
+
+/**
+ * @typedef {Object} ToastContent
+ * @property {string} title
+ * @property {string} [description]
+ */
+
+/**
+ * @typedef {Object} ToastOptions
+ * @property {number} [duration]
+ * @property {boolean} [dismissible=true]
+ * @property {string} [icon]
+ * @property {ToastAction} [action]
+ * @property {function(): void} [onClose]
+ */
+
+/** @private
+ * @typedef {Object} ToastRecord
+ * @property {string} id
+ * @property {number} index
+ * @property {number} timestamp
+ * @property {string|ToastContent} content
+ * @property {string} [icon]
+ * @property {ToastAction} [action]
+ * @property {boolean} dismissible
+ * @property {function(): void} [onClose]
+ * @property {Timer} [timer]
+ * @property {HTMLLIElement|null} itemRef
+ */
+
+/**
+ * @typedef {'top-start'|'top-center'|'top-end'|'bottom-start'|'bottom-center'|'bottom-end'} ToastQueuePlacement
+ */
+
+/**
+ * @typedef {'hover'|'click'|null} ToastQueueActivationMode
+ */
+
+/**
+ * @typedef {Object} ToastQueueOptions
+ * @property {HTMLElement} [root]
+ * @property {number} [duration]
+ * @property {ToastQueuePlacement} [placement]
+ * @property {ToastQueueActivationMode} [activationMode]
+ * @property {ToastQueueTemplate} [template]
+ */
+
+/** @typedef {'hover'|'focus'|'click'} ActivationReason */
+
+/**
+ * @typedef {Object} ToastQueueTemplate
+ * @property {string} [root]
+ * @property {string} [item]
+ * @property {string} [actionButton]
+ */
+
+/**
+ * Default HTML templates.
+ * @type {ToastQueueTemplate}
  * @private
  */
 const TEMPLATE = {
@@ -34,18 +92,6 @@ const TEMPLATE = {
 
 /**
  * CSS selectors for toast queue parts.
- * @type {Object}
- * @property {string} root - Selector for the root element.
- * @property {string} group - Selector for the group container.
- * @property {string} item - Selector for toast items.
- * @property {string} toast - Selector for the toast wrapper.
- * @property {string} icon - Selector for the icon element.
- * @property {string} content - Selector for the content wrapper.
- * @property {string} title - Selector for the title element.
- * @property {string} desc - Selector for the description element.
- * @property {string} closeButton - Selector for the close button.
- * @property {string} actions - Selector for the actions container.
- * @property {string} actionButton - Selector for the action button.
  * @private
  */
 const SELECTORS = {
@@ -63,346 +109,404 @@ const SELECTORS = {
 };
 
 /**
- * Inflected label for the toast queue, used for accessibility.
- * @type {Function}
- * @returns {string} "notification" (singular) or "notifications" (plural)
- * @example
- * ROOT_LABEL(1); // → "notification"
- * ROOT_LABEL(2); // → "notifications"
+ * Accessible singular/plural notification label.
  * @private
  */
 const ROOT_LABEL = inflect('notification')('notifications');
 
 /**
- * Create and manage accessible toast messages that can be styled as needed.
- *
  * @class ToastQueue
  */
 export class ToastQueue {
-  /** @private @type {ToastQueueOptions|null} */
-  #options = null;
-
-  /** @private @type {Set} */
-  #queue = new Set();
-
-  /** @private @type {number} */
-  #duration = 6000;
-
-  /**
-   * Enables activation mode for the toast queue.
-   *
-   * @typedef {boolean} ToastQueueActivationMode
+  /** @type {{
+   *   root: HTMLTemplateElement,
+   *   item: HTMLTemplateElement,
+   *   actionButton: HTMLTemplateElement
+   * }}
    */
-
-  /** @private @type {ToastQueueActivationMode|null} */
-  #activationMode = null;
-
-  /**
-   * Possible placement positions for the toast queue.
-   *
-   * @typedef {('top-start'|'top-center'|'top-end'|'bottom-start'|'bottom-center'|'bottom-end'|'center')} ToastQueuePlacement
-   */
-
-  /** @private @type {ToastQueuePlacement} */
-  #placement = 'top-end';
-
-  /** @private @type {Object.<string, HTMLTemplateElement>} */
   #template = {
     root: document.createElement('template'),
     item: document.createElement('template'),
     actionButton: document.createElement('template'),
   };
 
-  /** @private @type {HTMLElement} */
+  /** @type {HTMLElement} */
   #rootPart;
 
-  /** @private @type {HTMLElement} */
+  /** @type {HTMLOListElement} */
   #groupPart;
 
-  /** @private @type {Swipeable} */
+  /** @type {Map<string, ToastRecord>} */
+  #queue = new Map();
+
+  #duration = 6000;
+
+  /** @type {ToastQueuePlacement} */
+  #placement = 'top-end';
+
+  /** @type {ToastQueueActivationMode} */
+  #activationMode = null;
+
+  #paused = false;
+  #supportsHover = window.matchMedia('(hover: hover)').matches;
+
+  /** @type {Set<ActivationReason>} */
+  #activationReasons = new Set();
+
+  /** @type {Swipeable} */
   #swipeable;
 
   /**
-   * Configuration options for the ToastQueue.
-   *
-   * @typedef {Object} ToastQueueOptions
-   * @property {number} [duration=6000] - Auto-dismiss duration in milliseconds.
-   * @property {ToastQueueActivationMode|null} [activationMode=null] - Activation mode. Toggles a `data-active` attribute on the root part using a view transition.
-   * @property {ToastQueuePlacement|null} [placement='top-end'] - Position on screen.
-   * @property {HTMLElement} [root=document.body] - Container element for the toast queue.
-   * @property {boolean} [pauseOnPageIdle=true] - Pause timers when page is hidden.
-   * @property {Object} template - HTML templates for toast queue elements.
-   * @property {string} template.root - Template HTML for the toast container.
-   * @property {string} template.item - Template HTML for individual toast items.
-   * @property {string} template.actionButton - Template HTML for action buttons.
+   * @param {ToastQueueOptions} [options]
    */
-
-  /**
-   * Creates an instance of ToastQueue.
-   *
-   * @param {ToastQueueOptions} options - Configuration options.
-   */
-  constructor(options) {
-    this.#options = options;
-    this.#duration = typeof options?.duration !== 'undefined' ? options.duration : this.#duration;
-    this.#activationMode =
-      typeof options?.activationMode !== 'undefined'
-        ? options.activationMode
-        : this.#activationMode;
-    this.#placement = options?.placement || this.#placement;
-
+  constructor(options = {}) {
     this.#template.root.innerHTML = options?.template?.root || TEMPLATE.root;
     this.#template.item.innerHTML = options?.template?.item || TEMPLATE.item;
     this.#template.actionButton.innerHTML =
       options?.template?.actionButton || TEMPLATE.actionButton;
 
-    const rootPart = this.#template.root.content.cloneNode(true);
-    this.#rootPart = rootPart.querySelector(SELECTORS.root);
+    this.#duration = typeof options?.duration !== 'undefined' ? options.duration : this.#duration;
+    this.#placement = options.placement ?? this.#placement;
+    this.#activationMode = options.activationMode ?? null;
+
+    this.#mount(options.root || document.body);
+
+    this.#swipeable = new Swipeable({
+      onSwipe: ({ target }) => {
+        const id = target?.dataset?.id;
+        if (id) this.close(id);
+      },
+    });
+
+    this.#bindEvents();
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Setup                                                                  */
+  /* ---------------------------------------------------------------------- */
+
+  /**
+   * @param {HTMLElement} root
+   */
+  #mount(root) {
+    const fragment = this.#template.root.content.cloneNode(true);
+    this.#rootPart = fragment.querySelector(SELECTORS.root);
+    this.#groupPart = fragment.querySelector(SELECTORS.group);
+
     this.#rootPart.setAttribute('popover', 'manual');
     this.#rootPart.setAttribute('role', 'region');
     this.#rootPart.setAttribute('aria-label', 'Notifications');
     this.#rootPart.setAttribute('tabindex', '-1');
     this.#rootPart.dataset.placement = this.#placement;
-    this.#groupPart = rootPart.querySelector(SELECTORS.group);
+
     this.#groupPart.setAttribute('reversed', '');
 
-    (options?.root || document.body).appendChild(rootPart);
+    root.appendChild(fragment);
+  }
 
-    document.addEventListener('visibilitychange', this.#onPageIdle);
-    this.#rootPart.addEventListener('pointerdown', this.#handleEvent);
-    this.#rootPart.addEventListener('focusin', this.#handleEvent);
-    this.#rootPart.addEventListener('focusout', this.#handleEvent);
-    this.#rootPart.addEventListener('click', this.#handleEvent);
+  /* ---------------------------------------------------------------------- */
+  /* Derived state                                                         */
+  /* ---------------------------------------------------------------------- */
 
-    this.#swipeable = new Swipeable({
-      onSwipe: ({ target }) => {
-        const toastId = target?.dataset?.id;
-        if (!toastId) return;
-        this.close(toastId);
-      },
+  /** @returns {boolean} */
+  get #active() {
+    return this.#activationReasons.size > 0;
+  }
+
+  /** @returns {boolean} */
+  get #isExpandable() {
+    return this.#queue.size > 1;
+  }
+
+  /**
+   * @returns {ToastQueueActivationMode}
+   */
+  get #effectiveActivationMode() {
+    return this.#activationMode === 'hover' && !this.#supportsHover
+      ? 'click'
+      : this.#activationMode;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Activation                                                             */
+  /* ---------------------------------------------------------------------- */
+
+  /**
+   * @param {ActivationReason} reason
+   */
+  #activate(reason) {
+    const wasActive = this.#active;
+
+    this.#activationReasons.add(reason);
+
+    if (!wasActive && this.#active) {
+      this.#syncActivationState();
+    }
+
+    console.debug('[toast-queue] activate', reason, [...this.#activationReasons]);
+  }
+
+  /**
+   * @param {ActivationReason} reason
+   */
+  #deactivate(reason) {
+    const wasActive = this.#active;
+
+    this.#activationReasons.delete(reason);
+
+    if (wasActive && !this.#active) {
+      this.#syncActivationState();
+    }
+
+    console.debug('[toast-queue] deactivate', reason, [...this.#activationReasons]);
+  }
+
+  #clearActivation() {
+    if (!this.#active) return;
+
+    this.#activationReasons.clear();
+    this.#syncActivationState();
+  }
+
+  #syncActivationState() {
+    if (!this.#activationMode) return;
+
+    wrapInViewTransition(() => {
+      if (this.#active) {
+        this.#rootPart.dataset.active = 'true';
+      } else {
+        delete this.#rootPart.dataset.active;
+      }
     });
   }
 
-  /**
-   * Handles page visibility changes to pause/resume toast timers.
-   *
-   * @private
-   * @this ToastQueue
-   * @returns {void}
-   */
-  #onPageIdle = () => {
-    if (this.#options?.pauseOnPageIdle === false) return;
-    if (document.visibilityState === 'hidden') {
-      this.pause();
-    } else {
+  /* ---------------------------------------------------------------------- */
+  /* Events                                                                */
+  /* ---------------------------------------------------------------------- */
+
+  #bindEvents() {
+    document.addEventListener('visibilitychange', this.#onVisibility);
+    document.addEventListener('pointerdown', this.#onOutsidePointer);
+
+    this.#rootPart.addEventListener('click', this.#onClick);
+    this.#rootPart.addEventListener('pointerenter', this.#onEnter);
+    this.#rootPart.addEventListener('pointerleave', this.#onLeave);
+    this.#rootPart.addEventListener('focusin', this.#onFocusIn);
+    this.#rootPart.addEventListener('focusout', this.#onFocusOut);
+  }
+
+  #onEnter = () => {
+    this.pause();
+    if (this.#effectiveActivationMode !== 'hover') return;
+    if (!this.#isExpandable) return;
+    this.#activate('hover');
+  };
+
+  #onLeave = () => {
+    if (this.#effectiveActivationMode !== 'hover') {
+      // this.resume();
+      return;
+    }
+
+    this.#deactivate('hover');
+
+    if (!this.#active) {
       this.resume();
     }
   };
 
-  /**
-   * Handles delegated events for the toast queue (pointerdown, focusin, focusout, click).
-   * Processes commands like close, action, and clear from toast elements and manages
-   * user interaction states like hover and focus.
-   *
-   * @private
-   * @param {Event} event - The DOM event object (e.g., pointerdown, focusin, focusout, click).
-   * @listens pointerdown
-   * @listens focusin
-   * @listens focusout
-   * @listens click
-   */
-  #handleEvent = async (event) => {
-    if (event.type === 'pointerdown' && this.#activationMode) {
-      // Flag to determine if focus was triggered by a click.
-      this.isClick = true;
-    }
+  /** @param {FocusEvent} event */
+  #onFocusIn = (event) => {
+    this.pause();
 
-    if (event.type === 'click') {
-      const cmd = event.target.dataset?.command;
+    if (event.target.matches('[data-command]')) return;
+    if (!this.#isExpandable) return;
 
-      if (!cmd && this.#activationMode && event.target.closest(SELECTORS.root)) {
-        if (this.#queue.size === 1) return;
-        if (this.#rootPart.dataset?.active === 'true') return;
+    // Ignore focus moving within the queue
+    if (this.#rootPart.contains(event.relatedTarget)) return;
 
-        console.debug('[toast-queue] click:activation');
+    this.#activate('focus');
+  };
 
-        await wrapInViewTransition(() => {
-          this.#rootPart.dataset.active = 'true';
-        }).finished;
+  /** @param {FocusEvent} event */
+  #onFocusOut = (event) => {
+    // Ignore focus leaving the document (e.g. dev tools)
+    if (!document.hasFocus()) return;
 
-        document.addEventListener(
-          'pointerdown',
-          () => {
-            // Flag to determine if focus was triggered by a click.
-            this.isClick = true;
-          },
-          { once: true },
-        );
+    // Ignore focus moving within the queue
+    if (this.#rootPart.contains(event.relatedTarget)) return;
 
-        document.addEventListener(
-          'click',
-          (event) => {
-            if (!event.target.closest('toast-queue') && this.#rootPart.dataset?.active === 'true') {
-              console.debug('[toast-queue] click:deactivation');
-
-              wrapInViewTransition(() => {
-                delete this.#rootPart.dataset?.active;
-              });
-            }
-          },
-          { once: true },
-        );
-
-        return;
-      }
-
-      if (cmd === 'close') {
-        event.stopPropagation();
-        const toastId = event.target.closest(SELECTORS.toast).dataset.id;
-        this.close(toastId);
-        return;
-      }
-      if (cmd === 'action') {
-        event.stopPropagation();
-        const toastId = event.target.closest(SELECTORS.toast).dataset.id;
-        const toast = this.get(toastId);
-        toast?.action?.onClick();
-        this.close(toast.id);
-        return;
-      }
-      if (cmd === 'clear') {
-        this.clear();
-        return;
-      }
-
-      return;
-    }
-
-    if (event.type === 'focusin') {
-      if (this.#queue.size === 1) return;
-      if (event.target.dataset?.command) return;
-      this.pause();
-
-      if (!this.#activationMode) return;
-      if (this.#rootPart.dataset?.active === 'true') return;
-
-      // Focus was triggered by a click (reset flag).
-      if (this.isClick) {
-        this.isClick = false;
-        return;
-      }
-
-      console.debug('[toast-queue] focusin:activation');
-
-      wrapInViewTransition(() => {
-        this.#rootPart.dataset.active = 'true';
-      });
-
-      return;
-    }
-
-    if (event.type === 'focusout') {
-      // Focus will stay inside the toast queue.
-      if (this.#rootPart.contains(event.relatedTarget)) return;
+    queueMicrotask(() => {
       this.resume();
+      this.#deactivate('focus');
+    });
 
-      if (!this.#activationMode) return;
-      if (this.#rootPart.dataset?.active !== 'true') return;
+    console.debug('[toast-queue] onFocusOut', event);
+  };
 
-      // Focusout was triggered by a click (reset flag).
-      if (this.isClick) {
-        console.log('isClick');
-
-        this.isClick = false;
-        return;
-      }
-
-      console.debug('[toast-queue] focusout:deactivation');
-
-      // If the document has lost focus, don't remove the toast queue focus just yet.
-      // Wait until the document regains focus.
-      if (!document.hasFocus()) {
-        window.addEventListener(
-          'focus',
-          () => {
-            if (this.#rootPart.contains(document.activeElement)) {
-              wrapInViewTransition(() => {
-                delete event.currentTarget.dataset?.active;
-              });
-            }
-          },
-          { once: true },
-        );
-        return;
-      }
-
-      wrapInViewTransition(() => {
-        delete this.#rootPart.dataset?.active;
-      });
-
-      return;
+  /** @param {PointerEvent} event */
+  #onOutsidePointer = (event) => {
+    if (!this.#active) return;
+    if (!this.#rootPart.contains(event.target)) {
+      this.#deactivate('click');
     }
   };
 
+  #onVisibility = () => {
+    document.visibilityState === 'hidden' ? this.pause() : this.resume();
+  };
+
+  /** @param {MouseEvent} event */
+  #onClick = (event) => {
+    const cmd = event.target.dataset?.command;
+
+    console.debug('[toast-queue] onClick', cmd);
+
+    if (cmd === 'close') {
+      event.stopPropagation();
+      const id = event.target.closest(SELECTORS.toast).dataset.id;
+      this.close(id);
+      return;
+    }
+
+    if (cmd === 'action') {
+      event.stopPropagation();
+      const id = event.target.closest(SELECTORS.toast)?.dataset.id;
+      const toast = this.#queue.get(id);
+      toast?.action?.onClick?.();
+      this.close(id);
+      return;
+    }
+
+    if (cmd === 'clear') {
+      this.clear();
+      return;
+    }
+
+    if (this.#effectiveActivationMode !== 'click') return;
+    if (!this.#isExpandable) return;
+
+    this.#activate('click');
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /* Core API                                                              */
+  /* ---------------------------------------------------------------------- */
+
   /**
-   * Creates a toast reference object with the given options and default settings.
-   * @private
-   * @param {Object} options - Configuration options for the toast reference.
-   * @returns {Object} The created toast reference.
-   * @property {string} id - Unique identifier for the toast.
-   * @property {number} index - Position in the queue.
-   * @property {number} timestamp - Creation time in milliseconds.
-   * @property {Timer|undefined} timer - Timer for auto-dismissal, if duration is set.
-   * @property {boolean} dismissible - Whether the toast can be dismissed.
-   * @property {string|Object} content - The toast's message content.
-   * @property {string} [content.title] - Optional title of the toast.
-   * @property {string} [content.description] - Optional description or message of the toast.
-   * @property {Function|undefined} onClose - Close callback.
-   * @property {Object|null} action - Action button configuration.
-   * @property {Object|null} itemRef - Reference to the DOM element; initially null.
+   * @param {string|ToastContent} content
+   * @param {ToastOptions} [options]
+   * @returns {ToastRecord}
    */
-  #createToastRef(options) {
+  add(content, options = {}) {
+    const id = randomId();
     const duration = typeof options?.duration !== 'undefined' ? options.duration : this.#duration;
-    const toastId = randomId();
-    return {
-      id: toastId,
+
+    /** @type {ToastRecord} */
+    const toast = {
+      id,
       index: this.#queue.size + 1,
       timestamp: Date.now(),
-      timer: duration ? new Timer(() => this.close(toastId), duration) : undefined,
-      dismissible: options?.dismissible !== false,
-      content: options?.content,
-      onClose: options?.onClose,
-      action: options?.action,
+      content,
+      icon: options.icon,
+      action: options.action,
+      dismissible: options.dismissible ?? true,
+      onClose: options.onClose,
+      timer: duration ? new Timer(() => this.close(id), duration) : undefined,
       itemRef: null,
     };
+
+    const item = this.#createItem(toast);
+
+    toast.itemRef = item;
+    this.#queue.set(id, toast);
+
+    this.#syncRootState(() => {
+      this.#groupPart.prepend(item);
+    });
+
+    console.debug('[toast queue] add', toast.id);
+
+    return toast;
   }
 
   /**
-   * Updates the DOM, optionally skipping view transition.
-   *
-   * @private
-   * @param {Function} updateDOM - Function that performs DOM updates.
-   * @param {boolean} [skipTransition=false] - Whether to skip view transition.
+   * @param {string} id
+   * @returns {ToastRecord|undefined}
    */
-  async #update(updateDOM, skipTransition = false) {
-    this.#rootPart.setAttribute(
-      'aria-label',
-      `${this.#queue.size} ${ROOT_LABEL(this.#queue.size)}`,
+  get(id) {
+    return this.#queue.get(id);
+  }
+
+  /**
+   * @param {string} id
+   */
+  close(id) {
+    const toast = this.#queue.get(id);
+    if (!toast) return;
+
+    this.#queue.delete(id);
+    toast.onClose?.();
+    toast.timer?.pause();
+
+    this.#moveFocusAfterClose(toast);
+
+    this.#syncRootState(
+      () => toast.itemRef.remove(),
+      // Skip transition for invisible elements
+      !toast.itemRef.checkVisibility?.(),
     );
 
-    if (this.#queue.size === 1) this.#rootPart.showPopover();
-    if (typeof updateDOM === 'function') {
-      skipTransition ? updateDOM() : await wrapInViewTransition(updateDOM).finished;
-    }
-    if (this.#queue.size === 0) {
-      this.#rootPart.hidePopover();
-      delete this.#rootPart.dataset.active;
-    }
+    console.debug('[toast-queue] close', id);
   }
 
   /**
-   * Gets the current toast placement.
-   *
+   * Removes all toasts from the queue.
+   */
+  clear() {
+    this.#queue.clear();
+    this.#syncRootState(() => {
+      this.#groupPart.innerHTML = '';
+    });
+    this.#clearActivation();
+    console.debug('[toast-queue] clear');
+  }
+
+  /**
+   * @param {boolean} value
+   */
+  #setPaused(value) {
+    if (!this.#duration) return;
+    if (this.#paused === value) return;
+
+    this.#paused = value;
+
+    for (const toast of this.#queue.values()) {
+      toast.timer?.[value ? 'pause' : 'resume']?.();
+    }
+
+    console.debug(`[toast-queue] ${value ? 'pause' : 'resume'}`);
+  }
+
+  get isPaused() {
+    return this.#paused;
+  }
+
+  /**
+   * Pauses all active toast timers.
+   */
+  pause() {
+    this.#setPaused(true);
+  }
+
+  /**
+   * Resumes all active toast timers.
+   */
+  resume() {
+    this.#setPaused(false);
+  }
+
+  /**
    * @returns {ToastQueuePlacement} The current placement.
    */
   get placement() {
@@ -410,19 +514,17 @@ export class ToastQueue {
   }
 
   /**
-   * Sets the toast placement position.
-   *
    * @param {ToastQueuePlacement} value - The new placement.
    */
   set placement(value) {
     this.#placement = value;
-    for (const toast of this.#queue) {
-      const toastPart = toast.itemRef.querySelector(SELECTORS.toast);
-      toastPart.style.setProperty(
+    for (const toast of this.#queue.values()) {
+      toast.itemRef.style.setProperty(
         'view-transition-class',
-        `tq-toast ${getPlacementViewTransitionClass(this.#placement)}`,
+        `tq-item ${getPlacementViewTransitionClass(this.#placement)}`,
       );
       if (toast.dismissible) {
+        const toastPart = toast.itemRef.querySelector(SELECTORS.toast);
         toastPart.dataset.swipeable = getSwipeableDirection(value);
       }
     }
@@ -432,197 +534,137 @@ export class ToastQueue {
   }
 
   /**
-   * Retrieves a toast by its ID.
-   *
-   * @param {string} toastId - The ID of the toast to retrieve.
-   * @returns {Object|undefined} The toast object if found, otherwise undefined.
+   * Destroys the queue and removes all listeners.
    */
-  get(toastId) {
-    for (const toast of this.#queue) {
-      if (toast.id === toastId) {
-        return toast;
-      }
-    }
-    return;
+  destroy() {
+    document.removeEventListener('pointerdown', this.#onOutsidePointer);
+    document.removeEventListener('visibilitychange', this.#onVisibility);
+
+    this.#rootPart.remove();
+    this.#queue.clear();
+    this.#clearActivation();
+    this.#swipeable.destroy();
+
+    console.debug('[toast-queue] destroy');
   }
 
-  /**
-   * @typedef {string|Object} ToastContent
-   * @property {string|Object} content - The toast's content.
-   * @property {string} [content.title] - Optional title of the toast.
-   * @property {string} [content.description] - Optional description or message of the toast.
-   */
+  /* ---------------------------------------------------------------------- */
+  /* State synchronization                                                  */
+  /* ---------------------------------------------------------------------- */
 
   /**
-   * Configuration options for the Toast.
-   *
-   * @typedef {Object} ToastOptions
-   * @property {Object} [options] - Toast-specific options.
-   * @property {string} [options.className] - Additional CSS class.
-   * @property {number} [options.duration] - Override auto-dismiss duration.
-   * @property {boolean} [options.dismissible=true] - Whether toast can be manually closed.
-   * @property {string} [options.icon] - Icon HTML.
-   * @property {Object|string} [options.action] - Action button configuration.
-   * @property {string} options.action.label - Button label.
-   * @property {Function} options.action.onClick - Click handler.
-   * @property {Function} [options.onClose] - Callback when toast is closed.
+   * @param {function(): void} [update]
+   * @param {boolean} [skip]
+   * @returns {Promise<void>}
    */
+  async #syncRootState(update = () => {}, skip = false) {
+    this.#rootPart.setAttribute(
+      'aria-label',
+      `${this.#queue.size} ${ROOT_LABEL(this.#queue.size)}`,
+    );
+
+    if (this.#queue.size === 1) {
+      this.#rootPart.showPopover();
+    }
+
+    if (skip) {
+      update();
+    } else {
+      await wrapInViewTransition(update).finished;
+    }
+
+    if (this.#queue.size === 0) {
+      this.#rootPart.hidePopover();
+      this.#clearActivation();
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* DOM creation                                                           */
+  /* ---------------------------------------------------------------------- */
 
   /**
-   * Adds a new toast notification to the queue and renders it.
-   *
-   * @param {ToastContent} content - The message content (text or object).
-   * @param {ToastOptions} options - Toast configuration options.
-   * @returns {string} The generated toast ID.
+   * @param {ToastRecord} toast
+   * @returns {HTMLLIElement}
    */
-  add(content, options) {
-    const toastRef = this.#createToastRef({ content, ...options });
-    const titleId = `tq:${toastRef.id}:title`;
-    const descId = `tq:${toastRef.id}:desc`;
-    const template = this.#template.item.content.cloneNode(true);
-    const newItem = template.querySelector(SELECTORS.item);
-    const toastPart = newItem.querySelector(SELECTORS.toast);
-    toastPart.dataset.id = toastRef.id;
-    toastPart.dataset.dismissible = toastRef.dismissible;
+  #createItem(toast) {
+    const titleId = `tq:${toast.id}:title`;
+    const descId = `tq:${toast.id}:desc`;
+    const fragment = this.#template.item.content.cloneNode(true);
+
+    /** @type {HTMLLIElement} */
+    const item = fragment.querySelector(SELECTORS.item);
+
+    item.style.setProperty('view-transition-name', `tq-item-${toast.id}`);
+    item.style.setProperty(
+      'view-transition-class',
+      `tq-item ${getPlacementViewTransitionClass(this.#placement)}`,
+    );
+    const toastPart = item.querySelector(SELECTORS.toast);
+    toastPart.dataset.id = toast.id;
+    toastPart.dataset.dismissible = toast.dismissible;
     toastPart.setAttribute('tabindex', '0');
     toastPart.setAttribute('role', 'alertdialog');
     toastPart.setAttribute('aria-modal', 'false');
     toastPart.setAttribute('aria-labelledby', titleId);
-    toastPart.style.setProperty('view-transition-name', `tq-toast-${toastRef.id}`);
-    toastPart.style.setProperty(
-      'view-transition-class',
-      `tq-toast ${getPlacementViewTransitionClass(this.#placement)}`,
-    );
 
-    if (toastRef.dismissible) toastPart.dataset.swipeable = getSwipeableDirection(this.#placement);
-    if (options?.className) toastPart.classList.add(...options.className.split(' '));
-    if (options?.dismissible === false) toastPart.querySelector(SELECTORS.closeButton).remove();
-    if (content?.description) toastPart.setAttribute('aria-describedby', descId);
+    if (toast.dismissible) toastPart.dataset.swipeable = getSwipeableDirection(this.#placement);
+    if (toast?.dismissible === false) toastPart.querySelector(SELECTORS.closeButton).remove();
+    if (toast.content?.description) toastPart.setAttribute('aria-describedby', descId);
 
     /** Toast icon - Optional */
-    const iconPart = template.querySelector(SELECTORS.icon);
-    if (options?.icon) {
-      iconPart.innerHTML = options.icon;
+    const iconPart = fragment.querySelector(SELECTORS.icon);
+    if (toast?.icon) {
+      iconPart.innerHTML = toast.icon;
     } else {
       iconPart.remove();
     }
 
     /** Toast content */
-    const contentPart = template.querySelector(SELECTORS.content);
+    const contentPart = fragment.querySelector(SELECTORS.content);
     contentPart.setAttribute('role', 'alert');
     contentPart.setAttribute('aria-atomic', 'true');
-    if (typeof content === 'string') {
+    if (typeof toast?.content === 'string') {
       contentPart.id = titleId;
-      contentPart.textContent = content;
+      contentPart.textContent = toast.content;
     } else {
-      const titlePart = template.querySelector(SELECTORS.title);
-      const descPart = template.querySelector(SELECTORS.desc);
+      const titlePart = fragment.querySelector(SELECTORS.title);
+      const descPart = fragment.querySelector(SELECTORS.desc);
       titlePart.id = titleId;
-      titlePart.textContent = content?.title;
+      titlePart.textContent = toast.content?.title;
       descPart.id = descId;
-      descPart.textContent = content?.description;
+      descPart.textContent = toast.content?.description;
     }
 
     /** Toast actions - Optional */
-    const actionsPart = template.querySelector(SELECTORS.actions);
-    if (toastRef?.action?.label) {
+    const actionsPart = fragment.querySelector(SELECTORS.actions);
+    if (toast?.action?.label) {
       const actionButtonTemplate = this.#template.actionButton.content.cloneNode(true);
       const actionButton = actionButtonTemplate.querySelector(SELECTORS.actionButton);
-      actionButton.textContent = toastRef.action.label;
+      actionButton.textContent = toast.action.label;
       actionsPart.appendChild(actionButton);
     } else {
       actionsPart.remove();
     }
 
-    toastRef.itemRef = newItem;
-    this.#queue.add(toastRef);
-    this.#update(() => this.#groupPart.prepend(newItem));
-
-    console.debug('[toast-queue] add', toastRef);
-
-    return toastRef;
+    return item;
   }
+
+  /* ---------------------------------------------------------------------- */
+  /* Focus handling                                                       */
+  /* ---------------------------------------------------------------------- */
 
   /**
-   * Closes a toast by its ID.
-   *
-   * @param {string} id - The ID of the toast to close.
+   * @param {ToastRecord} toast
    */
-  close(id) {
-    for (const toast of this.#queue) {
-      if (toast.id === id) {
-        this.#queue.delete(toast);
+  #moveFocusAfterClose(toast) {
+    if (!this.#rootPart.contains(document.activeElement)) return;
+    if (!this.#active) return;
 
-        // Perform `ToastOptions.onClose` callback.
-        if (typeof toast.onClose === 'function') toast.onClose();
+    const next =
+      toast.itemRef.nextElementSibling?.firstElementChild ||
+      toast.itemRef.previousElementSibling?.firstElementChild;
 
-        // If focus is already within the toast queue, move focus to the next or previous toast.
-        if (this.#queue.size >= 1 && this.#rootPart.contains(document.activeElement)) {
-          if (
-            !this.#activationMode ||
-            (this.#activationMode && this.#rootPart.dataset?.active === 'true')
-          ) {
-            const item = toast.itemRef?.nextElementSibling || toast.itemRef?.previousElementSibling;
-            item?.firstElementChild?.focus();
-          }
-        }
-
-        this.#update(
-          () => {
-            toast.itemRef.remove();
-          }, // Skip transition for invisible elements
-          !toast.itemRef.checkVisibility(),
-        );
-
-        console.debug('[toast-queue] close', id);
-      }
-    }
-  }
-
-  /** Clears all toasts from the queue. */
-  clear() {
-    this.#queue.clear();
-    this.#update(() => {
-      this.#groupPart.innerHTML = '';
-    });
-    console.debug('[toast-queue] clear');
-  }
-
-  /** Pauses all active toast timers. */
-  pause() {
-    if (this.isPaused) return;
-    this.isPaused = true;
-    for (const toast of this.#queue) {
-      if (toast.timer) {
-        toast.timer.pause();
-      }
-    }
-    console.debug('[toast-queue] pause');
-  }
-
-  /** Resumes all paused toast timers. */
-  resume() {
-    if (!this.isPaused) return;
-    this.isPaused = false;
-    for (const toast of this.#queue) {
-      if (toast.timer) {
-        toast.timer.resume();
-      }
-    }
-    console.debug('[toast-queue] resume');
-  }
-
-  /**
-   * Removes event listeners and cleans up resources.
-   * @returns {void}
-   */
-  destroy() {
-    document.removeEventListener('visibilitychange', this.#onPageIdle);
-    this.#rootPart.removeEventListener('pointerdown', this.#handleEvent);
-    this.#rootPart.removeEventListener('focusin', this.#handleEvent);
-    this.#rootPart.removeEventListener('focusout', this.#handleEvent);
-    this.#rootPart.removeEventListener('click', this.#handleEvent);
-    this.#rootPart.remove();
-    this.#swipeable.destroy();
+    next?.focus();
   }
 }

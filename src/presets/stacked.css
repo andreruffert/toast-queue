@@ -25,16 +25,19 @@
   toast-queue[data-placement^="top"]:not([data-active="true"]) [data-part="item"]:nth-child(2) {
     margin-block-start: 10px;
   }
-  toast-queue[data-placement^="top"]:not([data-active="true"]) [data-part="item"]:nth-child(3) {
-    margin-block-start: 19px;
-  }
   toast-queue[data-placement^="bottom"]:not([data-active="true"]) [data-part="item"]:nth-child(2),
   toast-queue[data-placement="center"]:not([data-active="true"]) [data-part="item"]:nth-child(2) {
     margin-block-start: -10px;
   }
+  toast-queue[data-placement^="top"]:not([data-active="true"]) [data-part="item"]:nth-child(3) {
+    margin-block-start: 19px;
+  }
   toast-queue[data-placement^="bottom"]:not([data-active="true"]) [data-part="item"]:nth-child(3),
   toast-queue[data-placement="center"]:not([data-active="true"]) [data-part="item"]:nth-child(3) {
     margin-block-start: -19px;
+  }
+  toast-queue[data-placement^="top"]:not([data-active="true"]) [data-part="item"]:nth-child(4) {
+    margin-block-start: 26px;
   }
   toast-queue[data-placement^="bottom"]:not([data-active="true"]) [data-part="item"]:nth-child(4),
   toast-queue[data-placement="center"]:not([data-active="true"]) [data-part="item"]:nth-child(4) {
@@ -60,30 +63,30 @@
     opacity: 0;
   }
 
-  ::view-transition-group(.tq-toast) {
+  ::view-transition-group(.tq-item) {
     animation-duration: 0.3s;
   }
-  ::view-transition-group(.tq-toast.block-end) {
+  ::view-transition-group(.tq-item.block-end) {
     --slideX: 0;
     --slideY: calc(100%);
   }
-  ::view-transition-group(.tq-toast.block-start) {
+  ::view-transition-group(.tq-item.block-start) {
     --slideX: 0;
     --slideY: calc(-100%);
   }
-  ::view-transition-group(.tq-toast.inline-start) {
+  ::view-transition-group(.tq-item.inline-start) {
     --slideX: calc(-100%);
     --slideY: 0;
   }
-  ::view-transition-group(.tq-toast.inline-end) {
+  ::view-transition-group(.tq-item.inline-end) {
     --slideX: calc(100%);
     --slideY: 0;
   }
 
-  ::view-transition-new(.tq-toast):only-child {
+  ::view-transition-new(.tq-item):only-child {
     animation-name: enter;
   }
-  ::view-transition-old(.tq-toast):only-child {
+  ::view-transition-old(.tq-item):only-child {
     animation-name: exit;
   }
 

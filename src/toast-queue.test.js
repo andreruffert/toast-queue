@@ -170,3 +170,28 @@ test('toast placement', async () => {
   // Destroy instance
   toastQueue.destroy();
 });
+
+test('closing a focused toast keeps queue paused when focus moves to another toast', async () => {
+  const toastQueue = new ToastQueue({
+    activationMode: true,
+    duration: 10000,
+  });
+
+  const firstRef = toastQueue.add('First');
+  const secondRef = toastQueue.add('Second');
+  const firstToastElement = page.getByRole('alertdialog', { name: firstRef.content });
+  const secondToastElement = page.getByRole('alertdialog', { name: secondRef.content });
+
+  // focus first toast
+  await firstToastElement.click();
+
+  expect(toastQueue.isPaused).toBe(true);
+
+  toastQueue.close(firstRef.id);
+
+  await expect.element(secondToastElement).toHaveFocus();
+
+  expect(toastQueue.isPaused).toBe(true);
+
+  toastQueue.destroy();
+});
