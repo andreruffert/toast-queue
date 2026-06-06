@@ -1,4 +1,4 @@
-import { Swipeable } from './swipeable';
+import { Swipeable } from './swipeable.js';
 import {
   getPlacementViewTransitionClass,
   getSwipeableDirection,
@@ -6,7 +6,7 @@ import {
   randomId,
   Timer,
   wrapInViewTransition,
-} from './utils';
+} from './utils.js';
 
 /** @import {
  *   ToastQueueOptions,
