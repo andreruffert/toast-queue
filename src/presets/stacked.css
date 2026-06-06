@@ -25,22 +25,19 @@
   toast-queue[data-placement^="top"]:not([data-active="true"]) [data-part="item"]:nth-child(2) {
     margin-block-start: 10px;
   }
-  toast-queue[data-placement^="bottom"]:not([data-active="true"]) [data-part="item"]:nth-child(2),
-  toast-queue[data-placement="center"]:not([data-active="true"]) [data-part="item"]:nth-child(2) {
+  toast-queue[data-placement^="bottom"]:not([data-active="true"]) [data-part="item"]:nth-child(2) {
     margin-block-start: -10px;
   }
   toast-queue[data-placement^="top"]:not([data-active="true"]) [data-part="item"]:nth-child(3) {
     margin-block-start: 19px;
   }
-  toast-queue[data-placement^="bottom"]:not([data-active="true"]) [data-part="item"]:nth-child(3),
-  toast-queue[data-placement="center"]:not([data-active="true"]) [data-part="item"]:nth-child(3) {
+  toast-queue[data-placement^="bottom"]:not([data-active="true"]) [data-part="item"]:nth-child(3) {
     margin-block-start: -19px;
   }
   toast-queue[data-placement^="top"]:not([data-active="true"]) [data-part="item"]:nth-child(4) {
     margin-block-start: 26px;
   }
-  toast-queue[data-placement^="bottom"]:not([data-active="true"]) [data-part="item"]:nth-child(4),
-  toast-queue[data-placement="center"]:not([data-active="true"]) [data-part="item"]:nth-child(4) {
+  toast-queue[data-placement^="bottom"]:not([data-active="true"]) [data-part="item"]:nth-child(4) {
     margin-block-start: -26px;
   }
 
