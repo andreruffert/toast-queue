@@ -1,45 +1,51 @@
-/** @type {string[]} */
+/**
+ * @type {string[]}
+ * @private
+ */
 const inlineDirections = ['inline', 'horizontal', 'left', 'right'];
 
-/** @type {string[]} */
+/**
+ * @type {string[]}
+ * @private
+ */
 const blockDirections = ['block', 'vertical', 'up', 'down'];
 
 /**
  * A class that adds swipe gesture detection to elements with the `data-swipeable` attribute.
- * @class Swipeable
+ * @private
  */
 export class Swipeable {
-  /** @private @type {HTMLElement|null} The currently being dragged element. */
+  /** @type {HTMLElement|null} The currently being dragged element. */
   #target = null;
 
-  /** @private @type {boolean|null} Tracks if a drag gesture is currently active. */
+  /** @type {boolean|null} Tracks if a drag gesture is currently active. */
   #isDragging = null;
 
-  /** @private @type {number|null} Stores the requestAnimationFrame ID for the current drag frame. */
+  /** @type {number|null} Stores the requestAnimationFrame ID for the current drag frame. */
   #dragFrame = null;
 
-  /** @private @type {number|null} The clientX coordinate where the drag started. */
+  /** @type {number|null} The clientX coordinate where the drag started. */
   #startX = null;
 
-  /** @private @type {number|null} The clientY coordinate where the drag started. */
+  /** @type {number|null} The clientY coordinate where the drag started. */
   #startY = null;
 
-  /** @private @type {string} The allowed swipe direction ('inline', 'left', 'right', 'up', 'down'). */
+  /** @type {string} The allowed swipe direction ('inline', 'left', 'right', 'up', 'down'). */
   #direction = 'inline';
 
-  /** @private @type {number|null} The timestamp when the drag started or was last updated. */
+  /** @type {number|null} The timestamp when the drag started or was last updated. */
   #timestamp = null;
 
-  /** @private @type {number|null} The normalized distance (0-1) the element has been swiped. */
+  /** @type {number|null} The normalized distance (0-1) the element has been swiped. */
   #distance = null;
 
-  /** @private @type {number|null} The current velocity of the swipe (px/ms). */
+  /** @type {number|null} The current velocity of the swipe (px/ms). */
   #velocity = null;
 
-  /** @private @type {number|null} The current acceleration of the swipe ((px/ms)/ms). */
+  /** @type {number|null} The current acceleration of the swipe ((px/ms)/ms). */
   #acceleration = null;
 
-  /** @private @type {function({ target: HTMLElement }): void} Callback function triggered on a successful swipe. */
+  /** @type {function({ target: HTMLElement }): void} Callback function triggered on a successful swipe. */
   #onSwipe = () => {};
 
   /**
@@ -57,7 +63,6 @@ export class Swipeable {
 
   /**
    * Handles the pointerdown event to initiate a drag.
-   * @private
    * @param {PointerEvent} event - The pointerdown event.
    * @returns {void}
    */
@@ -76,7 +81,6 @@ export class Swipeable {
 
   /**
    * Handles the pointermove event to update the drag position.
-   * @private
    * @param {PointerEvent} event - The pointermove event.
    * @returns {void}
    */
@@ -122,7 +126,6 @@ export class Swipeable {
 
   /**
    * Handles the pointerup or pointercancel event to end the drag.
-   * @private
    * @returns {Promise<void>}
    */
   endDrag = async () => {

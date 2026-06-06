@@ -8,71 +8,20 @@ import {
   wrapInViewTransition,
 } from './utils';
 
-/**
- * @typedef {Object} ToastAction
- * @property {string} label
- * @property {function(): void} [onClick]
- */
-
-/**
- * @typedef {Object} ToastContent
- * @property {string} title
- * @property {string} [description]
- */
-
-/**
- * @typedef {Object} ToastOptions
- * @property {number} [duration]
- * @property {boolean} [dismissible=true]
- * @property {string} [icon]
- * @property {ToastAction} [action]
- * @property {function(): void} [onClose]
- */
-
-/** @private
- * @typedef {Object} ToastRecord
- * @property {string} id
- * @property {number} index
- * @property {number} timestamp
- * @property {string|ToastContent} content
- * @property {string} [icon]
- * @property {ToastAction} [action]
- * @property {boolean} dismissible
- * @property {function(): void} [onClose]
- * @property {Timer} [timer]
- * @property {HTMLLIElement|null} itemRef
- */
-
-/**
- * @typedef {'top-start'|'top-center'|'top-end'|'bottom-start'|'bottom-center'|'bottom-end'} ToastQueuePlacement
- */
-
-/**
- * @typedef {'hover'|'click'|null} ToastQueueActivationMode
- */
-
-/**
- * @typedef {Object} ToastQueueOptions
- * @property {HTMLElement} [root]
- * @property {number} [duration]
- * @property {ToastQueuePlacement} [placement]
- * @property {ToastQueueActivationMode} [activationMode]
- * @property {ToastQueueTemplate} [template]
- */
-
-/** @typedef {'hover'|'focus'|'click'} ActivationReason */
-
-/**
- * @typedef {Object} ToastQueueTemplate
- * @property {string} [root]
- * @property {string} [item]
- * @property {string} [actionButton]
+/** @import {
+ *   ToastQueueOptions,
+ *   ToastQueuePlacement,
+ *   ToastQueueTemplate,
+ *   ToastOptions,
+ *   ToastRecord,
+ *   ActivationReason
+ * } from './types.js'
  */
 
 /**
  * Default HTML templates.
- * @type {ToastQueueTemplate}
  * @private
+ * @type {ToastQueueTemplate}
  */
 const TEMPLATE = {
   root: `<toast-queue><ol data-part="group"></ol></toast-queue>`,
@@ -115,6 +64,9 @@ const SELECTORS = {
 const ROOT_LABEL = inflect('notification')('notifications');
 
 /**
+ * Manages a queue of toast notifications including rendering,
+ * focus management, swipe dismissal, and auto-dismiss timers.
+ *
  * @class ToastQueue
  */
 export class ToastQueue {
@@ -139,16 +91,14 @@ export class ToastQueue {
   /** @type {Map<string, ToastRecord>} */
   #queue = new Map();
 
+  /** @type {number} */
   #duration = 6000;
 
   /** @type {ToastQueuePlacement} */
   #placement = 'top-end';
 
-  /** @type {ToastQueueActivationMode} */
-  #activationMode = null;
-
+  /** @type {boolean} */
   #paused = false;
-  #supportsHover = window.matchMedia('(hover: hover)').matches;
 
   /** @type {Set<ActivationReason>} */
   #activationReasons = new Set();
@@ -157,7 +107,7 @@ export class ToastQueue {
   #swipeable;
 
   /**
-   * @param {ToastQueueOptions} [options]
+   * @param {ToastQueueOptions} [options] - Configuration options.
    */
   constructor(options = {}) {
     this.#template.root.innerHTML = options?.template?.root || TEMPLATE.root;
@@ -167,7 +117,6 @@ export class ToastQueue {
 
     this.#duration = typeof options?.duration !== 'undefined' ? options.duration : this.#duration;
     this.#placement = options.placement ?? this.#placement;
-    this.#activationMode = options.activationMode ?? null;
 
     this.#mount(options.root || document.body);
 
@@ -218,15 +167,6 @@ export class ToastQueue {
     return this.#queue.size > 1;
   }
 
-  /**
-   * @returns {ToastQueueActivationMode}
-   */
-  get #effectiveActivationMode() {
-    return this.#activationMode === 'hover' && !this.#supportsHover
-      ? 'click'
-      : this.#activationMode;
-  }
-
   /* ---------------------------------------------------------------------- */
   /* Activation                                                             */
   /* ---------------------------------------------------------------------- */
@@ -236,7 +176,6 @@ export class ToastQueue {
    */
   #activate(reason) {
     const wasActive = this.#active;
-
     this.#activationReasons.add(reason);
 
     if (!wasActive && this.#active) {
@@ -251,7 +190,6 @@ export class ToastQueue {
    */
   #deactivate(reason) {
     const wasActive = this.#active;
-
     this.#activationReasons.delete(reason);
 
     if (wasActive && !this.#active) {
@@ -269,8 +207,6 @@ export class ToastQueue {
   }
 
   #syncActivationState() {
-    if (!this.#activationMode) return;
-
     wrapInViewTransition(() => {
       if (this.#active) {
         this.#rootPart.dataset.active = 'true';
@@ -296,23 +232,13 @@ export class ToastQueue {
   }
 
   #onEnter = () => {
+    if (this.#active) return;
     this.pause();
-    if (this.#effectiveActivationMode !== 'hover') return;
-    if (!this.#isExpandable) return;
-    this.#activate('hover');
   };
 
   #onLeave = () => {
-    if (this.#effectiveActivationMode !== 'hover') {
-      // this.resume();
-      return;
-    }
-
-    this.#deactivate('hover');
-
-    if (!this.#active) {
-      this.resume();
-    }
+    if (this.#active) return;
+    this.resume();
   };
 
   /** @param {FocusEvent} event */
@@ -373,8 +299,7 @@ export class ToastQueue {
       event.stopPropagation();
       const id = event.target.closest(SELECTORS.toast)?.dataset.id;
       const toast = this.#queue.get(id);
-      toast?.action?.onClick?.();
-      this.close(id);
+      toast?.action?.onClick?.(toast);
       return;
     }
 
@@ -383,7 +308,6 @@ export class ToastQueue {
       return;
     }
 
-    if (this.#effectiveActivationMode !== 'click') return;
     if (!this.#isExpandable) return;
 
     this.#activate('click');
@@ -394,9 +318,14 @@ export class ToastQueue {
   /* ---------------------------------------------------------------------- */
 
   /**
+   * Adds a toast notification to the queue.
+   *
    * @param {string|ToastContent} content
+   *   Toast message content.
    * @param {ToastOptions} [options]
+   *   Per-toast configuration.
    * @returns {ToastRecord}
+   *   The created toast record.
    */
   add(content, options = {}) {
     const id = randomId();
@@ -408,6 +337,7 @@ export class ToastQueue {
       index: this.#queue.size + 1,
       timestamp: Date.now(),
       content,
+      className: options.className,
       icon: options.icon,
       action: options.action,
       dismissible: options.dismissible ?? true,
@@ -431,6 +361,8 @@ export class ToastQueue {
   }
 
   /**
+   * Retrieves a toast by id.
+   *
    * @param {string} id
    * @returns {ToastRecord|undefined}
    */
@@ -439,7 +371,9 @@ export class ToastQueue {
   }
 
   /**
-   * @param {string} id
+   * Removes the specified toast from the queue.
+   *
+   * @param {string} id - Toast identifier.
    */
   close(id) {
     const toast = this.#queue.get(id);
@@ -447,8 +381,7 @@ export class ToastQueue {
 
     this.#queue.delete(id);
     toast.onClose?.();
-    toast.timer?.pause();
-
+    toast.timer?.clear();
     this.#moveFocusAfterClose(toast);
 
     this.#syncRootState(
@@ -488,26 +421,29 @@ export class ToastQueue {
     console.debug(`[toast-queue] ${value ? 'pause' : 'resume'}`);
   }
 
+  /**
+   * @returns {boolean} - Whether toast timers are currently paused.
+   */
   get isPaused() {
     return this.#paused;
   }
 
   /**
-   * Pauses all active toast timers.
+   * Temporarily pauses all toast timers.
    */
   pause() {
     this.#setPaused(true);
   }
 
   /**
-   * Resumes all active toast timers.
+   * Resumes all paused toast timers.
    */
   resume() {
     this.#setPaused(false);
   }
 
   /**
-   * @returns {ToastQueuePlacement} The current placement.
+   * @returns {ToastQueuePlacement} - The current placement.
    */
   get placement() {
     return this.#placement;
@@ -540,7 +476,13 @@ export class ToastQueue {
     document.removeEventListener('pointerdown', this.#onOutsidePointer);
     document.removeEventListener('visibilitychange', this.#onVisibility);
 
+    this.#rootPart.removeEventListener('click', this.#onClick);
+    this.#rootPart.removeEventListener('pointerenter', this.#onEnter);
+    this.#rootPart.removeEventListener('pointerleave', this.#onLeave);
+    this.#rootPart.removeEventListener('focusin', this.#onFocusIn);
+    this.#rootPart.removeEventListener('focusout', this.#onFocusOut);
     this.#rootPart.remove();
+
     this.#queue.clear();
     this.#clearActivation();
     this.#swipeable.destroy();
@@ -609,13 +551,14 @@ export class ToastQueue {
     toastPart.setAttribute('aria-labelledby', titleId);
 
     if (toast.dismissible) toastPart.dataset.swipeable = getSwipeableDirection(this.#placement);
-    if (toast?.dismissible === false) toastPart.querySelector(SELECTORS.closeButton).remove();
+    if (toast.dismissible === false) toastPart.querySelector(SELECTORS.closeButton).remove();
+    if (toast.className) toastPart.classList.add(...toast.className.split(' '));
     if (toast.content?.description) toastPart.setAttribute('aria-describedby', descId);
 
     /** Toast icon - Optional */
     const iconPart = fragment.querySelector(SELECTORS.icon);
-    if (toast?.icon) {
-      iconPart.innerHTML = toast.icon;
+    if (toast.icon) {
+      iconPart.setHTML(toast.icon);
     } else {
       iconPart.remove();
     }
@@ -624,7 +567,7 @@ export class ToastQueue {
     const contentPart = fragment.querySelector(SELECTORS.content);
     contentPart.setAttribute('role', 'alert');
     contentPart.setAttribute('aria-atomic', 'true');
-    if (typeof toast?.content === 'string') {
+    if (typeof toast.content === 'string') {
       contentPart.id = titleId;
       contentPart.textContent = toast.content;
     } else {
@@ -638,7 +581,7 @@ export class ToastQueue {
 
     /** Toast actions - Optional */
     const actionsPart = fragment.querySelector(SELECTORS.actions);
-    if (toast?.action?.label) {
+    if (toast.action?.label) {
       const actionButtonTemplate = this.#template.actionButton.content.cloneNode(true);
       const actionButton = actionButtonTemplate.querySelector(SELECTORS.actionButton);
       actionButton.textContent = toast.action.label;

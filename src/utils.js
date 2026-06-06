@@ -30,8 +30,10 @@ const swipeableDirectionPlacementTypes = {
 
 /**
  * Gets the View Transition class for a given placement.
+ *
  * @param {string} placement - The placement (e.g., 'top-center', 'bottom-end').
  * @returns {string|undefined} The corresponding class string, or undefined if not found.
+ * @private
  */
 export function getPlacementViewTransitionClass(placement) {
   return viewTransitionPlacementTypes[placement];
@@ -39,8 +41,10 @@ export function getPlacementViewTransitionClass(placement) {
 
 /**
  * Gets the swipeable direction for a given placement.
+ *
  * @param {string} placement - The placement (e.g., 'top-center', 'bottom-end').
  * @returns {string|undefined} The corresponding direction ('up', 'down', 'left', 'right', 'inline'), or undefined if not found.
+ * @private
  */
 export function getSwipeableDirection(placement) {
   return swipeableDirectionPlacementTypes[placement];
@@ -53,6 +57,7 @@ export function getSwipeableDirection(placement) {
  * @param {Function} updateDOM - Function that performs DOM updates (required).
  * @returns {Object} A transition-like object with `ready` and `finished` promises.
  *                   Returns immediate-resolving promises when transitions are skipped.
+ * @private
  */
 export function wrapInViewTransition(updateDOM) {
   const immediate = {
@@ -79,6 +84,7 @@ export function wrapInViewTransition(updateDOM) {
 
 /**
  * A timer that can be paused, resumed, and cleared.
+ * @private
  */
 export class Timer {
   #timerId;
@@ -135,6 +141,7 @@ export class Timer {
 /**
  * Generates a random string ID.
  * @returns {string} A random alphanumeric string.
+ * @private
  */
 export function randomId() {
   return Math.random().toString(36).slice(2);
@@ -145,6 +152,7 @@ export function randomId() {
  * @param {string} singular - The singular form of the word.
  * @returns {Function} A function that takes the plural form and returns a function to determine the correct form.
  * @returns {Function} A function that takes a quantity and returns the singular or plural form.
+ * @private
  * @example
  * const itemInflection = inflect('item')('items');
  * itemInflection(1); // => 'item'

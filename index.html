@@ -30,6 +30,9 @@
         width: 300px;
         padding: 1rem;
         overflow: visible;
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
       }
 
       toast-queue [data-part="group"] {
@@ -76,6 +79,16 @@
       toast-queue .my-toast {
         background-color: hotpink;
       }
+
+      toast-queue [data-part="menu"] {
+        display: flex;
+        justify-content: flex-end;
+        margin: unset;
+      }
+
+      toast-queue:not([data-active]) [data-part="menu"] {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -100,18 +113,16 @@
       const toastPlacement = localStorage.getItem('tq-placement') || 'top-center';
 
       window.toastQueue = new ToastQueue({
-        // pauseOnPageIdle: false,
         // duration: false,
-        activationMode: true,
         placement: toastPlacement,
-        // template: {
-        //   root: `<toast-queue>
-        //     <div data-part="menu">
-        //       <button type="button" data-command="clear">Clear all</button>
-        //     </div>
-        //     <ol data-part="group"></ol>
-        //   </toast-queue>`,
-        // },
+        template: {
+          root: `<toast-queue>
+            <menu data-part="menu">
+              <button type="button" data-command="clear">Clear all</button>
+            </menu>
+            <ol data-part="group"></ol>
+          </toast-queue>`,
+        },
       });
 
       window.setToastPlacement = (value) => {
@@ -136,14 +147,17 @@
               description: Date.now()
             },
             {
-            // icon: 'ℹ️',
-            // className: 'my-toast',
+            icon: 'ℹ️',
+            className: 'my-toast',
             // dismissible: false,
-            // duration: null,
-            // action: {
-            //   label: 'Action',
-            //   onClick: () => console.log(Date.now())
-            // },
+            duration: null,
+            action: {
+              label: 'Action',
+              onClick: (toast) => {
+                console.log(toast)
+                toastQueue.close(toast.id)
+              }
+            },
           });
           return;
         }
