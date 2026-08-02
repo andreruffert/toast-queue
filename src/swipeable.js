@@ -21,6 +21,9 @@ export class Swipeable {
   /** @type {boolean|null} Tracks if a drag gesture is currently active. */
   #isDragging = null;
 
+  /** @type {number|null} The pointerId of the pointer currently driving the drag. */
+  #pointerId = null;
+
   /** @type {number|null} Stores the requestAnimationFrame ID for the current drag frame. */
   #dragFrame = null;
 
@@ -39,14 +42,17 @@ export class Swipeable {
   /** @type {number|null} The normalized distance (0-1) the element has been swiped. */
   #distance = null;
 
-  /** @type {number|null} The current velocity of the swipe (px/ms). */
-  #velocity = null;
+  /** @type {number} The current velocity of the swipe (px/ms). */
+  #velocity = 0;
 
   /** @type {number|null} The current acceleration of the swipe ((px/ms)/ms). */
   #acceleration = null;
 
   /** @type {function({ target: HTMLElement }): void} Callback function triggered on a successful swipe. */
   #onSwipe = () => {};
+
+  /** @type {AbortController} Controls all document-level event listeners added by this instance. */
+  #controller = new AbortController();
 
   /**
    * Creates a new Swipeable instance.
@@ -55,10 +61,13 @@ export class Swipeable {
    */
   constructor(options) {
     this.#onSwipe = options?.onSwipe || this.#onSwipe;
-    document.addEventListener('pointerdown', this.startDrag);
-    document.addEventListener('pointermove', this.drag);
-    document.addEventListener('pointerup', this.endDrag);
-    document.addEventListener('pointercancel', this.endDrag);
+
+    const { signal } = this.#controller;
+
+    document.addEventListener('pointerdown', this.startDrag, { signal });
+    document.addEventListener('pointermove', this.drag, { signal });
+    document.addEventListener('pointerup', this.endDrag, { signal });
+    document.addEventListener('pointercancel', this.endDrag, { signal });
   }
 
   /**
@@ -67,12 +76,16 @@ export class Swipeable {
    * @returns {void}
    */
   startDrag = (event) => {
+    // Ignore additional pointers (e.g. a second finger) while a drag is already active.
+    if (this.#isDragging) return;
+
     const target = event.target.closest('[data-swipeable]');
     if (!target) return;
 
     this.#target = target;
     this.#target.style.setProperty('will-change', 'translate');
     this.#isDragging = true;
+    this.#pointerId = event.pointerId;
     this.#startX = event.clientX;
     this.#startY = event.clientY;
     this.#direction = this.#target.dataset.swipeable || this.#direction;
@@ -86,6 +99,7 @@ export class Swipeable {
    */
   drag = (event) => {
     if (!this.#isDragging) return;
+    if (event.pointerId !== this.#pointerId) return;
     if (this.#direction === 'left' && event.clientX - 10 > this.#startX) return;
     if (this.#direction === 'right' && event.clientX + 10 < this.#startX) return;
     if (this.#direction === 'up' && event.clientY - 10 > this.#startY) return;
@@ -126,10 +140,12 @@ export class Swipeable {
 
   /**
    * Handles the pointerup or pointercancel event to end the drag.
+   * @param {PointerEvent} [event] - The pointerup or pointercancel event.
    * @returns {Promise<void>}
    */
-  endDrag = async () => {
+  endDrag = async (event) => {
     if (!this.#isDragging) return;
+    if (event && event.pointerId !== this.#pointerId) return;
 
     if (this.#distance > 0.5 || (this.#distance > 0.1 && this.#acceleration > 0.1)) {
       this.#dragFrame = requestAnimationFrame(() => {
@@ -138,21 +154,23 @@ export class Swipeable {
     }
     // Restore initial position
     else {
-      const onTransitionEnd = (event) => {
-        event.currentTarget.style.removeProperty('transition');
+      const onTransitionEnd = (transitionEvent) => {
+        transitionEvent.currentTarget.style.removeProperty('transition');
       };
+      const target = this.#target;
       this.#dragFrame = requestAnimationFrame(() => {
-        this.#target.addEventListener('transitionend', onTransitionEnd, { once: true });
-        this.#target.style.setProperty('transition', 'translate 0.3s');
-        this.#target.style.removeProperty('translate');
-        this.#target.style.removeProperty('--tq-swipe-distance');
-        this.#target.style.removeProperty('will-change');
-        delete this.#target.dataset.dragging;
+        target.addEventListener('transitionend', onTransitionEnd, { once: true });
+        target.style.setProperty('transition', 'translate 0.3s');
+        target.style.removeProperty('translate');
+        target.style.removeProperty('--tq-swipe-distance');
+        target.style.removeProperty('will-change');
+        delete target.dataset.dragging;
       });
     }
 
     // Reset state
     this.#isDragging = false;
+    this.#pointerId = null;
     this.#startX = 0;
     this.#startY = 0;
     this.#timestamp = null;
@@ -166,9 +184,8 @@ export class Swipeable {
    * @returns {void}
    */
   destroy() {
-    document.removeEventListener('pointerdown', this.startDrag);
-    document.removeEventListener('pointermove', this.drag);
-    document.removeEventListener('pointerup', this.endDrag);
-    document.removeEventListener('pointercancel', this.endDrag);
+    this.#controller.abort();
+
+    if (this.#dragFrame) cancelAnimationFrame(this.#dragFrame);
   }
 }

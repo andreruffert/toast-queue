@@ -60,7 +60,22 @@ const SELECTORS = {
  * Manages a queue of toast notifications including rendering,
  * focus management, swipe dismissal, and auto-dismiss timers.
  *
+ * Toasts are announced to screen readers via
+ * [`ariaNotify()`](https://developer.mozilla.org/en-US/docs/Web/API/Element/ariaNotify)
+ * where the browser supports it. On browsers that don't yet, announcements
+ * are silently skipped unless a polyfill is loaded beforehand — see
+ * [Browser support](README.md#browser-support)
+ * in the README.
+ *
  * @class ToastQueue
+ *
+ * @example
+ * // Optional: polyfill ariaNotify() on browsers that don't support it yet.
+ * if (typeof HTMLElement.prototype.ariaNotify !== 'function') {
+ *   await import('@github/arianotify-polyfill');
+ * }
+ *
+ * const toastQueue = new ToastQueue();
  */
 export class ToastQueue {
   /** @type {{
@@ -98,6 +113,9 @@ export class ToastQueue {
 
   /** @type {Swipeable} */
   #swipeable;
+
+  /** @type {AbortController} Controls all document/root event listeners added by this instance. */
+  #controller = new AbortController();
 
   /**
    * @param {ToastQueueOptions} [options] - Configuration options.
@@ -212,14 +230,17 @@ export class ToastQueue {
   /* ---------------------------------------------------------------------- */
 
   #bindEvents() {
-    document.addEventListener('visibilitychange', this.#onVisibility);
-    document.addEventListener('pointerdown', this.#onOutsidePointer);
+    const { signal } = this.#controller;
 
-    this.#rootPart.addEventListener('click', this.#onClick);
-    this.#rootPart.addEventListener('pointerenter', this.#onEnter);
-    this.#rootPart.addEventListener('pointerleave', this.#onLeave);
-    this.#rootPart.addEventListener('focusin', this.#onFocusIn);
-    this.#rootPart.addEventListener('focusout', this.#onFocusOut);
+    document.addEventListener('visibilitychange', this.#onVisibility, { signal });
+    document.addEventListener('pointerdown', this.#onOutsidePointer, { signal });
+
+    this.#rootPart.addEventListener('click', this.#onClick, { signal });
+    this.#rootPart.addEventListener('pointerenter', this.#onEnter, { signal });
+    this.#rootPart.addEventListener('pointerleave', this.#onLeave, { signal });
+    this.#rootPart.addEventListener('focusin', this.#onFocusIn, { signal });
+    this.#rootPart.addEventListener('focusout', this.#onFocusOut, { signal });
+    this.#rootPart.addEventListener('keydown', this.#onKeydown, { signal });
   }
 
   #onEnter = () => {
@@ -271,6 +292,21 @@ export class ToastQueue {
 
   #onVisibility = () => {
     document.visibilityState === 'hidden' ? this.pause() : this.resume();
+  };
+
+  /** @param {KeyboardEvent} event */
+  #onKeydown = (event) => {
+    if (event.key !== 'Escape') return;
+
+    const toastPart = event.target.closest(SELECTORS.toast);
+    if (!toastPart) return;
+
+    const id = toastPart.dataset.id;
+    const toast = this.#queue.get(id);
+    if (!toast || toast.dismissible === false) return;
+
+    event.stopPropagation();
+    this.close(id);
   };
 
   /** @param {MouseEvent} event */
@@ -467,14 +503,8 @@ export class ToastQueue {
    * Destroys the queue and removes all listeners.
    */
   destroy() {
-    document.removeEventListener('pointerdown', this.#onOutsidePointer);
-    document.removeEventListener('visibilitychange', this.#onVisibility);
+    this.#controller.abort();
 
-    this.#rootPart.removeEventListener('click', this.#onClick);
-    this.#rootPart.removeEventListener('pointerenter', this.#onEnter);
-    this.#rootPart.removeEventListener('pointerleave', this.#onLeave);
-    this.#rootPart.removeEventListener('focusin', this.#onFocusIn);
-    this.#rootPart.removeEventListener('focusout', this.#onFocusOut);
     this.#rootPart.remove();
 
     this.#queue.clear();
@@ -494,7 +524,7 @@ export class ToastQueue {
    * @returns {Promise<void>}
    */
   async #syncRootState(update = () => {}, skip = false) {
-    if (this.#queue.size === 1) {
+    if (this.#queue.size >= 1 && !this.#rootPart.matches(':popover-open')) {
       this.#rootPart.showPopover();
     }
 

@@ -79,7 +79,26 @@ export function wrapInViewTransition(updateDOM) {
   }
 
   // Use native View Transition API
-  return document.startViewTransition(updateDOM);
+  const transition = document.startViewTransition(updateDOM);
+
+  // `ready` isn't consumed anywhere, but the browser still
+  // reports it as an unhandled rejection when a transition is skipped (e.g.
+  // superseded by another transition, or the tab is backgrounded mid-flight).
+  // A skip is expected, benign behavior of the View Transitions API, not a
+  // bug — mark it handled so it doesn't surface in the console.
+  transition.ready.catch(() => {});
+
+  return {
+    ready: transition.ready,
+    // Callers await `finished` purely for sequencing (e.g. to hide the
+    // popover after the DOM settles). The DOM update itself already ran by
+    // this point regardless of whether the animation was skipped, so treat
+    // an expected skip (AbortError) as a no-op instead of propagating it as
+    // an unhandled rejection. Any other error still propagates.
+    finished: transition.finished.catch((error) => {
+      if (error?.name !== 'AbortError') throw error;
+    }),
+  };
 }
 
 /**
