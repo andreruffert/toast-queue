@@ -29,11 +29,16 @@
  */
 
 /**
+ * @typedef {'normal' | 'high'} ToastPriority
+ */
+
+/**
  * @typedef {Object} ToastOptions
  * @property {number} [duration]
  *  Override the queue default auto-dismiss duration in milliseconds.
  *  Use 0 to disable automatic dismissal.
  * @property {boolean} [dismissible=true] - Whether toast can be manually closed.
+ * @property {ToastPriority} [priority='normal']
  * @property {string} [className] - Additional CSS class.
  * @property {string} [icon] - HTML markup rendered into the icon slot.
  * @property {ToastAction} [action] - Action button configuration.
@@ -58,6 +63,7 @@
  * Called when a toast is closed.
  *
  * @callback ToastCloseHandler
+ * @param {ToastRecord} toast
  * @returns {void}
  */
 
@@ -80,10 +86,11 @@
  * @property {string} [icon]
  * @property {ToastAction} [action]
  * @property {boolean} dismissible
+ * @property {ToastPriority} priority
  * @property {string} [className]
  * @property {ToastCloseHandler} [onClose]
  * @property {Timer} [timer] - Auto-dismiss timer.
- * @property {HTMLLIElement|null} itemRef - Associated DOM element.
+ * @property {HTMLLIElement} itemRef - Associated DOM element.
  * @private
  */
 

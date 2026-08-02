@@ -146,17 +146,3 @@ export class Timer {
 export function randomId() {
   return Math.random().toString(36).slice(2);
 }
-
-/**
- * Creates a function that inflects a word based on quantity.
- * @param {string} singular - The singular form of the word.
- * @returns {Function} A function that takes the plural form and returns a function to determine the correct form.
- * @returns {Function} A function that takes a quantity and returns the singular or plural form.
- * @private
- * @example
- * const itemInflection = inflect('item')('items');
- * itemInflection(1); // => 'item'
- * itemInflection(2); // => 'items'
- */
-export const inflect = (singular) => (plural) => (quantity) =>
-  Number(quantity) === 1 ? singular : plural;

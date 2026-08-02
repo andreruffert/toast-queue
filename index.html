@@ -78,6 +78,7 @@
 
       toast-queue .my-toast {
         background-color: hotpink;
+        border-color: blueviolet;
       }
 
       toast-queue [data-part="menu"] {
@@ -105,6 +106,8 @@
     </main>
 
     <script type="module">
+      import "https://cdn.jsdelivr.net/npm/@github/arianotify-polyfill"
+
       import ToastQueue from './src/index.js';
       // import './src/presets/minimal.css';
       import './src/presets/stacked.css';

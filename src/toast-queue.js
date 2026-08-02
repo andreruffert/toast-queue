@@ -2,7 +2,6 @@ import { Swipeable } from './swipeable.js';
 import {
   getPlacementViewTransitionClass,
   getSwipeableDirection,
-  inflect,
   randomId,
   Timer,
   wrapInViewTransition,
@@ -56,12 +55,6 @@ const SELECTORS = {
   actions: '[data-part="actions"]',
   actionButton: '[data-part="action-button"]',
 };
-
-/**
- * Accessible singular/plural notification label.
- * @private
- */
-const ROOT_LABEL = inflect('notification')('notifications');
 
 /**
  * Manages a queue of toast notifications including rendering,
@@ -143,8 +136,6 @@ export class ToastQueue {
     this.#groupPart = fragment.querySelector(SELECTORS.group);
 
     this.#rootPart.setAttribute('popover', 'manual');
-    this.#rootPart.setAttribute('role', 'region');
-    this.#rootPart.setAttribute('aria-label', 'Notifications');
     this.#rootPart.setAttribute('tabindex', '-1');
     this.#rootPart.dataset.placement = this.#placement;
 
@@ -341,6 +332,7 @@ export class ToastQueue {
       icon: options.icon,
       action: options.action,
       dismissible: options.dismissible ?? true,
+      priority: options.priority ?? 'normal',
       onClose: options.onClose,
       timer: duration ? new Timer(() => this.close(id), duration) : undefined,
       itemRef: null,
@@ -353,6 +345,8 @@ export class ToastQueue {
 
     this.#syncRootState(() => {
       this.#groupPart.prepend(item);
+    }).then(() => {
+      this.#announce(toast);
     });
 
     console.debug('[toast queue] add', toast.id);
@@ -380,7 +374,7 @@ export class ToastQueue {
     if (!toast) return;
 
     this.#queue.delete(id);
-    toast.onClose?.();
+    toast.onClose?.(toast);
     toast.timer?.clear();
     this.#moveFocusAfterClose(toast);
 
@@ -500,11 +494,6 @@ export class ToastQueue {
    * @returns {Promise<void>}
    */
   async #syncRootState(update = () => {}, skip = false) {
-    this.#rootPart.setAttribute(
-      'aria-label',
-      `${this.#queue.size} ${ROOT_LABEL(this.#queue.size)}`,
-    );
-
     if (this.#queue.size === 1) {
       this.#rootPart.showPopover();
     }
@@ -543,11 +532,9 @@ export class ToastQueue {
       `tq-item ${getPlacementViewTransitionClass(this.#placement)}`,
     );
     const toastPart = item.querySelector(SELECTORS.toast);
+    toastPart.tabIndex = 0;
     toastPart.dataset.id = toast.id;
     toastPart.dataset.dismissible = toast.dismissible;
-    toastPart.setAttribute('tabindex', '0');
-    toastPart.setAttribute('role', 'alertdialog');
-    toastPart.setAttribute('aria-modal', 'false');
     toastPart.setAttribute('aria-labelledby', titleId);
 
     if (toast.dismissible) toastPart.dataset.swipeable = getSwipeableDirection(this.#placement);
@@ -558,15 +545,13 @@ export class ToastQueue {
     /** Toast icon - Optional */
     const iconPart = fragment.querySelector(SELECTORS.icon);
     if (toast.icon) {
-      iconPart.setHTML(toast.icon);
+      iconPart.setHTML?.(toast.icon) ?? (iconPart.innerHTML = toast.icon);
     } else {
       iconPart.remove();
     }
 
     /** Toast content */
     const contentPart = fragment.querySelector(SELECTORS.content);
-    contentPart.setAttribute('role', 'alert');
-    contentPart.setAttribute('aria-atomic', 'true');
     if (typeof toast.content === 'string') {
       contentPart.id = titleId;
       contentPart.textContent = toast.content;
@@ -609,5 +594,32 @@ export class ToastQueue {
       toast.itemRef.previousElementSibling?.firstElementChild;
 
     next?.focus();
+  }
+
+  #getAnnouncementText(toast) {
+    if (typeof toast.content === 'string') return toast.content;
+    if (!toast.content) return '';
+
+    return [toast.content.title, toast.content.description].filter(Boolean).join('. ');
+  }
+
+  #announce(toast) {
+    const message = this.#getAnnouncementText(toast);
+
+    if (!message) return;
+
+    console.debug('ariaNotify', message);
+
+    const target = toast.itemRef.querySelector(SELECTORS.toast);
+
+    if (target?.ariaNotify) {
+      target.ariaNotify(message, {
+        priority: toast.priority,
+      });
+    } else if (document.ariaNotify) {
+      document.ariaNotify(message, {
+        priority: toast.priority,
+      });
+    }
   }
 }
