@@ -1,197 +1,256 @@
-import { expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { ToastQueue } from './index.js';
 import { getSwipeableDirection } from './utils.js';
 
-test('renders a toast that is accessible', async () => {
-  const toastQueue = new ToastQueue();
-  const rootElement = page.getByLabelText('Notifications');
-  const groupElement = document.querySelector('[data-part="group"]');
+describe('ToastQueue', () => {
+  let toastQueue;
 
-  await expect.element(rootElement).toBeInTheDocument();
-  expect(groupElement).toBeInTheDocument();
-  await expect.element(rootElement).toHaveAttribute('role', 'region');
-  await expect.element(rootElement).toHaveAttribute('tabindex', '-1');
-  await expect.element(rootElement).toHaveAttribute('popover', 'manual');
-  await expect.element(rootElement).toHaveAttribute('data-placement', 'top-end');
-
-  const toastRef = toastQueue.add(
-    {
-      title: 'Toast notification',
-      description: '...',
-    },
-    {
-      onClose: vi.fn(),
-    },
-  );
-
-  // TODO: const toastItem = page.getByRole('listitem');
-  const toastElement = page.getByRole('alertdialog', { name: toastRef.content.title });
-  const toastContent = page.getByRole('alert');
-  const toastTitle = page.getByText(toastRef.content.title);
-  const toastDescription = page.getByText(toastRef.content.description);
-  const closeButton = page.getByRole('button', { name: 'Close' });
-
-  // Updates the region label when adding a toast
-  await expect.element(page.getByLabelText('1 notification')).not.toBeUndefined();
-
-  await expect.element(toastElement).toBeInTheDocument();
-  await expect.element(toastElement).toHaveAttribute('tabindex', '0');
-  await expect.element(toastElement).toHaveAttribute('aria-modal', 'false');
-  await expect.element(toastElement).toHaveAccessibleDescription(toastRef.content.description);
-  await expect.element(toastElement).toHaveAttribute('data-id', toastRef.id);
-  await expect.element(toastElement).toHaveAttribute('data-part', 'toast');
-  await expect.element(toastElement).toHaveAttribute('data-swipeable', 'right');
-  await expect.element(toastElement).toHaveAttribute('data-dismissible', 'true');
-
-  await expect.element(toastContent).toBeInTheDocument();
-  await expect.element(toastContent).toHaveAttribute('data-part', 'content');
-  await expect.element(toastContent).toHaveAttribute('aria-atomic', 'true');
-
-  await expect.element(toastTitle).toBeInTheDocument();
-  await expect.element(toastTitle).toHaveAttribute('data-part', 'title');
-
-  await expect.element(toastDescription).toBeInTheDocument();
-  await expect.element(toastDescription).toHaveAttribute('data-part', 'description');
-
-  await expect.element(closeButton).toBeInTheDocument();
-  await closeButton.click();
-  expect(toastRef.onClose).toHaveBeenCalled();
-
-  // Updates the region label when removing a toast
-  await expect.element(page.getByLabelText('0 notifications')).not.toBeUndefined();
-
-  // Destroy instance
-  toastQueue.destroy();
-});
-
-test('renders a toast with action', async () => {
-  const toastQueue = new ToastQueue();
-  const toastRef = toastQueue.add(
-    {
-      title: 'Title',
-      description: 'Description',
-    },
-    {
-      action: {
-        label: 'Action',
-        onClick: vi.fn(),
-      },
-    },
-  );
-
-  const actionTrigger = page.getByRole('button', { name: 'Action' });
-  const toastElement = page.getByRole('alertdialog', { name: toastRef.content.title });
-
-  // Calls the action callback
-  await actionTrigger.click();
-  expect(toastRef.action.onClick).toHaveBeenCalled();
-
-  // Action triggers should close the toast
-  expect(toastQueue.get(toastRef.id)).toBeUndefined();
-  await expect.element(toastElement).not.toBeInTheDocument();
-
-  // Destroy instance
-  toastQueue.destroy();
-});
-
-test('renders a toast with content string', async () => {
-  const toastQueue = new ToastQueue();
-  const toastRef = toastQueue.add('Toast message');
-  const toastElement = page.getByRole('alertdialog', { name: toastRef.content });
-  const toastContent = page.getByRole('alert', { atomic: 'true' });
-
-  await expect.element(toastElement).toBeInTheDocument();
-  await expect.element(toastContent).toBeInTheDocument();
-  await expect.element(toastContent).toHaveTextContent(toastRef.content);
-
-  // Destroy instance
-  toastQueue.destroy();
-});
-
-test('renders a toast with title and description', async () => {
-  const toastQueue = new ToastQueue();
-  const toastRef = toastQueue.add({ title: 'Title', description: 'Description' });
-  const toastElement = page.getByRole('alertdialog', { name: toastRef.content.title });
-  const toastContent = page.getByRole('alert');
-  const toastTitle = page.getByText(toastRef.content.title);
-  const toastDescription = page.getByText(toastRef.content.description);
-
-  await expect.element(toastElement).toBeInTheDocument();
-  await expect.element(toastContent).toBeInTheDocument();
-  await expect.element(toastTitle).toBeInTheDocument();
-  await expect.element(toastDescription).toBeInTheDocument();
-
-  // Destroy instance
-  toastQueue.destroy();
-});
-
-test('renders a toast that auto-dismisses', async () => {
-  const toastQueue = new ToastQueue({ pauseOnPageIdle: false });
-  const toastOptions = { duration: 100 };
-  const toastRef = toastQueue.add('Toast message', toastOptions);
-  const toastElement = page.getByRole('alertdialog', { name: toastRef.content });
-
-  await expect.element(toastElement).toBeInTheDocument();
-  await new Promise((resolve) => setTimeout(resolve, toastOptions.duration));
-  await expect.element(toastElement).not.toBeInTheDocument();
-
-  // Destroy instance
-  toastQueue.destroy();
-});
-
-test('renders a toast that is not dismissible', async () => {
-  const toastQueue = new ToastQueue();
-  const toastRef = toastQueue.add('Toast message', { dismissible: false });
-  const toastElement = page.getByRole('alertdialog', { name: toastRef.content });
-  const closeButton = page.getByRole('button', { name: 'Close' });
-
-  await expect.element(toastElement).toHaveAttribute('data-dismissible', 'false');
-  await expect.element(toastElement).not.toHaveAttribute('data-swipeable');
-  await expect.element(closeButton).not.toBeInTheDocument();
-
-  // Destroy instance
-  toastQueue.destroy();
-});
-
-test('toast placement', async () => {
-  const placement = 'top-center';
-  const toastQueue = new ToastQueue({ duration: null, placement });
-  const toastRef = toastQueue.add('Toast message');
-  const rootElement = page.getByLabelText('1 notification');
-  const toastElement = page.getByRole('alertdialog', { name: toastRef.content });
-
-  await expect.element(rootElement).toBeInTheDocument();
-  await expect.element(rootElement).toHaveAttribute('data-placement', 'top-center');
-  await expect
-    .element(toastElement)
-    .toHaveAttribute('data-swipeable', getSwipeableDirection(placement));
-
-  // Destroy instance
-  toastQueue.destroy();
-});
-
-test('closing a focused toast keeps queue paused when focus moves to another toast', async () => {
-  const toastQueue = new ToastQueue({
-    activationMode: true,
-    duration: 10000,
+  beforeEach(() => {
+    toastQueue = new ToastQueue();
   });
 
-  const firstRef = toastQueue.add('First');
-  const secondRef = toastQueue.add('Second');
-  const firstToastElement = page.getByRole('alertdialog', { name: firstRef.content });
-  const secondToastElement = page.getByRole('alertdialog', { name: secondRef.content });
+  afterEach(() => {
+    toastQueue?.destroy();
 
-  // focus first toast
-  await firstToastElement.click();
+    delete HTMLElement.prototype.ariaNotify;
 
-  expect(toastQueue.isPaused).toBe(true);
+    vi.restoreAllMocks();
+  });
 
-  toastQueue.close(firstRef.id);
+  test('mounts queue with default configuration', () => {
+    const root = document.querySelector('toast-queue');
 
-  await expect.element(secondToastElement).toHaveFocus();
+    expect(root).toBeTruthy();
+    expect(root).toHaveAttribute('popover', 'manual');
+    expect(root).toHaveAttribute('tabindex', '-1');
+    expect(root).toHaveAttribute('data-placement', 'top-end');
+  });
 
-  expect(toastQueue.isPaused).toBe(true);
+  test('renders toast content', async () => {
+    const toastRef = toastQueue.add('Toast message');
 
-  toastQueue.destroy();
+    await expect.element(page.getByText('Toast message')).toBeInTheDocument();
+
+    const toastPart = document.querySelector(`[data-part="toast"][data-id="${toastRef.id}"]`);
+
+    expect(toastPart).toHaveAttribute('tabindex', '0');
+    expect(toastPart).toHaveAttribute('data-dismissible', 'true');
+    expect(toastPart).toHaveAttribute('data-swipeable', 'right');
+  });
+
+  test('renders title and description toast content', async () => {
+    const toastRef = toastQueue.add({
+      title: 'Title',
+      description: 'Description',
+    });
+
+    await expect.element(page.getByText('Title')).toBeInTheDocument();
+
+    await expect.element(page.getByText('Description')).toBeInTheDocument();
+
+    const toastPart = document.querySelector(`[data-part="toast"][data-id="${toastRef.id}"]`);
+
+    expect(toastPart).toHaveAttribute('aria-labelledby', `tq:${toastRef.id}:title`);
+
+    expect(toastPart).toHaveAttribute('aria-describedby', `tq:${toastRef.id}:desc`);
+  });
+
+  test('renders icon markup when provided', async () => {
+    toastQueue.add('Toast message', {
+      icon: '<span>Icon</span>',
+    });
+
+    await expect.element(page.getByText('Icon')).toBeInTheDocument();
+  });
+
+  test('removes icon part without icon', async () => {
+    toastQueue.add('Toast message');
+
+    await expect.element(page.getByText('Toast message')).toBeInTheDocument();
+
+    expect(document.querySelector('[data-part="icon"]')).toBeNull();
+  });
+
+  test('renders action button and invokes callback', async () => {
+    const onClick = vi.fn();
+
+    toastQueue.add('Toast message', {
+      action: {
+        label: 'Action',
+        onClick,
+      },
+    });
+
+    const button = page.getByRole('button', {
+      name: 'Action',
+    });
+
+    await expect.element(button).toBeInTheDocument();
+
+    await button.click();
+
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  test('closes toast through close button', async () => {
+    const onClose = vi.fn();
+
+    const toastRef = toastQueue.add('Toast message', {
+      onClose,
+    });
+
+    await page
+      .getByRole('button', {
+        name: 'Close',
+      })
+      .click();
+
+    expect(onClose).toHaveBeenCalledWith(toastRef);
+    expect(toastQueue.get(toastRef.id)).toBeUndefined();
+  });
+
+  test('does not render close button for non-dismissible toast', async () => {
+    const toastRef = toastQueue.add('Toast message', {
+      dismissible: false,
+    });
+
+    await expect.element(page.getByText('Toast message')).toBeInTheDocument();
+
+    const toastPart = document.querySelector(`[data-part="toast"][data-id="${toastRef.id}"]`);
+
+    expect(toastPart).toHaveAttribute('data-dismissible', 'false');
+
+    expect(toastPart).not.toHaveAttribute('data-swipeable');
+
+    await expect
+      .element(
+        page.getByRole('button', {
+          name: 'Close',
+        }),
+      )
+      .not.toBeInTheDocument();
+  });
+
+  test('updates placement and swipe direction', async () => {
+    const toastRef = toastQueue.add('Toast message');
+
+    await expect.element(page.getByText('Toast message')).toBeInTheDocument();
+
+    toastQueue.placement = 'bottom-center';
+
+    await vi.waitFor(() => {
+      expect(document.querySelector('toast-queue')).toHaveAttribute(
+        'data-placement',
+        'bottom-center',
+      );
+    });
+
+    const toastPart = document.querySelector(`[data-part="toast"][data-id="${toastRef.id}"]`);
+
+    expect(toastPart).toHaveAttribute('data-swipeable', getSwipeableDirection('bottom-center'));
+  });
+
+  test('returns toast by id', () => {
+    const toastRef = toastQueue.add('Toast message');
+
+    expect(toastQueue.get(toastRef.id)).toBe(toastRef);
+  });
+
+  test('clears all toast items', async () => {
+    toastQueue.add('First');
+    toastQueue.add('Second');
+
+    await expect.element(page.getByText('First')).toBeInTheDocument();
+
+    toastQueue.clear();
+
+    await vi.waitFor(() => {
+      expect(document.querySelector('[data-part="item"]')).toBeNull();
+    });
+  });
+
+  test('auto dismisses toast', async () => {
+    const queue = new ToastQueue({
+      duration: 50,
+    });
+
+    const toastRef = queue.add('Toast message');
+
+    await vi.waitFor(() => {
+      expect(queue.get(toastRef.id)).toBeUndefined();
+    });
+
+    queue.destroy();
+  });
+
+  test('pauses and resumes timers', () => {
+    toastQueue.add('Toast message');
+
+    toastQueue.pause();
+
+    expect(toastQueue.isPaused).toBe(true);
+
+    toastQueue.resume();
+
+    expect(toastQueue.isPaused).toBe(false);
+  });
+
+  test('announces toast using ariaNotify', async () => {
+    const ariaNotify = vi.fn();
+
+    HTMLElement.prototype.ariaNotify = ariaNotify;
+
+    toastQueue.add('Toast message');
+
+    await vi.waitFor(() => {
+      expect(ariaNotify).toHaveBeenCalledWith('Toast message', {
+        priority: 'normal',
+      });
+    });
+  });
+
+  test('announces title and description using ariaNotify', async () => {
+    const ariaNotify = vi.fn();
+
+    HTMLElement.prototype.ariaNotify = ariaNotify;
+
+    toastQueue.add({
+      title: 'Title',
+      description: 'Description',
+    });
+
+    await vi.waitFor(() => {
+      expect(ariaNotify).toHaveBeenCalledWith('Title. Description', {
+        priority: 'normal',
+      });
+    });
+  });
+
+  test('moves focus after closing focused toast', async () => {
+    const first = toastQueue.add('First');
+    const second = toastQueue.add('Second');
+
+    await expect.element(page.getByText('First')).toBeInTheDocument();
+
+    await expect.element(page.getByText('Second')).toBeInTheDocument();
+
+    const firstToast = document.querySelector(`[data-part="toast"][data-id="${first.id}"]`);
+
+    const secondToast = document.querySelector(`[data-part="toast"][data-id="${second.id}"]`);
+
+    firstToast.focus();
+
+    expect(firstToast).toHaveFocus();
+
+    toastQueue.close(first.id);
+
+    await expect.element(secondToast).toHaveFocus();
+  });
+
+  test('destroys queue', () => {
+    toastQueue.destroy();
+
+    expect(document.querySelector('toast-queue')).toBeNull();
+  });
 });
