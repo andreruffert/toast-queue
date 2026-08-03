@@ -5,6 +5,7 @@
  * @property {HTMLElement} [root=document.body] - Container element for the toast queue.
  * @property {number} [duration=6000] - Auto-dismiss duration in milliseconds.
  * @property {ToastQueuePlacement} [placement='top-end'] - Position on screen.
+ * @property {number} [visibleLimit=3] - Number of toasts rendered visibly before the rest are hidden (exposed via `data-hidden-count`).
  * @property {ToastQueueTemplate} [template] - HTML templates.
  */
 
@@ -95,7 +96,7 @@
  */
 
 /**
- * @typedef {'hover'|'focus'|'click'} ActivationReason
+ * @typedef {'focus'|'click'} ActivationReason
  * @private
  */
 

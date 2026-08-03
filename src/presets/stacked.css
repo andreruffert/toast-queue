@@ -4,41 +4,27 @@
     grid-auto-flow: row;
   }
 
+  /**
+   * A single, shared base for the peek's z-index stack. Defined once here
+   * so the "+N more" badge (below) can derive its z-index from the same
+   * source instead of a disconnected literal.
+   */
+  toast-queue {
+    --tq-stack-z-base: 1000;
+  }
+
   toast-queue [data-part="item"] {
     height: fit-content;
+    /* Topmost item (--tq-item-index: 0) sits highest; each item behind it
+       drops one z-index step, however many are visible. */
+    z-index: calc(var(--tq-stack-z-base) - var(--tq-item-index, 0));
   }
 
-  toast-queue [data-part="item"]:first-child {
-    z-index: 3;
+  toast-queue[data-placement^="top"]:not([data-active="true"]) [data-part="item"] {
+    margin-block-start: calc(var(--tq-item-index, 0) * 10px);
   }
-  toast-queue [data-part="item"]:nth-child(2) {
-    z-index: 2;
-  }
-  toast-queue [data-part="item"]:nth-child(3) {
-    z-index: 1;
-  }
-
-  toast-queue [data-part="item"]:nth-child(n + 4) {
-    display: none;
-  }
-
-  toast-queue[data-placement^="top"]:not([data-active="true"]) [data-part="item"]:nth-child(2) {
-    margin-block-start: 10px;
-  }
-  toast-queue[data-placement^="bottom"]:not([data-active="true"]) [data-part="item"]:nth-child(2) {
-    margin-block-start: -10px;
-  }
-  toast-queue[data-placement^="top"]:not([data-active="true"]) [data-part="item"]:nth-child(3) {
-    margin-block-start: 19px;
-  }
-  toast-queue[data-placement^="bottom"]:not([data-active="true"]) [data-part="item"]:nth-child(3) {
-    margin-block-start: -19px;
-  }
-  toast-queue[data-placement^="top"]:not([data-active="true"]) [data-part="item"]:nth-child(4) {
-    margin-block-start: 26px;
-  }
-  toast-queue[data-placement^="bottom"]:not([data-active="true"]) [data-part="item"]:nth-child(4) {
-    margin-block-start: -26px;
+  toast-queue[data-placement^="bottom"]:not([data-active="true"]) [data-part="item"] {
+    margin-block-start: calc(var(--tq-item-index, 0) * -10px);
   }
 
   toast-queue:not([data-active="true"]) [data-part="item"]:not(:first-child) {
@@ -46,18 +32,28 @@
   }
   toast-queue:not([data-active="true"]) [data-part="item"] {
     grid-area: 1 / 1;
-  }
-  toast-queue:not([data-active="true"]) [data-part="item"]:nth-child(2) {
-    scale: 0.95;
-  }
-  toast-queue:not([data-active="true"]) [data-part="item"]:nth-child(3) {
-    scale: 0.9;
+    scale: calc(1 - (var(--tq-item-index, 0) * 0.05));
   }
 
-  toast-queue[data-placement]:not([data-active="true"]) [data-part="item"]:nth-child(4) {
+  /**
+   * The first hidden item (exactly one past `visibleLimit`) gets a preview
+   * treatment — briefly rendered small and transparent as a hint that
+   * another toast is queued up behind the stack — instead of disappearing
+   * outright like the rest of `[data-hidden]`.
+   */
+  toast-queue[data-placement]:not([data-active="true"]) [data-part="item"][data-peek] {
     display: initial;
     scale: 0.8;
     opacity: 0;
+  }
+
+  /** "+N more" indicator for toasts hidden **/
+  toast-queue[data-hidden-count][data-active="true"]::after {
+    content: "+" attr(data-hidden-count) " more";
+    text-align: center;
+    z-index: calc(var(--tq-stack-z-base) + 1);
+    font-size: smaller;
+    pointer-events: none;
   }
 
   ::view-transition-group(.tq-item) {

@@ -75,7 +75,7 @@ const SELECTORS = {
  *   await import('@github/arianotify-polyfill');
  * }
  *
- * const toastQueue = new ToastQueue();
+ * const tq = new ToastQueue();
  */
 export class ToastQueue {
   /** @type {{
@@ -105,6 +105,15 @@ export class ToastQueue {
   /** @type {ToastQueuePlacement} */
   #placement = 'top-end';
 
+  /**
+   * Number of toasts rendered visibly at once before the rest are hidden.
+   * Exposed to presets via `data-hidden-count`, `[data-hidden]`,
+   * `[data-peek]`, and `--tq-item-index` (see `#syncVisibleLimitState`) so they
+   * can build their own cutoff/peek treatment.
+   * @type {number}
+   */
+  #visibleLimit = 3;
+
   /** @type {boolean} */
   #paused = false;
 
@@ -128,10 +137,12 @@ export class ToastQueue {
 
     this.#duration = typeof options?.duration !== 'undefined' ? options.duration : this.#duration;
     this.#placement = options.placement ?? this.#placement;
+    this.#visibleLimit = options.visibleLimit ?? this.#visibleLimit;
 
     this.#mount(options.root || document.body);
 
     this.#swipeable = new Swipeable({
+      root: this.#rootPart,
       onSwipe: ({ target }) => {
         const id = target?.dataset?.id;
         if (id) this.close(id);
@@ -238,6 +249,9 @@ export class ToastQueue {
     this.#rootPart.addEventListener('click', this.#onClick, { signal });
     this.#rootPart.addEventListener('pointerenter', this.#onEnter, { signal });
     this.#rootPart.addEventListener('pointerleave', this.#onLeave, { signal });
+    this.#rootPart.addEventListener('pointerdown', this.#onPointerDown, { signal });
+    this.#rootPart.addEventListener('pointerup', this.#onPointerUp, { signal });
+    this.#rootPart.addEventListener('pointercancel', this.#onPointerUp, { signal });
     this.#rootPart.addEventListener('focusin', this.#onFocusIn, { signal });
     this.#rootPart.addEventListener('focusout', this.#onFocusOut, { signal });
     this.#rootPart.addEventListener('keydown', this.#onKeydown, { signal });
@@ -249,6 +263,20 @@ export class ToastQueue {
   };
 
   #onLeave = () => {
+    if (this.#active) return;
+    this.resume();
+  };
+
+  // `pointerenter`/`pointerleave` are meant to double as a touch-hover signal,
+  // but support for simulating hover from touch contact is inconsistent
+  // across browsers/webviews. `pointerdown`/`pointerup` are a more reliable
+  // primitive for "the user is physically touching a toast right now",
+  // covering the full contact window regardless of hover support.
+  #onPointerDown = () => {
+    this.pause();
+  };
+
+  #onPointerUp = () => {
     if (this.#active) return;
     this.resume();
   };
@@ -326,7 +354,11 @@ export class ToastQueue {
       event.stopPropagation();
       const id = event.target.closest(SELECTORS.toast)?.dataset.id;
       const toast = this.#queue.get(id);
-      toast?.action?.onClick?.(toast);
+      try {
+        toast?.action?.onClick?.(toast);
+      } catch (error) {
+        console.error('[toast-queue] action onClick callback threw', error);
+      }
       return;
     }
 
@@ -385,7 +417,7 @@ export class ToastQueue {
       this.#announce(toast);
     });
 
-    console.debug('[toast queue] add', toast.id);
+    console.debug('[toast-queue] add', toast.id);
 
     return toast;
   }
@@ -410,7 +442,6 @@ export class ToastQueue {
     if (!toast) return;
 
     this.#queue.delete(id);
-    toast.onClose?.(toast);
     toast.timer?.clear();
     this.#moveFocusAfterClose(toast);
 
@@ -420,6 +451,14 @@ export class ToastQueue {
       !toast.itemRef.checkVisibility?.(),
     );
 
+    // Run after internal cleanup so a throwing consumer callback can't leave
+    // the DOM/popover out of sync with `#queue`.
+    try {
+      toast.onClose?.(toast);
+    } catch (error) {
+      console.error('[toast-queue] onClose callback threw', error);
+    }
+
     console.debug('[toast-queue] close', id);
   }
 
@@ -427,6 +466,9 @@ export class ToastQueue {
    * Removes all toasts from the queue.
    */
   clear() {
+    for (const toast of this.#queue.values()) {
+      toast.timer?.clear();
+    }
     this.#queue.clear();
     this.#syncRootState(() => {
       this.#groupPart.innerHTML = '';
@@ -456,6 +498,13 @@ export class ToastQueue {
    */
   get isPaused() {
     return this.#paused;
+  }
+
+  /**
+   * @returns {HTMLElement} - The root DOM element for this queue instance.
+   */
+  get element() {
+    return this.#rootPart;
   }
 
   /**
@@ -500,10 +549,29 @@ export class ToastQueue {
   }
 
   /**
+   * @returns {number} - The current visible limit.
+   */
+  get visibleLimit() {
+    return this.#visibleLimit;
+  }
+
+  /**
+   * @param {number} value - The number of toasts to render visibly before hiding the rest.
+   */
+  set visibleLimit(value) {
+    this.#visibleLimit = value;
+    wrapInViewTransition(() => this.#syncVisibleLimitState());
+  }
+
+  /**
    * Destroys the queue and removes all listeners.
    */
   destroy() {
     this.#controller.abort();
+
+    for (const toast of this.#queue.values()) {
+      toast.timer?.clear();
+    }
 
     this.#rootPart.remove();
 
@@ -519,19 +587,62 @@ export class ToastQueue {
   /* ---------------------------------------------------------------------- */
 
   /**
+   * Exposes how many toasts exceed the visible limit as `data-hidden-count`,
+   * so CSS presets can render an indicator (e.g. "+2 more") without the
+   * library dictating how it looks. Removes the attribute when nothing is
+   * hidden.
+   *
+   * Also flags each toast item's position in the group so presets can build
+   * a peek effect (z-index, offset, scale) that scales with `visibleLimit`:
+   *  - `--tq-item-index` (0 = topmost/newest) - a CSS custom property,
+   *    usable in `calc()` for z-index/margin/scale formulas.
+   *  - `[data-hidden]` - set on every item beyond `visibleLimit`.
+   *  - `[data-peek]` - set on exactly the first hidden item, so presets can
+   *    override its display for a "the next one's coming" preview animation.
+   */
+  #syncVisibleLimitState() {
+    const hidden = Math.max(0, this.#queue.size - this.#visibleLimit);
+
+    if (hidden > 0) {
+      this.#rootPart.dataset.hiddenCount = hidden;
+    } else {
+      delete this.#rootPart.dataset.hiddenCount;
+    }
+
+    let index = 0;
+    for (const item of this.#groupPart.children) {
+      item.style.setProperty('--tq-item-index', index);
+      item.toggleAttribute('data-hidden', index >= this.#visibleLimit);
+      item.toggleAttribute('data-peek', index === this.#visibleLimit);
+      index++;
+    }
+  }
+
+  /**
    * @param {function(): void} [update]
-   * @param {boolean} [skip]
+   * @param {boolean} [skipTransition]
    * @returns {Promise<void>}
    */
-  async #syncRootState(update = () => {}, skip = false) {
+  async #syncRootState(update = () => {}, skipTransition = false) {
     if (this.#queue.size >= 1 && !this.#rootPart.matches(':popover-open')) {
       this.#rootPart.showPopover();
     }
 
-    if (skip) {
+    // `#syncVisibleLimitState` reads live DOM order to decide which items are
+    // past the limit, so it must run *after* `update()` has actually
+    // mutated the DOM (not before) — otherwise it flags items based on
+    // the previous state, one step behind the queue it's counting
+    // against. Bundling both into a single callback also keeps them
+    // inside the same view-transition snapshot.
+    const applyUpdate = () => {
       update();
+      this.#syncVisibleLimitState();
+    };
+
+    if (skipTransition) {
+      applyUpdate();
     } else {
-      await wrapInViewTransition(update).finished;
+      await wrapInViewTransition(applyUpdate).finished;
     }
 
     if (this.#queue.size === 0) {
@@ -589,9 +700,9 @@ export class ToastQueue {
       const titlePart = fragment.querySelector(SELECTORS.title);
       const descPart = fragment.querySelector(SELECTORS.desc);
       titlePart.id = titleId;
-      titlePart.textContent = toast.content?.title;
+      titlePart.textContent = toast.content?.title ?? '';
       descPart.id = descId;
-      descPart.textContent = toast.content?.description;
+      descPart.textContent = toast.content?.description ?? '';
     }
 
     /** Toast actions - Optional */
@@ -619,13 +730,19 @@ export class ToastQueue {
     if (!this.#rootPart.contains(document.activeElement)) return;
     if (!this.#active) return;
 
-    const next =
-      toast.itemRef.nextElementSibling?.firstElementChild ||
-      toast.itemRef.previousElementSibling?.firstElementChild;
+    const { nextElementSibling: next, previousElementSibling: prev } = toast.itemRef;
+    const target = next && !next.hasAttribute('data-hidden') ? next : prev;
 
-    next?.focus();
+    target?.firstElementChild?.focus();
   }
 
+  /* ---------------------------------------------------------------------- */
+  /* Accessibility                                                          */
+  /* ---------------------------------------------------------------------- */
+
+  /**
+   * @param {ToastRecord} toast
+   */
   #getAnnouncementText(toast) {
     if (typeof toast.content === 'string') return toast.content;
     if (!toast.content) return '';
@@ -633,12 +750,15 @@ export class ToastQueue {
     return [toast.content.title, toast.content.description].filter(Boolean).join('. ');
   }
 
+  /**
+   * @param {ToastRecord} toast
+   */
   #announce(toast) {
     const message = this.#getAnnouncementText(toast);
 
     if (!message) return;
 
-    console.debug('ariaNotify', message);
+    console.debug('[toast-queue] announce', message);
 
     const target = toast.itemRef.querySelector(SELECTORS.toast);
 

@@ -55,15 +55,13 @@ export function getSwipeableDirection(placement) {
  * Skips transitions if disabled by user preferences.
  *
  * @param {Function} updateDOM - Function that performs DOM updates (required).
+ * @param {Element} root - scope
  * @returns {Object} A transition-like object with `ready` and `finished` promises.
  *                   Returns immediate-resolving promises when transitions are skipped.
  * @private
  */
-export function wrapInViewTransition(updateDOM) {
-  const immediate = {
-    ready: Promise.resolve(),
-    finished: Promise.resolve(),
-  };
+export function wrapInViewTransition(updateDOM, root = document) {
+  const immediate = { ready: Promise.resolve(), finished: Promise.resolve() };
 
   // Skip transition if user prefers reduced motion
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -71,15 +69,20 @@ export function wrapInViewTransition(updateDOM) {
     return immediate;
   }
 
+  // Prefer scoping the transition to `root` — isolates snapshotting and
+  // pointer-event blocking to this subtree instead of the whole document,
+  // and lets multiple ToastQueue instances animate independently instead
+  // of contending for the document's single transition slot.
+  const scope = typeof root.startViewTransition === 'function' ? root : document;
+
   // Skip if View Transition API is not supported
-  if (!('startViewTransition' in document)) {
+  if (typeof scope.startViewTransition !== 'function') {
     updateDOM();
     console.debug('[toast-queue] skipping transition');
     return immediate;
   }
 
-  // Use native View Transition API
-  const transition = document.startViewTransition(updateDOM);
+  const transition = scope.startViewTransition(updateDOM);
 
   // `ready` isn't consumed anywhere, but the browser still
   // reports it as an unhandled rejection when a transition is skipped (e.g.

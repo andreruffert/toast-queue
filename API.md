@@ -8,8 +8,11 @@
     * [.ToastQueue](#ToastQueue+ToastQueue)
         * [new exports.ToastQueue([options])](#new_ToastQueue+ToastQueue_new)
     * [.isPaused](#ToastQueue+isPaused) ⇒ <code>boolean</code>
+    * [.element](#ToastQueue+element) ⇒ <code>HTMLElement</code>
     * [.placement](#ToastQueue+placement) ⇒ <code>ToastQueuePlacement</code>
     * [.placement](#ToastQueue+placement)
+    * [.visibleLimit](#ToastQueue+visibleLimit) ⇒ <code>number</code>
+    * [.visibleLimit](#ToastQueue+visibleLimit)
     * [.add(content, [options])](#ToastQueue+add) ⇒ <code>ToastRecord</code>
     * [.get(id)](#ToastQueue+get) ⇒ <code>ToastRecord</code> \| <code>undefined</code>
     * [.close(id)](#ToastQueue+close)
@@ -24,6 +27,22 @@
 Manages a queue of toast notifications including rendering,
 focus management, swipe dismissal, and auto-dismiss timers.
 
+Toasts are announced to screen readers via
+[`ariaNotify()`](https://developer.mozilla.org/en-US/docs/Web/API/Element/ariaNotify)
+where the browser supports it. On browsers that don't yet, announcements
+are silently skipped unless a polyfill is loaded beforehand — see
+[Browser support](README.md#browser-support)
+in the README.
+
+**Example**  
+```js
+// Optional: polyfill ariaNotify() on browsers that don't support it yet.
+if (typeof HTMLElement.prototype.ariaNotify !== 'function') {
+  await import('@github/arianotify-polyfill');
+}
+
+const tq = new ToastQueue();
+```
 <a name="ToastQueue+ToastQueue"></a>
 
 ### toastQueue.ToastQueue
@@ -41,6 +60,11 @@ focus management, swipe dismissal, and auto-dismiss timers.
 ### toastQueue.isPaused ⇒ <code>boolean</code>
 **Kind**: instance property of [<code>ToastQueue</code>](#ToastQueue)  
 **Returns**: <code>boolean</code> - - Whether toast timers are currently paused.  
+<a name="ToastQueue+element"></a>
+
+### toastQueue.element ⇒ <code>HTMLElement</code>
+**Kind**: instance property of [<code>ToastQueue</code>](#ToastQueue)  
+**Returns**: <code>HTMLElement</code> - - The root DOM element for this queue instance.  
 <a name="ToastQueue+placement"></a>
 
 ### toastQueue.placement ⇒ <code>ToastQueuePlacement</code>
@@ -54,6 +78,20 @@ focus management, swipe dismissal, and auto-dismiss timers.
 | Param | Type | Description |
 | --- | --- | --- |
 | value | <code>ToastQueuePlacement</code> | The new placement. |
+
+<a name="ToastQueue+visibleLimit"></a>
+
+### toastQueue.visibleLimit ⇒ <code>number</code>
+**Kind**: instance property of [<code>ToastQueue</code>](#ToastQueue)  
+**Returns**: <code>number</code> - - The current visible limit.  
+<a name="ToastQueue+visibleLimit"></a>
+
+### toastQueue.visibleLimit
+**Kind**: instance property of [<code>ToastQueue</code>](#ToastQueue)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| value | <code>number</code> | The number of toasts to render visibly before hiding the rest. |
 
 <a name="ToastQueue+add"></a>
 

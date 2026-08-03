@@ -19,7 +19,7 @@ describe('ToastQueue', () => {
   });
 
   test('mounts queue with default configuration', () => {
-    const root = document.querySelector('toast-queue');
+    const root = toastQueue.element;
 
     expect(root).toBeTruthy();
     expect(root).toHaveAttribute('popover', 'manual');
@@ -93,6 +93,14 @@ describe('ToastQueue', () => {
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
+  test('removes actions part without an action', async () => {
+    toastQueue.add('Toast message');
+
+    await expect.element(page.getByText('Toast message')).toBeInTheDocument();
+
+    expect(document.querySelector('[data-part="actions"]')).toBeNull();
+  });
+
   test('closes toast through close button', async () => {
     const onClose = vi.fn();
 
@@ -132,6 +140,32 @@ describe('ToastQueue', () => {
       .not.toBeInTheDocument();
   });
 
+  test('closes dismissible toast on Escape', async () => {
+    const toastRef = toastQueue.add('Toast message');
+
+    await expect.element(page.getByText('Toast message')).toBeInTheDocument();
+
+    const toastPart = document.querySelector(`[data-part="toast"][data-id="${toastRef.id}"]`);
+    toastPart.focus();
+
+    toastPart.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+
+    expect(toastQueue.get(toastRef.id)).toBeUndefined();
+  });
+
+  test('ignores Escape on a non-dismissible toast', async () => {
+    const toastRef = toastQueue.add('Toast message', { dismissible: false });
+
+    await expect.element(page.getByText('Toast message')).toBeInTheDocument();
+
+    const toastPart = document.querySelector(`[data-part="toast"][data-id="${toastRef.id}"]`);
+    toastPart.focus();
+
+    toastPart.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+
+    expect(toastQueue.get(toastRef.id)).toBe(toastRef);
+  });
+
   test('updates placement and swipe direction', async () => {
     const toastRef = toastQueue.add('Toast message');
 
@@ -140,15 +174,46 @@ describe('ToastQueue', () => {
     toastQueue.placement = 'bottom-center';
 
     await vi.waitFor(() => {
-      expect(document.querySelector('toast-queue')).toHaveAttribute(
-        'data-placement',
-        'bottom-center',
-      );
+      expect(toastQueue.element).toHaveAttribute('data-placement', 'bottom-center');
     });
 
     const toastPart = document.querySelector(`[data-part="toast"][data-id="${toastRef.id}"]`);
 
     expect(toastPart).toHaveAttribute('data-swipeable', getSwipeableDirection('bottom-center'));
+  });
+
+  test('flags items beyond visibleLimit as hidden and exposes the count', async () => {
+    toastQueue.visibleLimit = 2;
+    toastQueue.add('First');
+    toastQueue.add('Second');
+    toastQueue.add('Third');
+
+    await expect.element(page.getByText('Third')).toBeInTheDocument();
+
+    // Newest is prepended, so DOM order is [Third, Second, First].
+    const items = document.querySelectorAll('[data-part="item"]');
+
+    expect(toastQueue.element).toHaveAttribute('data-hidden-count', '1');
+    expect(items[0]).not.toHaveAttribute('data-hidden');
+    expect(items[1]).not.toHaveAttribute('data-hidden');
+    expect(items[2]).toHaveAttribute('data-hidden');
+    expect(items[2]).toHaveAttribute('data-peek');
+  });
+
+  test('drops data-hidden-count once toasts fall back within visibleLimit', async () => {
+    toastQueue.visibleLimit = 2;
+
+    toastQueue.add('First');
+    toastQueue.add('Second');
+    const third = toastQueue.add('Third');
+
+    await expect.element(page.getByText('Third')).toBeInTheDocument();
+
+    toastQueue.close(third.id);
+
+    await vi.waitFor(() => {
+      expect(toastQueue.element).not.toHaveAttribute('data-hidden-count');
+    });
   });
 
   test('returns toast by id', () => {
@@ -170,6 +235,33 @@ describe('ToastQueue', () => {
     });
   });
 
+  test('clears pending toast timers on clear()', () => {
+    const clearTimeoutSpy = vi.spyOn(window, 'clearTimeout');
+
+    toastQueue.add('First', { duration: 5000 });
+    toastQueue.add('Second', { duration: 5000 });
+
+    clearTimeoutSpy.mockClear();
+
+    toastQueue.clear();
+
+    // One clearTimeout per pending toast timer — proves clear() doesn't just
+    // drop the Map and leave the underlying setTimeouts running.
+    expect(clearTimeoutSpy).toHaveBeenCalledTimes(2);
+  });
+
+  test('clears pending toast timers on destroy()', () => {
+    const clearTimeoutSpy = vi.spyOn(window, 'clearTimeout');
+
+    toastQueue.add('First', { duration: 5000 });
+
+    clearTimeoutSpy.mockClear();
+
+    toastQueue.destroy();
+
+    expect(clearTimeoutSpy).toHaveBeenCalledTimes(1);
+  });
+
   test('auto dismisses toast', async () => {
     const queue = new ToastQueue({
       duration: 50,
@@ -182,6 +274,20 @@ describe('ToastQueue', () => {
     });
 
     queue.destroy();
+  });
+
+  test('does not auto dismiss when duration is 0', async () => {
+    const tq = new ToastQueue({ duration: 0 });
+
+    const toastRef = tq.add('Toast message');
+
+    // Longer than the auto-dismiss test above uses, to be confident this
+    // isn't just "hasn't fired yet".
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(tq.get(toastRef.id)).toBe(toastRef);
+
+    tq.destroy();
   });
 
   test('pauses and resumes timers', () => {
@@ -248,9 +354,41 @@ describe('ToastQueue', () => {
     await expect.element(secondToast).toHaveFocus();
   });
 
+  test('keeps the queue expanded when closing the last visible toast', async () => {
+    const queue = new ToastQueue({ visibleLimit: 3 });
+
+    queue.add('First');
+    queue.add('Second');
+    const third = queue.add('Third');
+    queue.add('Fourth');
+
+    await expect.element(page.getByText('Third')).toBeInTheDocument();
+
+    const thirdToast = document.querySelector(`[data-part="toast"][data-id="${third.id}"]`);
+
+    // Focusing a toast is one of the ways the queue expands (data-active).
+    thirdToast.focus();
+
+    await vi.waitFor(() => {
+      expect(queue.element).toHaveAttribute('data-active', 'true');
+    });
+
+    queue.close(third.id);
+
+    await vi.waitFor(() => {
+      expect(queue.get(third.id)).toBeUndefined();
+    });
+
+    expect(queue.element).toHaveAttribute('data-active', 'true');
+
+    queue.destroy();
+  });
+
   test('destroys queue', () => {
+    const root = toastQueue.element;
+
     toastQueue.destroy();
 
-    expect(document.querySelector('toast-queue')).toBeNull();
+    expect(root.isConnected).toBe(false);
   });
 });

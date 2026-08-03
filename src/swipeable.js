@@ -51,6 +51,17 @@ export class Swipeable {
   /** @type {function({ target: HTMLElement }): void} Callback function triggered on a successful swipe. */
   #onSwipe = () => {};
 
+  /**
+   * @type {Document|HTMLElement}
+   * Scopes which pointerdown targets this instance is allowed to claim.
+   * Listeners still live on `document` (so a drag remains tracked even once
+   * the pointer moves outside this element's box), but a drag only starts
+   * if the target is inside `#root`. Without this, two `Swipeable`
+   * instances (e.g. two `ToastQueue`s on screen at once) would both react
+   * to the same pointerdown and both start dragging the same element.
+   */
+  #root = document;
+
   /** @type {AbortController} Controls all document-level event listeners added by this instance. */
   #controller = new AbortController();
 
@@ -58,9 +69,11 @@ export class Swipeable {
    * Creates a new Swipeable instance.
    * @param {Object} options - Configuration options.
    * @param {function({ target: HTMLElement }): void} [options.onSwipe] - Callback function called when a swipe is completed.
+   * @param {Document|HTMLElement} [options.root=document] - Element that scopes which `[data-swipeable]` targets this instance may claim.
    */
   constructor(options) {
     this.#onSwipe = options?.onSwipe || this.#onSwipe;
+    this.#root = options?.root || this.#root;
 
     const { signal } = this.#controller;
 
@@ -81,6 +94,7 @@ export class Swipeable {
 
     const target = event.target.closest('[data-swipeable]');
     if (!target) return;
+    if (!this.#root.contains(target)) return;
 
     this.#target = target;
     this.#target.style.setProperty('will-change', 'translate');
@@ -106,26 +120,25 @@ export class Swipeable {
     if (this.#direction === 'down' && event.clientY + 10 < this.#startY) return;
 
     event.preventDefault();
-
     this.#target.dataset.dragging = '';
 
     const dx = inlineDirections.includes(this.#direction) ? event.clientX - this.#startX : 0;
     const dy = blockDirections.includes(this.#direction) ? event.clientY - this.#startY : 0;
     const dt = event.timeStamp - this.#timestamp;
 
+    // Distance is spatial, not time-dependent — always update it.
+    this.#distance = inlineDirections.includes(this.#direction)
+      ? Math.abs(dx) / this.#target.offsetWidth
+      : Math.abs(dy) / this.#target.offsetHeight;
+
+    // Velocity/acceleration divide by dt, so they still need the guard.
     if (dt > 0) {
       const velocityX = dx / dt;
       const velocityY = dy / dt;
-      const distance = inlineDirections.includes(this.#direction)
-        ? Math.abs(dx) / this.#target.offsetWidth
-        : Math.abs(dy) / this.#target.offsetHeight;
-      const velocity = Math.hypot(velocityX, velocityY); // px/ms
-      const acceleration = (velocity - this.#velocity) / dt; // (px/ms)/ms
-
-      this.#timestamp = event.timeStamp;
+      const velocity = Math.hypot(velocityX, velocityY); //px/ms
+      this.#acceleration = (velocity - this.#velocity) / dt; // (px/ms)/ms
       this.#velocity = velocity;
-      this.#acceleration = acceleration;
-      this.#distance = distance;
+      this.#timestamp = event.timeStamp;
     }
 
     // Cancel previous frame to avoid multiple calls

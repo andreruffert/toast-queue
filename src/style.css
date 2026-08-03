@@ -74,4 +74,11 @@
     display: flex;
     flex-direction: column;
   }
+
+  /**
+   * Items beyond `visibleLimit` are flagged with `[data-hidden]`.
+   */
+  toast-queue [data-part="item"][data-hidden] {
+    display: none;
+  }
 }
