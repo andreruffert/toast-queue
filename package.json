@@ -23,7 +23,7 @@
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.5",
+    "@biomejs/biome": "2.5.6",
     "@vitest/browser-playwright": "4.1.10",
     "vite": "8.2.0",
     "vitest": "4.1.10"
