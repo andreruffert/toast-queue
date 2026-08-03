@@ -26,7 +26,7 @@
     "@biomejs/biome": "2.3.5",
     "@vitest/browser-playwright": "4.1.10",
     "vite": "8.2.0",
-    "vitest": "4.0.8"
+    "vitest": "4.1.10"
   },
   "volta": {
     "node": "22.13.1",
