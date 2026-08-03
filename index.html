@@ -76,11 +76,6 @@
         background-color: var(--toast-color);
       }
 
-      toast-queue .my-toast {
-        /* background-color: hotpink;
-        border-color: blueviolet; */
-      }
-
       toast-queue [data-part="menu"] {
         display: flex;
         justify-content: flex-end;
@@ -107,8 +102,8 @@
 
     <script type="module">
       import ToastQueue from './src/index.js';
-      import './src/presets/minimal.css';
-      // import './src/presets/stacked.css';
+      // import './src/presets/minimal.css';
+      import './src/presets/stacked.css';
 
       if (typeof HTMLElement.prototype.ariaNotify !== 'function') {
         await import('https://cdn.jsdelivr.net/npm/@github/arianotify-polyfill');
