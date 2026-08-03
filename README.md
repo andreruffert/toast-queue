@@ -56,7 +56,7 @@ import 'toast-queue/presets/stacked.css';
 ```
 
 - **minimal** — a simple vertical list.
-- **stacked** — a card-stack "peek" effect, where toasts beyond `visibleLimit` collapse behind the topmost one with a "+N more" indicator.
+- **stacked** — a card-stack "peek" effect, where toasts beyond `visibleLimit` collapse behind the topmost one.
 
 Both are plain CSS layered under `@layer toast-queue`, so your own styles will win by default — treat them as a starting point, not a lock-in.
 

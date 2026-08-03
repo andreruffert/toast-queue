@@ -686,7 +686,11 @@ export class ToastQueue {
     /** Toast icon - Optional */
     const iconPart = fragment.querySelector(SELECTORS.icon);
     if (toast.icon) {
-      iconPart.setHTML?.(toast.icon) ?? (iconPart.innerHTML = toast.icon);
+      if (typeof iconPart.setHTML === 'function') {
+        iconPart.setHTML(toast.icon);
+      } else {
+        iconPart.innerHTML = toast.icon;
+      }
     } else {
       iconPart.remove();
     }
