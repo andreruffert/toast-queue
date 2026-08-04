@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Live playground for toast-queue — an unstyled, accessible toast notification library." />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>">
+    <title>toast-queue</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+
+        --font-sans: ui-sans-serif, "Segoe UI", system-ui, -apple-system, sans-serif;
+        --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+
+        --bg: light-dark(#f3efe6, #14161a);
+        --surface: light-dark(#ffffff, #1b1e23);
+        --ink: light-dark(#1c1a16, #eae6da);
+        --muted: light-dark(#726c5e, #9b9689);
+        --line: light-dark(#ddd6c4, #2a2e35);
+        --accent: light-dark(#a8631f, #e2a559);
+        --focus: #3b6ff2;
+
+        --radius: 14px;
+        --shadow: 0 16px 32px -16px rgb(0 0 0 / 0.28);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: unset;
+        min-height: 100dvh;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        line-height: 1.5;
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 2px;
+      }
+
+      button {
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+        font-family: inherit;
+        color: inherit;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .variant-btn,
+        #togglePause,
+        #clearAll {
+          transition: transform 0.15s ease, border-color 0.15s ease;
+        }
+        .variant-btn:active {
+          transform: scale(0.97);
+        }
+      }
+
+      /* ---------------------------------------------------------------- */
+      /* Layout                                                           */
+      /* ---------------------------------------------------------------- */
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding: 1rem clamp(1rem, 4vw, 2rem);
+        border-bottom: 1px solid var(--line);
+        position: sticky;
+        top: 0;
+        background: color-mix(in srgb, var(--bg) 88%, transparent);
+        backdrop-filter: blur(8px);
+      }
+
+      .brand {
+        margin: unset;
+        font-weight: 700;
+        font-size: 1rem;
+        letter-spacing: -0.01em;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .header-fields {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      main {
+        max-width: 640px;
+        margin-inline: auto;
+        padding: clamp(1.5rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem) 6rem;
+        display: flex;
+        flex-direction: column;
+        gap: 3rem;
+      }
+
+      .eyebrow {
+        margin: 0 0 0.5rem;
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      h1,
+      h2 {
+        margin: 0 0 0.5rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+
+      h1 {
+        font-size: clamp(1.5rem, 1rem + 2vw, 2rem);
+      }
+
+      .lede {
+        margin: 0 0 1.5rem;
+        color: var(--muted);
+        max-width: 32em;
+      }
+
+      /* ---------------------------------------------------------------- */
+      /* Fields                                                           */
+      /* ---------------------------------------------------------------- */
+
+      .field {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      select,
+      input[type="number"] {
+        font: inherit;
+        color: var(--ink);
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0.4rem 0.6rem;
+      }
+
+      input[type="number"] {
+        width: fit-content;
+      }
+
+      /* ---------------------------------------------------------------- */
+      /* Trigger variants                                                 */
+      /* ---------------------------------------------------------------- */
+
+      .variants {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.75rem;
+      }
+
+      .variant {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+
+      .variant-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-align: left;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 0.65rem 0.8rem;
+        cursor: pointer;
+      }
+
+      .variant-btn:hover {
+        border-color: var(--accent);
+      }
+
+      .variant-icon {
+        font-size: 1.1rem;
+      }
+
+      .variant-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+
+      .variant-caption {
+        margin: 0;
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        color: var(--muted);
+      }
+
+      /* ---------------------------------------------------------------- */
+      /* Queue controls                                                   */
+      /* ---------------------------------------------------------------- */
+
+      fieldset {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      legend {
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        padding-inline: 0.25rem;
+      }
+
+      .hint {
+        margin: -0.5rem 0 0;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      .controls-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      #togglePause,
+      #clearAll {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0.5rem 0.9rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      #togglePause:hover,
+      #clearAll:hover {
+        border-color: var(--accent);
+      }
+
+      output {
+        margin-inline-start: auto;
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      /* ---------------------------------------------------------------- */
+      /* toast-queue customization                                       */
+      /* ---------------------------------------------------------------- */
+
+      toast-queue:not(:has([data-part="group"]:empty)) {
+
+        --toast-color: var(--accent);
+
+        width: min(380px, 100vw);
+        padding: 1.5rem 1rem;
+
+        display: flex;
+        flex-direction: column;
+        gap: .6rem;
+      }
+
+      /** "+N more" indicator for toasts hidden **/
+      toast-queue[data-hidden-count]::after {
+        content: "+" attr(data-hidden-count) " more";
+        display: block;
+        font-size: 0.75rem;
+        background: var(--surface);
+        border: 1px solid light-dark(#0000001a, #ffffff1a);
+        border-radius: .75rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.102);
+        pointer-events: none;
+        padding: .1rem .4rem;
+        margin-inline: auto;
+        width: fit-content;
+      }
+
+      toast-queue [data-part="group"] {
+        gap: 0.8rem;
+      }
+
+      toast-queue [data-part="toast"] {
+        border: 1px solid var(--toast-color);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+        border-radius: var(--radius);
+        padding: 1rem;
+        gap: 0.6rem;
+        align-items: center;
+        font-size: 0.9rem;
+        position: relative;
+      }
+
+      toast-queue [data-part="toast"]:is([data-dragging]) {
+        opacity: calc(1 - var(--tq-swipe-distance, 0));
+      }
+
+      toast-queue [data-part="content"] {
+        align-items: flex-start;
+        flex: 1;
+        gap: 0.25rem;
+        text-wrap: balance;
+      }
+
+      toast-queue [data-part="title"],
+      toast-queue [data-part="description"] {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      toast-queue [data-part="title"] {
+        font-weight: 600;
+        -webkit-line-clamp: 1;
+      }
+
+      toast-queue [data-part="description"] {
+        color: var(--muted);
+        font-size: 0.85rem;
+        -webkit-line-clamp: 3;
+      }
+
+      toast-queue [data-part="close-button"] {
+        border: 1px solid var(--toast-color);
+        position: absolute;
+        right: 100%;
+        bottom: 100%;
+        translate: 50% 50%;
+        aspect-ratio: 1;
+        padding: unset;
+        width: 1.5rem;
+        font-size: .75rem;
+        border-radius: 100%;
+        z-index: inherit;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--surface);
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+      }
+
+      toast-queue [data-part="toast"]:hover [data-part="close-button"],
+      toast-queue [data-part="toast"]:focus-within [data-part="close-button"] {
+        opacity: 1;
+      }
+
+      toast-queue [data-part="action-button"] {
+        font: inherit;
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: hsl(from var(--toast-color) h s 30%);
+        background: var(--toast-color);
+        border: 1px solid var(--toast-color);
+        border-radius: 6px;
+        padding: 0.3rem 0.6rem;
+        cursor: pointer;
+      }
+
+      /* Category colors — hue signals what kind of toast this is, not decoration */
+      toast-queue [data-part="toast"].tq-demo--message {
+        --toast-color: light-dark(#2f5fa8, #7fb0f2);
+      }
+      toast-queue [data-part="toast"].tq-demo--action {
+        --toast-color: light-dark(#a13f3f, #e28080);
+      }
+      toast-queue [data-part="toast"].tq-demo--pinned {
+        --toast-color: light-dark(#5c5440, #cbbf94);
+      }
+      toast-queue [data-part="toast"].tq-demo--locked {
+        --toast-color: light-dark(#454b52, #aab4bd);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p class="brand"><span aria-hidden="true">🔔</span> toast-queue</p>
+      <div class="header-fields">
+        <label class="field">
+          Preset
+          <select id="preset" aria-label="Style preset" disabled></select>
+        </label>
+        <label class="field">
+          Placement
+          <select id="placement" aria-label="Toast placement">
+            <option value="top-start">top start</option>
+            <option value="top-center">top center</option>
+            <option value="top-end">top end</option>
+            <option value="bottom-start">bottom start</option>
+            <option value="bottom-center">bottom center</option>
+            <option value="bottom-end">bottom end</option>
+          </select>
+        </label>
+      </div>
+    </header>
+
+    <main>
+      <section aria-labelledby="trigger-heading">
+        <p class="eyebrow">Live playground</p>
+        <h1 id="trigger-heading">Try the API</h1>
+        <p class="lede">
+          Everything on this page is powered by toast-queue. Try the examples below, change the placement, switch presets, and inspect the markup. The library ships unstyled. This entire UI is just demo CSS.
+        </p>
+        <div class="variants" id="variants"></div>
+      </section>
+
+      <fieldset>
+        <legend>Toast queue</legend>
+        <p class="hint">
+          Toasts pause on hover and focus by default. Use Pause to freeze the entire queue.
+        </p>
+        <div class="controls-row">
+          <label class="field">
+            Visible limit
+            <input type="number" id="visibleLimit" min="1" max="8" value="3" inputmode="numeric" />
+          </label>
+          <button type="button" id="togglePause" aria-pressed="false">Pause</button>
+          <button type="button" id="clearAll">Clear all</button>
+          <output id="status" aria-live="polite">0 active</output>
+        </div>
+        <p class="hint">Extra toasts stay queued until space becomes available.</p>
+      </fieldset>
+    </main>
+
+    <script type="module">
+      import ToastQueue from '../src/index.js';
+
+      if (typeof HTMLElement.prototype.ariaNotify !== 'function') {
+        await import('https://cdn.jsdelivr.net/npm/@github/arianotify-polyfill');
+      }
+
+      /**
+       * Local style presets. The <select>'s options are generated from
+       * these keys below, so the map is the single source of truth for
+       * both the control and what each option actually loads.
+       */
+      const presets = {
+        stacked: 'stacked',
+        minimal: 'minimal',
+      };
+
+      const placementSelect = document.querySelector('#placement');
+      const presetSelect = document.querySelector('#preset');
+      const visibleLimitInput = document.querySelector('#visibleLimit');
+      const togglePauseButton = document.querySelector('#togglePause');
+      const clearAllButton = document.querySelector('#clearAll');
+      const statusOutput = document.querySelector('#status');
+      const variantsRoot = document.querySelector('#variants');
+
+      // Store reference to the current theme style element
+      let currentPresetStyleTag = null;
+
+      const loadPreset = async (name) => {
+        // 1. Remove the previous theme if it exists
+        if (currentPresetStyleTag) {
+          currentPresetStyleTag.remove();
+          currentPresetStyleTag = null;
+        }
+
+        try {
+          presetSelect.disabled = true;
+
+          // 2. Dynamically import the CSS as a string using ?inline
+          const cssModule = await import(`@presets/${presets[name]}.css?inline`);
+          const cssContent = cssModule.default;
+
+          // 3. Create and inject the new style tag
+          const styleTag = document.createElement('style');
+          styleTag.id = `preset-${name}`; // Unique ID for debugging/tracking
+          styleTag.setAttribute('data-preset', 'active'); // Marker for easy selection
+          styleTag.innerHTML = cssContent;
+
+          document.head.appendChild(styleTag);
+
+          presetSelect.disabled = false;
+
+          // 4. Update the reference
+          currentPresetStyleTag = styleTag;
+
+        } catch (error) {
+          tq.add({ title: `Failed to load preset: ${name}`, description: error }, { className: 'tq-demo--action'})
+          console.error(`Failed to load preset: ${name}`, error);
+        }
+      };
+
+      const storedPreset = localStorage.getItem('tq-preset') || Object.keys(presets)[0];
+
+      Object.keys(presets).forEach((name) => {
+        const option = document.createElement('option');
+        option.value = option.textContent = name;
+        option.selected = name === storedPreset;
+        presetSelect.append(option);
+      });
+
+      presetSelect.removeAttribute('disabled');
+
+      loadPreset(storedPreset);
+
+      const storedPlacement = localStorage.getItem('tq-placement') || 'bottom-end';
+      placementSelect.value = storedPlacement;
+
+      const tq = new ToastQueue({
+        placement: storedPlacement,
+      });
+
+      tq.add(
+      {
+        title: "toast-queue",
+        description:
+          "Accessible, unstyled toast notifications for modern web apps."
+      },
+      {
+        duration: 0,
+        action: {
+          label: "View on GitHub",
+          onClick: () => window.open("https://github.com/andreruffert/toast-queue")
+        }
+      }
+    );
+
+      let activeCount = 0;
+
+      function renderStatus() {
+        const parts = [`${activeCount} active`];
+        if (tq.isPaused) parts.push('paused');
+        statusOutput.textContent = parts.join(' · ');
+      }
+
+      /**
+       * One entry per demo button. `content`/`options` go straight to
+       * `tq.add()` — this array is the single source of truth for both
+       * the button markup and its behavior.
+       */
+      const variants = [
+        {
+          id: 'basic',
+          icon: '🔔',
+          label: 'Basic',
+          caption: 'Plain text notification',
+          content: 'Update installed.',
+          options: { className: 'tq-demo--info' },
+        },
+        {
+          id: 'message',
+          icon: '💬',
+          label: 'Message',
+          caption: 'Title and description',
+          content: { title: 'New message', description: 'André replied in #general' },
+          options: { className: 'tq-demo--message' },
+        },
+        {
+          id: 'action',
+          icon: '‼️',
+          label: 'Action',
+          caption: 'Includes a CTA button',
+          content: 'File failed to upload.',
+          options: {
+            className: 'tq-demo--action',
+            priority: 'high',
+            action: {
+              label: 'Retry',
+              onClick: (toast) => tq.close(toast.id),
+            },
+          },
+        },
+        {
+          id: 'persistent',
+          icon: '📌',
+          label: 'Persistent',
+          caption: 'Stays until dismissed',
+          content: 'Exporting your data…',
+          options: { className: 'tq-demo--pinned', duration: 0 },
+        },
+        {
+          id: 'locked',
+          icon: '🔒',
+          label: 'Non-dismissible',
+          caption: 'User can\'t close it',
+          content: 'Syncing, please wait…',
+          options: { className: 'tq-demo--locked', dismissible: false, duration: 4000 },
+        },
+      ];
+
+      variantsRoot.innerHTML = variants
+        .map(
+          ({ id, icon, label, caption }) => `
+            <div class="variant">
+              <button type="button" class="variant-btn" data-variant="${id}" aria-describedby="${id}-caption">
+                <span class="variant-icon" aria-hidden="true">${icon}</span>
+                <span class="variant-label">${label}</span>
+              </button>
+              <p class="variant-caption" id="${id}-caption">${caption}</p>
+            </div>
+          `,
+        )
+        .join('');
+
+      variantsRoot.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-variant]');
+        if (!button) return;
+
+        const variant = variants.find((v) => v.id === button.dataset.variant);
+        if (!variant) return;
+
+        activeCount++;
+        tq.add(variant.content, {
+          ...variant.options,
+          icon: variant.icon,
+          onClose: () => {
+            activeCount--;
+            renderStatus();
+          },
+        });
+        renderStatus();
+      });
+
+      placementSelect.addEventListener('change', (event) => {
+        const value = event.target.value;
+        tq.placement = value;
+        localStorage.setItem('tq-placement', value);
+      });
+
+      presetSelect.addEventListener('change', (event) => {
+        const value = event.target.value;
+        loadPreset(value);
+        localStorage.setItem('tq-preset', value);
+      });
+
+      visibleLimitInput.addEventListener('input', (event) => {
+        const value = Number(event.target.value);
+        if (!Number.isNaN(value) && value >= 1) {
+          tq.visibleLimit = value;
+        }
+      });
+
+      togglePauseButton.addEventListener('click', () => {
+        tq.isPaused ? tq.resume() : tq.pause();
+        togglePauseButton.textContent = tq.isPaused ? 'Resume' : 'Pause';
+        togglePauseButton.setAttribute('aria-pressed', String(tq.isPaused));
+        renderStatus();
+      });
+
+      clearAllButton.addEventListener('click', () => {
+        tq.clear();
+        activeCount = 0;
+        renderStatus();
+      });
+    </script>
+  </body>
+</html>
