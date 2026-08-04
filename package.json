@@ -15,6 +15,7 @@
   ],
   "scripts": {
     "dev": "vite",
+    "docs": "vite --config vite.docs.config.js",
     "format": "biome check --write",
     "lint": "biome ci",
     "test": "vitest",

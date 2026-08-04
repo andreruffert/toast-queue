@@ -149,12 +149,12 @@
             icon: 'ℹ️',
             className: 'my-toast',
             // dismissible: false,
-            duration: null,
+            duration: 0,
             action: {
               label: 'Action',
               onClick: (toast) => {
                 console.log(toast)
-                toastQueue.close(toast.id)
+                tq.close(toast.id)
               }
             },
           });

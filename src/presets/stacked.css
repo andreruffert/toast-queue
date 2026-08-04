@@ -47,15 +47,6 @@
     opacity: 0;
   }
 
-  /** "+N more" indicator for toasts hidden **/
-  toast-queue[data-hidden-count][data-active="true"]::after {
-    content: "+" attr(data-hidden-count) " more";
-    text-align: center;
-    z-index: calc(var(--tq-stack-z-base) + 1);
-    font-size: smaller;
-    pointer-events: none;
-  }
-
   ::view-transition-group(.tq-item) {
     animation-duration: 0.3s;
   }

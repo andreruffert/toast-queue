@@ -46,6 +46,10 @@
     -webkit-user-select: none;
   }
 
+  toast-queue:has([data-part="group"]:empty) {
+    display: none;
+  }
+
   /** Group */
   toast-queue [data-part="group"] {
     display: contents;
