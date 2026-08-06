@@ -1,0 +1,627 @@
+@layer toast-queue, layout;
+
+@layer layout {
+  :root {
+    color-scheme: light dark;
+
+    --font-sans: ui-sans-serif, "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-mono:
+      ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+
+    --bg: light-dark(#f3efe6, #14161a);
+    --surface: light-dark(#ffffff, #1b1e23);
+    --ink: light-dark(#1c1a16, #eae6da);
+    --muted: light-dark(#726c5e, #9b9689);
+    --line: light-dark(#ddd6c4, #2a2e35);
+    --line-strong: light-dark(#948868, #6a7280);
+    --accent: light-dark(#8a4e18, #e2a559);
+    --on-toast: light-dark(#fffefb, #18160f);
+    --focus: #3b6ff2;
+
+    --radius: 14px;
+    --shadow: 0 16px 32px -16px rgb(0 0 0 / 0.28);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: unset;
+    min-height: 100dvh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  button {
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    font-family: inherit;
+    color: inherit;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .variant-btn,
+    #togglePause,
+    #clearAll {
+      transition:
+        transform 0.15s ease,
+        border-color 0.15s ease;
+    }
+    .variant-btn:active {
+      transform: scale(0.97);
+    }
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Layout                                                           */
+  /* ---------------------------------------------------------------- */
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem clamp(1rem, 4vw, 2rem);
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(8px);
+  }
+
+  .brand {
+    margin: unset;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .byline {
+    font-weight: 400;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .byline a {
+    color: inherit;
+  }
+
+  .header-fields {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .header-fields .field {
+    gap: 0.4rem;
+  }
+
+  .header-fields .field select {
+    box-sizing: border-box;
+    height: 2.25rem;
+  }
+
+  .header-fields a.button,
+  .header-fields color-scheme-switch {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    height: 2.25rem;
+    line-height: 1;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0 0.7rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+
+  .header-fields color-scheme-switch {
+    width: 2.25rem;
+    padding: 0;
+  }
+
+  .header-fields a.button:hover,
+  .header-fields color-scheme-switch:hover {
+    border-color: var(--accent);
+  }
+
+  main {
+    max-width: 640px;
+    margin-inline: auto;
+    padding: clamp(1.5rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem) 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  .eyebrow {
+    margin: 0 0 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  h1,
+  h2 {
+    margin: 0 0 0.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  h1 {
+    font-size: clamp(1.5rem, 1rem + 2vw, 2rem);
+  }
+
+  .lede {
+    margin: 0 0 1.5rem;
+    color: var(--muted);
+    max-width: 32em;
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Fields                                                           */
+  /* ---------------------------------------------------------------- */
+
+  .field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  select,
+  input[type="number"] {
+    font: inherit;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    padding: 0.4rem 0.6rem;
+  }
+
+  input[type="number"] {
+    width: fit-content;
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Trigger variants                                                 */
+  /* ---------------------------------------------------------------- */
+
+  .variants {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .variant {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .variant-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    padding: 0.65rem 0.8rem;
+    cursor: pointer;
+  }
+
+  .variant-btn:hover {
+    border-color: var(--accent);
+  }
+
+  .variant-icon {
+    font-size: 1.1rem;
+  }
+
+  .variant-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .variant-caption {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Queue controls                                                   */
+  /* ---------------------------------------------------------------- */
+
+  fieldset {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  legend {
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    padding-inline: 0.25rem;
+  }
+
+  .hint {
+    margin: -0.5rem 0 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .controls-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  #togglePause,
+  #clearAll {
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  #togglePause:hover,
+  #clearAll:hover {
+    border-color: var(--accent);
+  }
+
+  output {
+    margin-inline-start: auto;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Documentation                                                    */
+  /* ---------------------------------------------------------------- */
+
+  .docs {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .docs a {
+    color: var(--accent);
+  }
+
+  .doc-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .doc-block h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .lede code,
+  .doc-block p code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.1em 0.35em;
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Footer                                                           */
+  /* ---------------------------------------------------------------- */
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 1.5rem clamp(1rem, 4vw, 2rem) 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  footer p {
+    margin: 0;
+  }
+
+  footer a {
+    color: var(--muted);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  footer a:hover {
+    color: var(--accent);
+  }
+
+  .footer-links {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* toast-queue customization                                       */
+  /* ---------------------------------------------------------------- */
+
+  toast-queue:not(:has([data-part="group"]:empty)) {
+    --toast-color: var(--accent);
+
+    width: min(380px, 100vw);
+    padding: 1.5rem 1rem;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  /** "+N more" indicator for toasts hidden **/
+  toast-queue[data-hidden-count]::after {
+    content: "+" attr(data-hidden-count) " more";
+    display: block;
+    font-size: 0.75rem;
+    background: var(--surface);
+    border: 1px solid light-dark(#0000001a, #ffffff1a);
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.102);
+    pointer-events: none;
+    padding: 0.1rem 0.4rem;
+    margin-inline: auto;
+    width: fit-content;
+  }
+
+  toast-queue [data-part="group"] {
+    gap: 0.8rem;
+  }
+
+  toast-queue [data-part="toast"] {
+    border: 1px solid var(--toast-color);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    border-radius: var(--radius);
+    padding: 1rem;
+    gap: 0.6rem;
+    align-items: center;
+    font-size: 0.9rem;
+    position: relative;
+  }
+
+  toast-queue [data-part="toast"]:is([data-dragging]) {
+    opacity: calc(1 - var(--tq-swipe-distance, 0));
+  }
+
+  toast-queue [data-part="content"] {
+    align-items: flex-start;
+    flex: 1;
+    gap: 0.25rem;
+    text-wrap: balance;
+  }
+
+  toast-queue [data-part="title"],
+  toast-queue [data-part="description"] {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  toast-queue [data-part="title"] {
+    font-weight: 600;
+    -webkit-line-clamp: 1;
+  }
+
+  toast-queue [data-part="description"] {
+    color: var(--muted);
+    font-size: 0.85rem;
+    -webkit-line-clamp: 3;
+  }
+
+  toast-queue [data-part="close-button"] {
+    border: 1px solid #ddd;
+    position: absolute;
+    right: 0;
+    bottom: 100%;
+    translate: 50% 50%;
+    aspect-ratio: 1;
+    padding: unset;
+    width: 1.5rem;
+    font-size: 0.75rem;
+    border-radius: 100%;
+    z-index: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--surface);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  toast-queue [data-part="toast"]:hover [data-part="close-button"],
+  toast-queue [data-part="toast"]:focus-within [data-part="close-button"] {
+    opacity: 1;
+  }
+
+  toast-queue [data-part="action-button"] {
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--on-toast);
+    background: var(--toast-color);
+    border: 1px solid var(--toast-color);
+    border-radius: 6px;
+    padding: 0.3rem 0.6rem;
+    cursor: pointer;
+  }
+
+  /* Category colors: hue signals what kind of toast this is, not decoration */
+  toast-queue [data-part="toast"].tq-demo--message {
+    --toast-color: light-dark(#2f5fa8, #7fb0f2);
+  }
+  toast-queue [data-part="toast"].tq-demo--action {
+    --toast-color: light-dark(#a13f3f, #e28080);
+  }
+  toast-queue [data-part="toast"].tq-demo--pinned {
+    --toast-color: light-dark(#5c5440, #cbbf94);
+  }
+  toast-queue [data-part="toast"].tq-demo--locked {
+    --toast-color: light-dark(#454b52, #aab4bd);
+  }
+
+  /*
+  * Custom vitesse-inspired theme for <syntax-highlight>.
+  */
+  syntax-highlight {
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    word-wrap: normal;
+    overflow-x: auto;
+    tab-size: 2;
+    hyphens: none;
+
+    --vitesse-bg: light-dark(#ffffff, #121212);
+    --vitesse-fg: light-dark(#393a34, #dbd7ca);
+    --vitesse-comment: light-dark(#a0ada0, #758575);
+    --vitesse-keyword: light-dark(#1e754f, #4d9375);
+    --vitesse-entity: light-dark(#998418, #e6cc77);
+    --vitesse-constant: light-dark(#2f798a, #4c9a91);
+    --vitesse-string: light-dark(#b56959, #c98a7d);
+    --vitesse-variable: light-dark(#a65e2b, #cb997e);
+    --vitesse-tag: light-dark(#1e754f, #4d9375);
+    --vitesse-deleted-bg: light-dark(#fce6e6, #37232b);
+    --vitesse-deleted-text: light-dark(#a13f3f, #e28080);
+    --vitesse-inserted-bg: light-dark(#e6f4e6, #1c3327);
+    --vitesse-inserted-text: light-dark(#3f7d4f, #8fca9e);
+
+    color: var(--vitesse-fg);
+    background: var(--vitesse-bg);
+    border: 1px solid light-dark(#e4e0d8, #262626);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.6;
+  }
+
+  ::highlight(atrule),
+  ::highlight(number),
+  ::highlight(punctuation) {
+    color: var(--vitesse-fg);
+  }
+  ::highlight(namespace) {
+    opacity: 0.7;
+  }
+  ::highlight(cdata),
+  ::highlight(comment),
+  ::highlight(doctype),
+  ::highlight(prolog) {
+    color: var(--vitesse-comment);
+    font-style: italic;
+  }
+  ::highlight(attr-name),
+  ::highlight(builtin),
+  ::highlight(char),
+  ::highlight(constant),
+  ::highlight(operator) {
+    color: var(--vitesse-constant);
+  }
+  ::highlight(boolean),
+  ::highlight(property),
+  ::highlight(symbol),
+  ::highlight(tag) {
+    color: var(--vitesse-tag);
+  }
+  ::highlight(class-name),
+  ::highlight(entity),
+  ::highlight(function),
+  ::highlight(selector) {
+    color: var(--vitesse-entity);
+  }
+  ::highlight(keyword),
+  ::highlight(rule) {
+    color: var(--vitesse-keyword);
+  }
+  ::highlight(attr-value),
+  ::highlight(string) {
+    color: var(--vitesse-string);
+  }
+  ::highlight(variable) {
+    color: var(--vitesse-variable);
+  }
+  ::highlight(regex) {
+    color: var(--vitesse-constant);
+  }
+  ::highlight(italic) {
+    font-style: italic;
+  }
+  ::highlight(bold) {
+    font-weight: 700;
+  }
+  ::highlight(deleted) {
+    color: var(--vitesse-deleted-text);
+    background-color: var(--vitesse-deleted-bg);
+  }
+  ::highlight(inserted) {
+    color: var(--vitesse-inserted-text);
+    background-color: var(--vitesse-inserted-bg);
+  }
+  ::highlight(url) {
+    text-decoration: underline;
+    color: var(--vitesse-constant);
+  }
+  ::highlight(important),
+  ::highlight(md-title) {
+    color: var(--vitesse-keyword);
+  }
+  ::highlight(css-important) {
+    color: var(--vitesse-keyword);
+  }
+  ::highlight(md-list) {
+    color: var(--vitesse-variable);
+  }
+}
