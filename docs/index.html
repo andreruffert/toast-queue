@@ -6,12 +6,9 @@
     <meta name="description" content="Live playground for toast-queue, an unstyled, accessible toast notification library." />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>">
     <title>toast-queue</title>
-
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue@next/dist/toast-queue.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue@next/dist/presets/stacked.min.css" data-tq-preset>
-<link rel="stylesheet" href="./style.css">
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue@latest/dist/toast-queue.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue@latest/dist/presets/stacked.min.css" data-tq-preset>
+    <link rel="stylesheet" href="./style.css">
     <script>
       // Ensure the event listener is setup before the initial `color-scheme-switch` event gets fired.
       document.addEventListener('color-scheme-switch', event => {
@@ -221,7 +218,7 @@ const tq = new ToastQueue();</syntax-highlight>
     </svg>
 
     <script type="module">
-      import ToastQueue from 'https://cdn.jsdelivr.net/npm/toast-queue@next/dist/toast-queue.min.js';
+      import ToastQueue from 'https://cdn.jsdelivr.net/npm/toast-queue@latest/dist/toast-queue.min.js';
 
       if (typeof HTMLElement.prototype.ariaNotify !== 'function') {
         await import('https://cdn.jsdelivr.net/npm/@github/arianotify-polyfill');
