@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Live playground for toast-queue — an unstyled, accessible toast notification library." />
+    <meta name="description" content="Live playground for toast-queue, an unstyled, accessible toast notification library." />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>">
     <title>toast-queue</title>
     <style>
@@ -18,7 +18,9 @@
         --ink: light-dark(#1c1a16, #eae6da);
         --muted: light-dark(#726c5e, #9b9689);
         --line: light-dark(#ddd6c4, #2a2e35);
-        --accent: light-dark(#a8631f, #e2a559);
+        --line-strong: light-dark(#948868, #6a7280);
+        --accent: light-dark(#8a4e18, #e2a559);
+        --on-toast: light-dark(#fffefb, #18160f);
         --focus: #3b6ff2;
 
         --radius: 14px;
@@ -90,11 +92,61 @@
         gap: 0.5rem;
       }
 
+      .byline {
+        font-weight: 400;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      .byline a {
+        color: inherit;
+      }
+
       .header-fields {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 0.75rem;
         flex-wrap: wrap;
+      }
+
+      .header-fields .field {
+        gap: 0.4rem;
+      }
+
+      .header-fields .field select {
+        box-sizing: border-box;
+        height: 2.25rem;
+      }
+
+      .header-fields a.button,
+      .header-fields color-scheme-switch {
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        height: 2.25rem;
+        line-height: 1;
+        text-decoration: none;
+        color: var(--ink);
+        font-size: 0.85rem;
+        font-weight: 600;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0 0.7rem;
+        cursor: pointer;
+        transition: border-color 0.15s ease;
+      }
+
+      .header-fields color-scheme-switch {
+        width: 2.25rem;
+        padding: 0;
+      }
+
+      .header-fields a.button:hover,
+      .header-fields color-scheme-switch:hover {
+        border-color: var(--accent);
       }
 
       main {
@@ -150,7 +202,7 @@
         font: inherit;
         color: var(--ink);
         background: var(--surface);
-        border: 1px solid var(--line);
+        border: 1px solid var(--line-strong);
         border-radius: 8px;
         padding: 0.4rem 0.6rem;
       }
@@ -181,7 +233,7 @@
         gap: 0.5rem;
         text-align: left;
         background: var(--surface);
-        border: 1px solid var(--line);
+        border: 1px solid var(--line-strong);
         border-radius: 10px;
         padding: 0.65rem 0.8rem;
         cursor: pointer;
@@ -242,7 +294,7 @@
       #togglePause,
       #clearAll {
         background: var(--surface);
-        border: 1px solid var(--line);
+        border: 1px solid var(--line-strong);
         border-radius: 8px;
         padding: 0.5rem 0.9rem;
         font-size: 0.85rem;
@@ -260,6 +312,81 @@
         font-family: var(--font-mono);
         font-size: 0.8rem;
         color: var(--muted);
+      }
+
+      /* ---------------------------------------------------------------- */
+      /* Documentation                                                    */
+      /* ---------------------------------------------------------------- */
+
+      .docs {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .docs a {
+        color: var(--accent);
+      }
+
+      .doc-block {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+
+      .doc-block h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+
+      .lede code,
+      .doc-block p code {
+        font-family: var(--font-mono);
+        font-size: 0.85em;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 0.1em 0.35em;
+      }
+
+      /* ---------------------------------------------------------------- */
+      /* Footer                                                           */
+      /* ---------------------------------------------------------------- */
+
+      footer {
+        border-top: 1px solid var(--line);
+        padding: 1.5rem clamp(1rem, 4vw, 2rem) 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+        text-align: center;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      footer p {
+        margin: 0;
+      }
+
+      footer a {
+        color: var(--muted);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+
+      footer a:hover {
+        color: var(--accent);
+      }
+
+      .footer-links {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
       }
 
       /* ---------------------------------------------------------------- */
@@ -367,7 +494,7 @@
         font: inherit;
         font-weight: 600;
         font-size: 0.8rem;
-        color: hsl(from var(--toast-color) h s 30%);
+        color: var(--on-toast);
         background: var(--toast-color);
         border: 1px solid var(--toast-color);
         border-radius: 6px;
@@ -375,7 +502,7 @@
         cursor: pointer;
       }
 
-      /* Category colors — hue signals what kind of toast this is, not decoration */
+      /* Category colors: hue signals what kind of toast this is, not decoration */
       toast-queue [data-part="toast"].tq-demo--message {
         --toast-color: light-dark(#2f5fa8, #7fb0f2);
       }
@@ -389,26 +516,158 @@
         --toast-color: light-dark(#454b52, #aab4bd);
       }
     </style>
+    <script>
+      // Ensure the event listener is setup before the initial `color-scheme-switch` event gets fired.
+      document.addEventListener('color-scheme-switch', event => {
+        const colorScheme = event.target.value;
+        document.documentElement.style.setProperty('color-scheme', colorScheme);
+        event.target.querySelector('.icon use').setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", colorScheme === 'light' ? '#sun' : '#moon');
+        event.target.setAttribute('aria-label', `Switch to ${colorScheme === 'light' ? 'dark' : 'light'} color scheme`)
+      });
+
+      window.she = window.she || {};
+      window.she.config = {
+        languages: ['markup', 'css', 'javascript', 'bash'],
+      };
+    </script>
+    <script type="module" async blocking="render" src="https://cdn.jsdelivr.net/npm/color-scheme-switch-element@1.0.0/+esm"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/syntax-highlight-element@1/+esm"></script>
+    <style>
+      /*
+       * Custom vitesse-inspired theme for <syntax-highlight>.
+       */
+      syntax-highlight {
+        white-space: pre;
+        word-spacing: normal;
+        word-break: normal;
+        word-wrap: normal;
+        overflow-x: auto;
+        tab-size: 2;
+        hyphens: none;
+
+        --vitesse-bg: light-dark(#ffffff, #121212);
+        --vitesse-fg: light-dark(#393a34, #dbd7ca);
+        --vitesse-comment: light-dark(#a0ada0, #758575);
+        --vitesse-keyword: light-dark(#1e754f, #4d9375);
+        --vitesse-entity: light-dark(#998418, #e6cc77);
+        --vitesse-constant: light-dark(#2f798a, #4c9a91);
+        --vitesse-string: light-dark(#b56959, #c98a7d);
+        --vitesse-variable: light-dark(#a65e2b, #cb997e);
+        --vitesse-tag: light-dark(#1e754f, #4d9375);
+        --vitesse-deleted-bg: light-dark(#fce6e6, #37232b);
+        --vitesse-deleted-text: light-dark(#a13f3f, #e28080);
+        --vitesse-inserted-bg: light-dark(#e6f4e6, #1c3327);
+        --vitesse-inserted-text: light-dark(#3f7d4f, #8fca9e);
+
+        color-scheme: light dark;
+        color: var(--vitesse-fg);
+        background: var(--vitesse-bg);
+        border: 1px solid light-dark(#e4e0d8, #262626);
+        border-radius: 10px;
+        padding: 1rem 1.1rem;
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        line-height: 1.6;
+      }
+
+      ::highlight(atrule),
+      ::highlight(number),
+      ::highlight(punctuation) {
+        color: var(--vitesse-fg);
+      }
+      ::highlight(namespace) {
+        opacity: 0.7;
+      }
+      ::highlight(cdata),
+      ::highlight(comment),
+      ::highlight(doctype),
+      ::highlight(prolog) {
+        color: var(--vitesse-comment);
+        font-style: italic;
+      }
+      ::highlight(attr-name),
+      ::highlight(builtin),
+      ::highlight(char),
+      ::highlight(constant),
+      ::highlight(operator) {
+        color: var(--vitesse-constant);
+      }
+      ::highlight(boolean),
+      ::highlight(property),
+      ::highlight(symbol),
+      ::highlight(tag) {
+        color: var(--vitesse-tag);
+      }
+      ::highlight(class-name),
+      ::highlight(entity),
+      ::highlight(function),
+      ::highlight(selector) {
+        color: var(--vitesse-entity);
+      }
+      ::highlight(keyword),
+      ::highlight(rule) {
+        color: var(--vitesse-keyword);
+      }
+      ::highlight(attr-value),
+      ::highlight(string) {
+        color: var(--vitesse-string);
+      }
+      ::highlight(variable) {
+        color: var(--vitesse-variable);
+      }
+      ::highlight(regex) {
+        color: var(--vitesse-constant);
+      }
+      ::highlight(italic) {
+        font-style: italic;
+      }
+      ::highlight(bold) {
+        font-weight: 700;
+      }
+      ::highlight(deleted) {
+        color: var(--vitesse-deleted-text);
+        background-color: var(--vitesse-deleted-bg);
+      }
+      ::highlight(inserted) {
+        color: var(--vitesse-inserted-text);
+        background-color: var(--vitesse-inserted-bg);
+      }
+      ::highlight(url) {
+        text-decoration: underline;
+        color: var(--vitesse-constant);
+      }
+      ::highlight(important),
+      ::highlight(md-title) {
+        color: var(--vitesse-keyword);
+      }
+      ::highlight(css-important) {
+        color: var(--vitesse-keyword);
+      }
+      ::highlight(md-list) {
+        color: var(--vitesse-variable);
+      }
+    </style>
   </head>
   <body>
     <header>
-      <p class="brand"><span aria-hidden="true">🔔</span> toast-queue</p>
+      <p class="brand">
+        <span aria-hidden="true">🔔</span> toast-queue
+        <span class="byline">by <a href="https://andreruffert.com" target="_blank" rel="noopener">André Ruffert</a></span>
+      </p>
       <div class="header-fields">
+        <a class="button" href="https://github.com/andreruffert/toast-queue" target="_blank" rel="noopener">
+          <svg class="icon" width="1.1em" height="1.1em" aria-hidden="true"><use xlink:href="#github"></use></svg>
+          <span>Source</span>
+        </a>
+
         <label class="field">
           Preset
           <select id="preset" aria-label="Style preset" disabled></select>
         </label>
-        <label class="field">
-          Placement
-          <select id="placement" aria-label="Toast placement">
-            <option value="top-start">top start</option>
-            <option value="top-center">top center</option>
-            <option value="top-end">top end</option>
-            <option value="bottom-start">bottom start</option>
-            <option value="bottom-center">bottom center</option>
-            <option value="bottom-end">bottom end</option>
-          </select>
-        </label>
+
+        <color-scheme-switch class="button" title="Toggle light & dark color scheme">
+          <svg class="icon" width="1.2em" height="1.2em" aria-hidden="true"><use xlink:href="#sun"></use></svg>
+        </color-scheme-switch>
       </div>
     </header>
 
@@ -423,11 +682,22 @@
       </section>
 
       <fieldset>
-        <legend>Toast queue</legend>
+        <legend>Queue controls</legend>
         <p class="hint">
-          Toasts pause on hover and focus by default. Use Pause to freeze the entire queue.
+          Placement and visible limit are live <code>ToastQueue</code> setters. Toasts pause on hover and focus by default; use Pause to freeze the entire queue.
         </p>
         <div class="controls-row">
+          <label class="field">
+            Placement
+            <select id="placement" aria-label="Toast placement">
+              <option value="top-start">top start</option>
+              <option value="top-center">top center</option>
+              <option value="top-end">top end</option>
+              <option value="bottom-start">bottom start</option>
+              <option value="bottom-center">bottom center</option>
+              <option value="bottom-end">bottom end</option>
+            </select>
+          </label>
           <label class="field">
             Visible limit
             <input type="number" id="visibleLimit" min="1" max="8" value="3" inputmode="numeric" />
@@ -438,7 +708,133 @@
         </div>
         <p class="hint">Extra toasts stay queued until space becomes available.</p>
       </fieldset>
+
+      <section aria-labelledby="docs-heading" class="docs">
+        <p class="eyebrow">Documentation</p>
+        <h2 id="docs-heading">Using toast-queue</h2>
+        <p class="lede">
+          A quick reference to get started. For the full API (options, per-toast
+          config, and every method), see
+          <a href="https://github.com/andreruffert/toast-queue/blob/main/API.md" target="_blank" rel="noopener">API.md</a>.
+        </p>
+
+        <div class="doc-block">
+          <h3>Install</h3>
+          <p class="lede">Install the library via npm.</p>
+          <syntax-highlight language="shell">npm install toast-queue</syntax-highlight>
+        </div>
+
+        <div class="doc-block">
+          <h3>Usage</h3>
+          <p class="lede">
+            Create a <code>ToastQueue</code> instance. This is where all your toasts render.
+          </p>
+          <syntax-highlight language="js">import ToastQueue from 'toast-queue'
+
+const tq = new ToastQueue();</syntax-highlight>
+          <p class="lede">Then trigger a toast from anywhere using the instance.</p>
+          <syntax-highlight language="html">&lt;button onclick="tq.add('Toast message...');"&gt;Trigger toast&lt;/button&gt;</syntax-highlight>
+        </div>
+
+        <div class="doc-block">
+          <h3>Presets</h3>
+          <p class="lede">
+            <code>toast-queue</code> ships unstyled by default, you own every pixel.
+            Two optional presets are included if you'd rather start from a look and
+            adjust from there: <strong>minimal</strong>, a simple vertical list, and
+            <strong>stacked</strong>, a card-stack "peek" effect where toasts beyond
+            <code>visibleLimit</code> collapse behind the topmost one.
+          </p>
+          <syntax-highlight language="js">import 'toast-queue/presets/minimal.css';
+// or
+import 'toast-queue/presets/stacked.css';</syntax-highlight>
+          <p class="lede">
+            Both are plain CSS layered under <code>@layer toast-queue</code>, so your
+            own styles win by default. Treat them as a starting point, not a lock-in.
+          </p>
+        </div>
+
+        <div class="doc-block">
+          <h3>Options</h3>
+          <p class="lede">Configuration passed to the <code>ToastQueue</code> constructor:</p>
+          <syntax-highlight language="js">new ToastQueue({
+  root: document.body,      // Container element for the toast queue
+  duration: 6000,            // Auto-dismiss duration in ms (0 disables it)
+  placement: 'top-end',      // 'top-start' | 'top-center' | 'top-end' | 'bottom-start' | 'bottom-center' | 'bottom-end'
+  visibleLimit: 3,           // Toasts rendered before the rest are flagged hidden
+  template: { root, item, actionButton }, // Override the default markup
+});</syntax-highlight>
+          <p class="lede">
+            <code>placement</code> and <code>visibleLimit</code> are also live setters
+            (<code>toastQueue.placement = 'bottom-center'</code>) and update everything
+            in place. Per-toast options are passed as the second argument to
+            <code>.add()</code>. See API.md for the full list (<code>dismissible</code>,
+            <code>priority</code>, <code>icon</code>, <code>action</code>,
+            <code>onClose</code>, etc.).
+          </p>
+        </div>
+
+        <div class="doc-block">
+          <h3>Browser support</h3>
+          <p class="lede">
+            <code>toast-queue</code> uses modern, progressively-enhanced browser
+            features, Popover API, View Transitions API, and
+            <code>ariaNotify()</code>, and falls back gracefully where a browser
+            doesn't yet support them (toasts still render and function without
+            animation, just without a transition).
+          </p>
+          <p class="lede">
+            <code>ariaNotify()</code> is the one exception worth calling out: it's how
+            toasts are announced to screen readers. Without it, screen reader users on
+            browsers that haven't shipped it yet won't hear an announcement when a
+            toast appears. If that matters for your app, install the polyfill and load
+            it conditionally so browsers with native support skip it entirely.
+          </p>
+          <syntax-highlight language="shell">npm install @github/arianotify-polyfill</syntax-highlight>
+          <syntax-highlight language="js">if (typeof HTMLElement.prototype.ariaNotify !== 'function') {
+  await import('@github/arianotify-polyfill');
+}
+
+const tq = new ToastQueue();</syntax-highlight>
+        </div>
+      </section>
     </main>
+
+    <footer>
+      <p>
+        <span aria-hidden="true">🔔</span> toast-queue,
+        made by <a href="https://andreruffert.com" target="_blank" rel="noopener">André Ruffert</a>
+      </p>
+      <p class="footer-links">
+        <a href="https://github.com/andreruffert/toast-queue" target="_blank" rel="noopener">GitHub</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://github.com/andreruffert/toast-queue/blob/main/API.md" target="_blank" rel="noopener">API reference</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://www.npmx.dev/package/toast-queue" target="_blank" rel="noopener">npm</a>
+        <span aria-hidden="true">·</span>
+        <span>MIT License</span>
+      </p>
+    </footer>
+
+    <svg width="0" height="0" aria-hidden="true" hidden>
+      <symbol id="sun" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v2"></path>
+        <path d="M12 20v2"></path>
+        <path d="m4.93 4.93 1.41 1.41"></path>
+        <path d="m17.66 17.66 1.41 1.41"></path>
+        <path d="M2 12h2"></path>
+        <path d="M20 12h2"></path>
+        <path d="m6.34 17.66-1.41 1.41"></path>
+        <path d="m19.07 4.93-1.41 1.41"></path>
+      </symbol>
+      <symbol id="moon" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+      </symbol>
+      <symbol id="github" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.09 3.29 9.4 7.86 10.93.57.1.78-.25.78-.55 0-.27-.01-1.16-.02-2.11-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.71 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.64 1.59.24 2.77.12 3.06.74.81 1.18 1.84 1.18 3.1 0 4.44-2.7 5.42-5.27 5.7.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .3.2.66.79.55A10.51 10.51 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"></path>
+      </symbol>
+    </svg>
 
     <script type="module">
       import ToastQueue from '../src/index.js';
@@ -521,6 +917,12 @@
         placement: storedPlacement,
       });
 
+      function renderStatus() {
+        const parts = [`${tq.size} active`];
+        if (tq.isPaused) parts.push('paused');
+        statusOutput.textContent = parts.join(' · ');
+      }
+
       tq.add(
       {
         title: "toast-queue",
@@ -532,21 +934,16 @@
         action: {
           label: "View on GitHub",
           onClick: () => window.open("https://github.com/andreruffert/toast-queue")
-        }
+        },
+        onClose: renderStatus,
       }
     );
 
-      let activeCount = 0;
-
-      function renderStatus() {
-        const parts = [`${activeCount} active`];
-        if (tq.isPaused) parts.push('paused');
-        statusOutput.textContent = parts.join(' · ');
-      }
+      renderStatus();
 
       /**
        * One entry per demo button. `content`/`options` go straight to
-       * `tq.add()` — this array is the single source of truth for both
+       * `tq.add()`. This array is the single source of truth for both
        * the button markup and its behavior.
        */
       const variants = [
@@ -620,14 +1017,10 @@
         const variant = variants.find((v) => v.id === button.dataset.variant);
         if (!variant) return;
 
-        activeCount++;
         tq.add(variant.content, {
           ...variant.options,
           icon: variant.icon,
-          onClose: () => {
-            activeCount--;
-            renderStatus();
-          },
+          onClose: renderStatus,
         });
         renderStatus();
       });
@@ -660,7 +1053,6 @@
 
       clearAllButton.addEventListener('click', () => {
         tq.clear();
-        activeCount = 0;
         renderStatus();
       });
     </script>

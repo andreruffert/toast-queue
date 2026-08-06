@@ -9,6 +9,7 @@
         * [new exports.ToastQueue([options])](#new_ToastQueue+ToastQueue_new)
     * [.isPaused](#ToastQueue+isPaused) ⇒ <code>boolean</code>
     * [.element](#ToastQueue+element) ⇒ <code>HTMLElement</code>
+    * [.size](#ToastQueue+size) ⇒ <code>number</code>
     * [.placement](#ToastQueue+placement) ⇒ <code>ToastQueuePlacement</code>
     * [.placement](#ToastQueue+placement)
     * [.visibleLimit](#ToastQueue+visibleLimit) ⇒ <code>number</code>
@@ -65,6 +66,11 @@ const tq = new ToastQueue();
 ### toastQueue.element ⇒ <code>HTMLElement</code>
 **Kind**: instance property of [<code>ToastQueue</code>](#ToastQueue)  
 **Returns**: <code>HTMLElement</code> - - The root DOM element for this queue instance.  
+<a name="ToastQueue+size"></a>
+
+### toastQueue.size ⇒ <code>number</code>
+**Kind**: instance property of [<code>ToastQueue</code>](#ToastQueue)  
+**Returns**: <code>number</code> - - The number of toasts currently in the queue.  
 <a name="ToastQueue+placement"></a>
 
 ### toastQueue.placement ⇒ <code>ToastQueuePlacement</code>

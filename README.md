@@ -47,7 +47,7 @@ Then, you can use the provided `ToastQueue` API to trigger a toast from anywhere
 
 ## Presets
 
-`toast-queue` ships unstyled by default — you own every pixel. If you'd rather start from a look and adjust from there, two optional presets are included:
+`toast-queue` ships unstyled by default, you own every pixel. If you'd rather start from a look and adjust from there, two optional presets are included:
 
 ```js
 import 'toast-queue/presets/minimal.css';
@@ -55,10 +55,10 @@ import 'toast-queue/presets/minimal.css';
 import 'toast-queue/presets/stacked.css';
 ```
 
-- **minimal** — a simple vertical list.
-- **stacked** — a card-stack "peek" effect, where toasts beyond `visibleLimit` collapse behind the topmost one.
+- **minimal**: a simple vertical list.
+- **stacked**: a card-stack "peek" effect, where toasts beyond `visibleLimit` collapse behind the topmost one.
 
-Both are plain CSS layered under `@layer toast-queue`, so your own styles will win by default — treat them as a starting point, not a lock-in.
+Both are plain CSS layered under `@layer toast-queue`, so your own styles will win by default. Treat them as a starting point, not a lock-in.
 
 ## Options
 
@@ -74,11 +74,11 @@ new ToastQueue({
 
 `placement` and `visibleLimit` are also live setters (`toastQueue.placement = 'bottom-center'`) and update everything in place.
 
-Per-toast options are passed as the second argument to `.add()` — see [API.md](./API.md) for the full list (`dismissible`, `priority`, `icon`, `action`, `onClose`, etc.).
+Per-toast options are passed as the second argument to `.add()`. See [API.md](./API.md) for the full list (`dismissible`, `priority`, `icon`, `action`, `onClose`, etc.).
 
 ## Browser support
 
-`toast-queue` uses modern, progressively-enhanced browser features — [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API), [View Transitions API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API), and [`ariaNotify()`](https://developer.mozilla.org/en-US/docs/Web/API/Element/ariaNotify) — and falls back gracefully where a browser doesn't yet support them (e.g. toasts still render and function without animation, just without a transition).
+`toast-queue` uses modern, progressively-enhanced browser features, [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API), [View Transitions API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API), and [`ariaNotify()`](https://developer.mozilla.org/en-US/docs/Web/API/Element/ariaNotify), and it falls back gracefully where a browser doesn't yet support them (e.g. toasts still render and function without animation, just without a transition).
 
 `ariaNotify()` is the one exception worth calling out: it's how toasts are announced to screen readers, and without it (or a fallback), screen reader users on browsers that haven't shipped it yet won't hear an announcement when a toast appears. If that matters for your app, install the polyfill and load it conditionally so browsers with native support skip it entirely:
 

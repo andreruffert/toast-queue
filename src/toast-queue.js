@@ -508,6 +508,13 @@ export class ToastQueue {
   }
 
   /**
+   * @returns {number} - The number of toasts currently in the queue.
+   */
+  get size() {
+    return this.#queue.size;
+  }
+
+  /**
    * Temporarily pauses all toast timers.
    */
   pause() {
