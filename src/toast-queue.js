@@ -313,9 +313,8 @@ export class ToastQueue {
   /** @param {PointerEvent} event */
   #onOutsidePointer = (event) => {
     if (!this.#active) return;
-    if (!this.#rootPart.contains(event.target)) {
-      this.#deactivate('click');
-    }
+    if (this.#rootPart.contains(event.target)) return;
+    this.#clearActivation();
   };
 
   #onVisibility = () => {
