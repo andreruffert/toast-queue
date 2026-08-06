@@ -1,3 +1,37 @@
+## Classes
+
+<dl>
+<dt><a href="#ToastQueue">ToastQueue</a></dt>
+<dd></dd>
+</dl>
+
+## Typedefs
+
+<dl>
+<dt><a href="#ToastQueueOptions">ToastQueueOptions</a> : <code>Object</code></dt>
+<dd></dd>
+<dt><a href="#ToastQueuePlacement">ToastQueuePlacement</a> : <code>&#x27;top-start&#x27;</code> | <code>&#x27;top-center&#x27;</code> | <code>&#x27;top-end&#x27;</code> | <code>&#x27;bottom-start&#x27;</code> | <code>&#x27;bottom-center&#x27;</code> | <code>&#x27;bottom-end&#x27;</code></dt>
+<dd><p>Toast queue placement.</p>
+</dd>
+<dt><a href="#ToastQueueTemplate">ToastQueueTemplate</a> : <code>Object</code></dt>
+<dd></dd>
+<dt><a href="#ToastPriority">ToastPriority</a> : <code>&#x27;normal&#x27;</code> | <code>&#x27;high&#x27;</code></dt>
+<dd></dd>
+<dt><a href="#ToastOptions">ToastOptions</a> : <code>Object</code></dt>
+<dd></dd>
+<dt><a href="#ToastContent">ToastContent</a> : <code>Object</code></dt>
+<dd></dd>
+<dt><a href="#ToastActionHandler">ToastActionHandler</a> ⇒ <code>void</code></dt>
+<dd><p>Called when a toast action button is clicked.</p>
+</dd>
+<dt><a href="#ToastCloseHandler">ToastCloseHandler</a> ⇒ <code>void</code></dt>
+<dd><p>Called when a toast is closed.</p>
+</dd>
+<dt><a href="#ToastAction">ToastAction</a> : <code>Object</code></dt>
+<dd><p>Action button configuration.</p>
+</dd>
+</dl>
+
 <a name="ToastQueue"></a>
 
 ## ToastQueue
@@ -10,7 +44,7 @@
     * [.isPaused](#ToastQueue+isPaused) ⇒ <code>boolean</code>
     * [.element](#ToastQueue+element) ⇒ <code>HTMLElement</code>
     * [.size](#ToastQueue+size) ⇒ <code>number</code>
-    * [.placement](#ToastQueue+placement) ⇒ <code>ToastQueuePlacement</code>
+    * [.placement](#ToastQueue+placement) ⇒ [<code>ToastQueuePlacement</code>](#ToastQueuePlacement)
     * [.placement](#ToastQueue+placement)
     * [.visibleLimit](#ToastQueue+visibleLimit) ⇒ <code>number</code>
     * [.visibleLimit](#ToastQueue+visibleLimit)
@@ -54,7 +88,7 @@ const tq = new ToastQueue();
 
 | Param | Type | Description |
 | --- | --- | --- |
-| [options] | <code>ToastQueueOptions</code> | Configuration options. |
+| [options] | [<code>ToastQueueOptions</code>](#ToastQueueOptions) | Configuration options. |
 
 <a name="ToastQueue+isPaused"></a>
 
@@ -73,9 +107,9 @@ const tq = new ToastQueue();
 **Returns**: <code>number</code> - - The number of toasts currently in the queue.  
 <a name="ToastQueue+placement"></a>
 
-### toastQueue.placement ⇒ <code>ToastQueuePlacement</code>
+### toastQueue.placement ⇒ [<code>ToastQueuePlacement</code>](#ToastQueuePlacement)
 **Kind**: instance property of [<code>ToastQueue</code>](#ToastQueue)  
-**Returns**: <code>ToastQueuePlacement</code> - - The current placement.  
+**Returns**: [<code>ToastQueuePlacement</code>](#ToastQueuePlacement) - - The current placement.  
 <a name="ToastQueue+placement"></a>
 
 ### toastQueue.placement
@@ -83,7 +117,7 @@ const tq = new ToastQueue();
 
 | Param | Type | Description |
 | --- | --- | --- |
-| value | <code>ToastQueuePlacement</code> | The new placement. |
+| value | [<code>ToastQueuePlacement</code>](#ToastQueuePlacement) | The new placement. |
 
 <a name="ToastQueue+visibleLimit"></a>
 
@@ -109,8 +143,8 @@ Adds a toast notification to the queue.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| content | <code>string</code> \| <code>ToastContent</code> | Toast message content. |
-| [options] | <code>ToastOptions</code> | Per-toast configuration. |
+| content | <code>string</code> \| [<code>ToastContent</code>](#ToastContent) | Toast message content. |
+| [options] | [<code>ToastOptions</code>](#ToastOptions) | Per-toast configuration. |
 
 <a name="ToastQueue+get"></a>
 
@@ -158,3 +192,101 @@ Resumes all paused toast timers.
 Destroys the queue and removes all listeners.
 
 **Kind**: instance method of [<code>ToastQueue</code>](#ToastQueue)  
+<a name="ToastQueueOptions"></a>
+
+## ToastQueueOptions : <code>Object</code>
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| [root] | <code>HTMLElement</code> | <code>document.body</code> | Container element for the toast queue. |
+| [duration] | <code>number</code> | <code>6000</code> | Auto-dismiss duration in milliseconds. |
+| [placement] | [<code>ToastQueuePlacement</code>](#ToastQueuePlacement) | <code>&#x27;top-end&#x27;</code> | Position on screen. |
+| [visibleLimit] | <code>number</code> | <code>3</code> | Number of toasts rendered visibly before the rest are hidden (exposed via `data-hidden-count`). |
+| [template] | [<code>ToastQueueTemplate</code>](#ToastQueueTemplate) |  | HTML templates. |
+
+<a name="ToastQueuePlacement"></a>
+
+## ToastQueuePlacement : <code>&#x27;top-start&#x27;</code> \| <code>&#x27;top-center&#x27;</code> \| <code>&#x27;top-end&#x27;</code> \| <code>&#x27;bottom-start&#x27;</code> \| <code>&#x27;bottom-center&#x27;</code> \| <code>&#x27;bottom-end&#x27;</code>
+Toast queue placement.
+
+**Kind**: global typedef  
+<a name="ToastQueueTemplate"></a>
+
+## ToastQueueTemplate : <code>Object</code>
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| [root] | <code>string</code> | HTML for the toast container. |
+| [item] | <code>string</code> | HTML for individual toast items. |
+| [actionButton] | <code>string</code> | HTML for action buttons. |
+
+<a name="ToastPriority"></a>
+
+## ToastPriority : <code>&#x27;normal&#x27;</code> \| <code>&#x27;high&#x27;</code>
+**Kind**: global typedef  
+<a name="ToastOptions"></a>
+
+## ToastOptions : <code>Object</code>
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| [duration] | <code>number</code> |  | Override the queue default auto-dismiss duration in milliseconds.  Use 0 to disable automatic dismissal. |
+| [dismissible] | <code>boolean</code> | <code>true</code> | Whether toast can be manually closed. |
+| [priority] | [<code>ToastPriority</code>](#ToastPriority) | <code>&#x27;normal&#x27;</code> |  |
+| [className] | <code>string</code> |  | Additional CSS class. |
+| [icon] | <code>string</code> |  | HTML markup rendered into the icon slot. |
+| [action] | [<code>ToastAction</code>](#ToastAction) |  | Action button configuration. |
+| [onClose] | [<code>ToastCloseHandler</code>](#ToastCloseHandler) |  | Called when the toast is closed. |
+
+<a name="ToastContent"></a>
+
+## ToastContent : <code>Object</code>
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| title | <code>string</code> | Primary toast message. |
+| [description] | <code>string</code> | Additional supporting text. |
+
+<a name="ToastActionHandler"></a>
+
+## ToastActionHandler ⇒ <code>void</code>
+Called when a toast action button is clicked.
+
+**Kind**: global typedef  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| toast | <code>ToastRecord</code> | The toast associated with the action. |
+
+<a name="ToastCloseHandler"></a>
+
+## ToastCloseHandler ⇒ <code>void</code>
+Called when a toast is closed.
+
+**Kind**: global typedef  
+
+| Param | Type |
+| --- | --- |
+| toast | <code>ToastRecord</code> | 
+
+<a name="ToastAction"></a>
+
+## ToastAction : <code>Object</code>
+Action button configuration.
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| label | <code>string</code> | Text displayed in the action button. |
+| [onClick] | [<code>ToastActionHandler</code>](#ToastActionHandler) |  |
+

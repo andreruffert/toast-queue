@@ -20,7 +20,7 @@
     "lint": "biome ci",
     "test": "vitest",
     "build": "vite build && vite build --config vite.presets.config.js",
-    "prebuild": "npx jsdoc-to-markdown src/toast-queue.js > API.md",
+    "prebuild": "npx jsdoc-to-markdown src/*.js > API.md",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
