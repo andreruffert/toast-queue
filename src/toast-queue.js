@@ -182,11 +182,6 @@ export class ToastQueue {
     return this.#activationReasons.size > 0;
   }
 
-  /** @returns {boolean} */
-  get #isExpandable() {
-    return this.#queue.size > 1;
-  }
-
   /* ---------------------------------------------------------------------- */
   /* Activation                                                             */
   /* ---------------------------------------------------------------------- */
@@ -199,6 +194,7 @@ export class ToastQueue {
     this.#activationReasons.add(reason);
 
     if (!wasActive && this.#active) {
+      this.pause();
       this.#syncActivationState();
     }
 
@@ -213,6 +209,7 @@ export class ToastQueue {
     this.#activationReasons.delete(reason);
 
     if (wasActive && !this.#active) {
+      this.resume();
       this.#syncActivationState();
     }
 
@@ -222,6 +219,7 @@ export class ToastQueue {
   #clearActivation() {
     if (!this.#active) return;
 
+    this.resume();
     this.#activationReasons.clear();
     this.#syncActivationState();
   }
@@ -249,9 +247,7 @@ export class ToastQueue {
     this.#rootPart.addEventListener('click', this.#onClick, { signal });
     this.#rootPart.addEventListener('pointerenter', this.#onEnter, { signal });
     this.#rootPart.addEventListener('pointerleave', this.#onLeave, { signal });
-    this.#rootPart.addEventListener('pointerdown', this.#onPointerDown, { signal });
-    this.#rootPart.addEventListener('pointerup', this.#onPointerUp, { signal });
-    this.#rootPart.addEventListener('pointercancel', this.#onPointerUp, { signal });
+    this.#rootPart.addEventListener('pointercancel', this.#onLeave, { signal });
     this.#rootPart.addEventListener('focusin', this.#onFocusIn, { signal });
     this.#rootPart.addEventListener('focusout', this.#onFocusOut, { signal });
     this.#rootPart.addEventListener('keydown', this.#onKeydown, { signal });
@@ -267,26 +263,9 @@ export class ToastQueue {
     this.resume();
   };
 
-  // `pointerenter`/`pointerleave` are meant to double as a touch-hover signal,
-  // but support for simulating hover from touch contact is inconsistent
-  // across browsers/webviews. `pointerdown`/`pointerup` are a more reliable
-  // primitive for "the user is physically touching a toast right now",
-  // covering the full contact window regardless of hover support.
-  #onPointerDown = () => {
-    this.pause();
-  };
-
-  #onPointerUp = () => {
-    if (this.#active) return;
-    this.resume();
-  };
-
   /** @param {FocusEvent} event */
   #onFocusIn = (event) => {
-    this.pause();
-
     if (event.target.matches('[data-command]')) return;
-    if (!this.#isExpandable) return;
 
     // Ignore focus moving within the queue
     if (this.#rootPart.contains(event.relatedTarget)) return;
@@ -303,7 +282,6 @@ export class ToastQueue {
     if (this.#rootPart.contains(event.relatedTarget)) return;
 
     queueMicrotask(() => {
-      this.resume();
       this.#deactivate('focus');
     });
 
@@ -365,8 +343,6 @@ export class ToastQueue {
       this.clear();
       return;
     }
-
-    if (!this.#isExpandable) return;
 
     this.#activate('click');
   };
