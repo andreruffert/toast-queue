@@ -1,5 +1,10 @@
 # toast-queue
 
+[![Test status](https://img.shields.io/github/actions/workflow/status/andreruffert/toast-queue/test.yml?label=Test&logo=github&color=e2a559&labelColor=1b1e23)](https://github.com/andreruffert/toast-queue/actions/workflows/test.yml)
+[![npm version](https://img.shields.io/npm/v/toast-queue?color=e2a559&labelColor=1b1e23)](https://npmx.dev/package/toast-queue/versions)
+[![npm downloads](https://img.shields.io/npm/dm/toast-queue?logo=npm&color=e2a559&labelColor=1b1e23)](https://npmx.dev/package/toast-queue)
+[![jsDelivr hits (npm)](https://img.shields.io/jsdelivr/npm/hm/toast-queue?color=e2a559&labelColor=1b1e23)](https://www.jsdelivr.com/package/npm/toast-queue)
+
 > A unstyled, accessible Vanilla JS library to display brief, temporary toast messages.
 
 - Framework agnostic: Vanilla JavaScript without dependencies.
@@ -19,7 +24,6 @@
 - [Options](#options)
 - [Browser support](#browser-support)
 - [Documentation](#documentation)
-- [Development](#development)
 
 ## Usage
 
@@ -39,10 +43,10 @@ import ToastQueue from 'toast-queue'
 const tq = new ToastQueue();
 ```
 
-Then, you can use the provided `ToastQueue` API to trigger a toast from anywhere.
+Then, you can use the provided `ToastQueue` [API](./API.md#ToastQueue+add) to trigger a toast from anywhere.
 
-```html
-<button onclick="tq.add('Toast message...');">Trigger toast</button>
+```js
+tq.add('Toast message...');
 ```
 
 ## Presets
@@ -74,7 +78,7 @@ new ToastQueue({
 
 `placement` and `visibleLimit` are also live setters (`toastQueue.placement = 'bottom-center'`) and update everything in place.
 
-Per-toast options are passed as the second argument to `.add()`. See [API.md](./API.md) for the full list (`dismissible`, `priority`, `icon`, `action`, `onClose`, etc.).
+Per-toast options are passed as the second argument to `.add()`. See [API.md](./API.md#ToastOptions) for the full list (`dismissible`, `priority`, `icon`, `action`, `onClose`, etc.).
 
 ## Browser support
 
