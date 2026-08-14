@@ -1,14 +1,25 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Live playground for toast-queue, an unstyled, accessible toast notification library." />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>">
+    <meta charset="utf-8">
     <title>toast-queue</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="author" content="André Ruffert">
+    <meta name="description" content="Live playground for toast-queue, an unstyled, accessible toast notification library.">
+    <meta name="keywords" content="toast,notification">
+
+    <meta name="og:title" content="toast-queue">
+    <meta name="og:type" content="website">
+    <meta name="og:url" content="https://toast-queue.js.org">
+    <meta property="og:image" content="https://repository-images.githubusercontent.com/939061098/9b852acf-e1bf-4391-9811-91eca4fd29c7">
+    <meta property="og:image:alt" content="A unstyled, accessible Vanilla JS library to display brief, temporary toast messages.">
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%2224%22 height%3D%2224%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22currentColor%22 stroke-width%3D%222%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cstyle%3E path%7Bcolor%3Ablack%7D%40media (prefers-color-scheme%3Adark)%7Bpath%7Bcolor%3Awhite%7D%7D%3C%2Fstyle%3E%3Cpath d%3D%22M10.268 21a2 2 0 0 0 3.464 0%22%2F%3E%3Cpath d%3D%22M22 8c0-2.3-.8-4.3-2-6%22%2F%3E%3Cpath d%3D%22M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326%22%2F%3E%3Cpath d%3D%22M4 2C2.8 3.7 2 5.7 2 8%22%2F%3E%3C%2Fsvg%3E" sizes="any" />
+    <link rel="canonical" href="https://toast-queue.js.org">
+    <link rel="stylesheet" href="./style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue/dist/toast-queue.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue/dist/presets/stacked.min.css" data-tq-preset>
-    <link rel="stylesheet" href="./style.css">
     <script>
       // Ensure the event listener is setup before the initial `color-scheme-switch` event gets fired.
       document.addEventListener('color-scheme-switch', event => {
@@ -23,13 +34,12 @@
         languages: ['markup', 'css', 'javascript', 'bash'],
       };
     </script>
-    <script type="module" async blocking="render" src="https://cdn.jsdelivr.net/npm/color-scheme-switch-element@1.0.0/+esm"></script>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/syntax-highlight-element@1/+esm"></script>
+    <script type="module" async blocking="render" src="https://cdn.jsdelivr.net/npm/color-scheme-switch-element@2/+esm"></script>
   </head>
   <body>
     <header>
       <p class="brand">
-        <span aria-hidden="true">🔔</span> toast-queue
+        toast-queue
         <span class="byline">by <a href="https://andreruffert.com" target="_blank" rel="noopener">André Ruffert</a></span>
       </p>
       <div class="header-fields">
@@ -38,13 +48,7 @@
           <span>Source</span>
         </a>
 
-        <label class="field">
-          Preset
-          <select id="preset" aria-label="Style preset">
-            <option value="stacked" selected>Stacked</option>
-            <option value="minimal">Minimal</option>
-          </select>
-        </label>
+
 
         <color-scheme-switch class="button" title="Toggle light & dark color scheme">
           <svg class="icon" width="1.2em" height="1.2em" aria-hidden="true"><use xlink:href="#sun"></use></svg>
@@ -53,21 +57,28 @@
     </header>
 
     <main>
-      <section aria-labelledby="trigger-heading">
-        <p class="eyebrow">Live playground</p>
-        <h1 id="trigger-heading">Try the API</h1>
-        <p class="lede">
-          Everything on this page is powered by toast-queue. Try the examples below, change the placement, switch presets, and inspect the markup. The library ships unstyled. This entire UI is just demo CSS.
-        </p>
-        <div class="variants" id="variants"></div>
-      </section>
+      <article>
+        <div>
+          <p class="eyebrow">Live playground</p>
+          <h1 id="trigger-heading">Try the API</h1>
+          <p class="lede">
+            Everything on this page is powered by toast-queue. Try the examples below, change the placement, switch presets, and inspect the markup. The library ships unstyled. This entire UI is just demo CSS.
+          </p>
+        </div>
 
-      <fieldset>
+        <fieldset>
         <legend>Queue controls</legend>
         <p class="hint">
           Placement and visible limit are live <code>ToastQueue</code> setters. Toasts pause on hover and focus by default; use Pause to freeze the entire queue.
         </p>
         <div class="controls-row">
+          <label class="field">
+            Preset
+            <select id="preset" aria-label="Style preset">
+              <option value="stacked" selected>Stacked</option>
+              <option value="minimal">Minimal</option>
+            </select>
+          </label>
           <label class="field">
             Placement
             <select id="placement" aria-label="Toast placement">
@@ -88,36 +99,149 @@
           <output id="status" aria-live="polite">0 active</output>
         </div>
         <p class="hint">Extra toasts stay queued until space becomes available.</p>
+
+        <button type="button" id="addToast">Show toast</button>
       </fieldset>
 
-      <section aria-labelledby="docs-heading" class="docs">
-        <p class="eyebrow">Documentation</p>
-        <h2 id="docs-heading">Using toast-queue</h2>
-        <p class="lede">
-          A quick reference to get started. For the full API (options, per-toast
-          config, and every method), see
-          <a href="https://github.com/andreruffert/toast-queue/blob/main/API.md" target="_blank" rel="noopener">API.md</a>.
-        </p>
+      <div class="copy-code">
+        <syntax-highlight language="css" content-selector="style">
+            <style id="playground-css" type="text/css" spellcheck="false">/* toast-queue customization */
+toast-queue {
+  --toast-color: light-dark(#ffffff, #171717);
 
-        <div class="doc-block">
-          <h3>Install</h3>
-          <p class="lede">Install the library via npm.</p>
-          <syntax-highlight language="shell">npm install toast-queue</syntax-highlight>
+  width: 300px;
+  padding: 1rem;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+toast-queue [data-part="group"] {
+  gap: .6rem;
+}
+
+toast-queue [data-part="toast"] {
+  color: contrast-color(var(--toast-color));
+  border: 1px solid color-mix(in srgb, currentColor, transparent 87%);
+  background: var(--toast-color);
+  box-shadow: 0 4px 12px rgba(0,0,0,.1);
+  border-radius: 1rem;
+  padding: 1rem;
+  gap: .5rem;
+  font-size: smaller;
+  flex-wrap: wrap;
+}
+
+toast-queue [data-part="toast"]:is([data-dragging]) {
+  opacity: calc(1 - var(--tq-swipe-distance, 0));
+}
+
+toast-queue [data-part="content"] {
+  align-items: flex-start;
+  flex: 1;
+  gap: .3rem;
+  min-inline-size: fit-content;
+}
+toast-queue [data-part="title"],
+toast-queue [data-part="description"] {
+  font-size: inherit;
+  margin: unset;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+toast-queue [data-part="title"] {
+  font-weight: 600;
+  -webkit-line-clamp: 1;
+}
+toast-queue [data-part="description"] {
+  -webkit-line-clamp: 3;
+}
+
+toast-queue [data-part="actions"],
+toast-queue [data-part="close-button"] {
+  align-self: center;
+}
+
+toast-queue [data-part="action-button"],
+toast-queue [data-part="close-button"] {
+  background: contrast-color(var(--toast-color));
+  color: var(--toast-color);
+  border: 1px solid contrast-color(var(--toast-color));
+  text-wrap: nowrap;
+  block-size: 2rem;
+}
+
+toast-queue [data-part="close-button"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: unset;
+  aspect-ratio: 1;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+toast-queue [data-part="menu"] {
+  display: flex;
+  justify-content: flex-end;
+  margin: unset;
+}
+
+toast-queue:not([data-active]) [data-part="menu"] {
+  display: none;
+}</style>
+            </syntax-highlight>
+            <clipboard-copy for="playground-css" class="button">
+              Copy code
+            </clipboard-copy>
+      </div>
+      </article>
+
+
+
+
+
+      <article>
+        <div>
+          <p class="eyebrow">Documentation</p>
+          <h2 id="docs-heading">Using toast-queue</h2>
+          <p class="lede">
+            A quick reference to get started. For the full API (options, per-toast
+            config, and every method), see
+            <a href="https://github.com/andreruffert/toast-queue/blob/main/API.md" target="_blank">API reference</a>.
+          </p>
         </div>
 
-        <div class="doc-block">
+        <section>
+          <h3>Install</h3>
+          <p class="lede">Install the library via <a href="https://www.npmx.dev/package/toast-queue" target="_blank">npm</a>.</p>
+          <div class="copy-code">
+            <syntax-highlight id="copy-install" language="shell">npm install toast-queue</syntax-highlight>
+            <clipboard-copy for="copy-install">Copy code</clipboard-copy>
+          </div>
+        </section>
+
+        <section>
           <h3>Usage</h3>
           <p class="lede">
             Create a <code>ToastQueue</code> instance. This is where all your toasts render.
           </p>
-          <syntax-highlight language="js">import ToastQueue from 'toast-queue'
+          <div class="copy-code">
+            <syntax-highlight id="copy-usage-1" language="js">import ToastQueue from 'toast-queue'
 
 const tq = new ToastQueue();</syntax-highlight>
+            <clipboard-copy for="copy-usage-1">Copy code</clipboard-copy>
+          </div>
           <p class="lede">Then trigger a toast from anywhere using the instance.</p>
-          <syntax-highlight language="js">tq.add('Toast message...');</syntax-highlight>
-        </div>
+          <div class="copy-code">
+            <syntax-highlight id="copy-usage-2" language="js">tq.add('Toast message...');</syntax-highlight>
+            <clipboard-copy for="copy-usage-2">Copy code</clipboard-copy>
+          </div>
+        </section>
 
-        <div class="doc-block">
+        <section>
           <h3>Presets</h3>
           <p class="lede">
             <code>toast-queue</code> ships unstyled by default, you own every pixel.
@@ -126,36 +250,47 @@ const tq = new ToastQueue();</syntax-highlight>
             <strong>stacked</strong>, a card-stack "peek" effect where toasts beyond
             <code>visibleLimit</code> collapse behind the topmost one.
           </p>
-          <syntax-highlight language="js">import 'toast-queue/presets/minimal.css';
-// or
+          <div class="copy-code">
+            <syntax-highlight id="copy-usage-preset" language="css">/* core */
+import 'toast-queue/toast-queue.css';
+
+/* minimal */
+import 'toast-queue/presets/minimal.css';
+
+/* stacked */
 import 'toast-queue/presets/stacked.css';</syntax-highlight>
+            <clipboard-copy for="copy-usage-preset">Copy code</clipboard-copy>
+          </div>
           <p class="lede">
             Both are plain CSS layered under <code>@layer toast-queue</code>, so your
             own styles win by default. Treat them as a starting point, not a lock-in.
           </p>
-        </div>
+        </section>
 
-        <div class="doc-block">
+        <section>
           <h3>Options</h3>
           <p class="lede">Configuration passed to the <code>ToastQueue</code> constructor:</p>
-          <syntax-highlight language="js">new ToastQueue({
+          <div class="copy-code">
+            <syntax-highlight id="copy-usage-options" language="js">new ToastQueue({
   root: document.body,      // Container element for the toast queue
-  duration: 6000,            // Auto-dismiss duration in ms (0 disables it)
-  placement: 'top-end',      // 'top-start' | 'top-center' | 'top-end' | 'bottom-start' | 'bottom-center' | 'bottom-end'
-  visibleLimit: 3,           // Toasts rendered before the rest are flagged hidden
+  duration: 6000,           // Auto-dismiss duration in ms (0 disables it)
+  placement: 'top-end',     // 'top-start' | 'top-center' | 'top-end' | 'bottom-start' | 'bottom-center' | 'bottom-end'
+  visibleLimit: 3,          // Toasts rendered before the rest are flagged hidden
   template: { root, item, actionButton }, // Override the default markup
 });</syntax-highlight>
+            <clipboard-copy for="copy-usage-options">Copy code</clipboard-copy>
+          </div>
           <p class="lede">
             <code>placement</code> and <code>visibleLimit</code> are also live setters
             (<code>toastQueue.placement = 'bottom-center'</code>) and update everything
             in place. Per-toast options are passed as the second argument to
-            <code>.add()</code>. See API.md for the full list (<code>dismissible</code>,
+            <code>.add()</code>. See <a href="https://github.com/andreruffert/toast-queue/blob/main/API.md#ToastOptions" target="_blank">API reference</a> for the full list (<code>dismissible</code>,
             <code>priority</code>, <code>icon</code>, <code>action</code>,
             <code>onClose</code>, etc.).
           </p>
-        </div>
+        </section>
 
-        <div class="doc-block">
+        <section>
           <h3>Browser support</h3>
           <p class="lede">
             <code>toast-queue</code> uses modern, progressively-enhanced browser
@@ -171,20 +306,26 @@ import 'toast-queue/presets/stacked.css';</syntax-highlight>
             toast appears. If that matters for your app, install the polyfill and load
             it conditionally so browsers with native support skip it entirely.
           </p>
-          <syntax-highlight language="shell">npm install @github/arianotify-polyfill</syntax-highlight>
-          <syntax-highlight language="js">if (typeof HTMLElement.prototype.ariaNotify !== 'function') {
+          <div class="copy-code">
+            <syntax-highlight id="copy-polyfill-install" language="shell">npm install @github/arianotify-polyfill</syntax-highlight>
+            <clipboard-copy for="copy-polyfill-install">Copy code</clipboard-copy>
+          </div>
+
+          <div class="copy-code">
+          <syntax-highlight id="copy-polyfill-usage" language="js">if (typeof HTMLElement.prototype.ariaNotify !== 'function') {
   await import('@github/arianotify-polyfill');
 }
 
 const tq = new ToastQueue();</syntax-highlight>
-        </div>
-      </section>
+<clipboard-copy for="copy-polyfill-usage">Copy code</clipboard-copy>
+</div>
+        </section>
+      </article>
     </main>
 
     <footer>
       <p>
-        <span aria-hidden="true">🔔</span> toast-queue,
-        made by <a href="https://andreruffert.com" target="_blank" rel="noopener">André Ruffert</a>
+        An open source project by <a href="https://andreruffert.com" target="_blank" rel="noopener">André Ruffert</a>.
       </p>
       <p class="footer-links">
         <a href="https://github.com/andreruffert/toast-queue" target="_blank" rel="noopener">GitHub</a>
@@ -218,10 +359,10 @@ const tq = new ToastQueue();</syntax-highlight>
     </svg>
 
     <script type="module">
-      import ToastQueue from 'https://cdn.jsdelivr.net/npm/toast-queue/+esm';
+      import ToastQueue from 'https://cdn.jsdelivr.net/npm/toast-queue@1.0.0-alpha.17/+esm';
 
       if (typeof HTMLElement.prototype.ariaNotify !== 'function') {
-        await import('https://cdn.jsdelivr.net/npm/@github/arianotify-polyfill');
+        await import('https://cdn.jsdelivr.net/npm/@github/arianotify-polyfill@1');
       }
 
       /**
@@ -240,7 +381,48 @@ const tq = new ToastQueue();</syntax-highlight>
       const togglePauseButton = document.querySelector('#togglePause');
       const clearAllButton = document.querySelector('#clearAll');
       const statusOutput = document.querySelector('#status');
-      const variantsRoot = document.querySelector('#variants');
+      const addToastButton = document.querySelector('#addToast');
+
+
+      const playgroundCss = document.querySelector('#playground-css');
+      /**
+         * Playground CSS
+         * Allow only plaintext editing
+         * Firefox doesn't support `plaintext-only` yet so we fallback to `true`.
+         */
+        playgroundCss.setAttribute('contenteditable', 'plaintext-only');
+        if (playgroundCss.contentEditable !== 'plaintext-only') {
+          playgroundCss.setAttribute('contenteditable', 'true');
+        }
+
+        // Update syntax highlighting on input
+        playgroundCss.addEventListener('input', event => {
+          if (SUPPORTS_CSS_HIGHLIGHTS) {
+            event.target.normalize();
+            event.target.closest('syntax-highlight')?.update();
+          }
+        });
+
+        // Enhance content-editable functionality
+        playgroundCss.addEventListener('keydown', (event) => {
+          // The tab key should insert a tab character
+          if (event.key === 'Tab') {
+            event.preventDefault();
+
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+
+            const range = selection.getRangeAt(0);
+            const tabNode = document.createTextNode('  '); // two spaces
+            range.insertNode(tabNode);
+
+            // Move the caret after the inserted spaces
+            range.setStartAfter(tabNode);
+            range.setEndAfter(tabNode);
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+        });
 
       const loadPreset = async (name) => {
         presetSelect.disabled = true;
@@ -293,87 +475,8 @@ const tq = new ToastQueue();</syntax-highlight>
 
       renderStatus();
 
-      /**
-       * One entry per demo button. `content`/`options` go straight to
-       * `tq.add()`. This array is the single source of truth for both
-       * the button markup and its behavior.
-       */
-      const variants = [
-        {
-          id: 'basic',
-          icon: '🔔',
-          label: 'Basic',
-          caption: 'Plain text notification',
-          content: 'Update installed.',
-          options: { className: 'tq-demo--info' },
-        },
-        {
-          id: 'message',
-          icon: '💬',
-          label: 'Message',
-          caption: 'Title and description',
-          content: { title: 'New message', description: 'André replied in #general' },
-          options: { className: 'tq-demo--message' },
-        },
-        {
-          id: 'action',
-          icon: '‼️',
-          label: 'Action',
-          caption: 'Includes a CTA button',
-          content: 'File failed to upload.',
-          options: {
-            className: 'tq-demo--action',
-            priority: 'high',
-            action: {
-              label: 'Retry',
-              onClick: (toast) => tq.close(toast.id),
-            },
-          },
-        },
-        {
-          id: 'persistent',
-          icon: '📌',
-          label: 'Persistent',
-          caption: 'Stays until dismissed',
-          content: 'Exporting your data…',
-          options: { className: 'tq-demo--pinned', duration: 0 },
-        },
-        {
-          id: 'locked',
-          icon: '🔒',
-          label: 'Non-dismissible',
-          caption: 'User can\'t close it',
-          content: 'Syncing, please wait…',
-          options: { className: 'tq-demo--locked', dismissible: false, duration: 4000 },
-        },
-      ];
-
-      variantsRoot.innerHTML = variants
-        .map(
-          ({ id, icon, label, caption }) => `
-            <div class="variant">
-              <button type="button" class="variant-btn" data-variant="${id}" aria-describedby="${id}-caption">
-                <span class="variant-icon" aria-hidden="true">${icon}</span>
-                <span class="variant-label">${label}</span>
-              </button>
-              <p class="variant-caption" id="${id}-caption">${caption}</p>
-            </div>
-          `,
-        )
-        .join('');
-
-      variantsRoot.addEventListener('click', (event) => {
-        const button = event.target.closest('[data-variant]');
-        if (!button) return;
-
-        const variant = variants.find((v) => v.id === button.dataset.variant);
-        if (!variant) return;
-
-        tq.add(variant.content, {
-          ...variant.options,
-          icon: variant.icon,
-          onClose: renderStatus,
-        });
+      addToastButton.addEventListener('click', () => {
+        tq.add({title: 'Toast created', description: new Date(Date.now()).toLocaleTimeString() })
         renderStatus();
       });
 
@@ -405,6 +508,20 @@ const tq = new ToastQueue();</syntax-highlight>
       clearAllButton.addEventListener('click', () => {
         tq.clear();
         renderStatus();
+      });
+    </script>
+
+    <script type="module">
+      import 'https://cdn.jsdelivr.net/npm/syntax-highlight-element@1.0.0/+esm';
+      import 'https://cdn.jsdelivr.net/npm/@github/clipboard-copy-element@1.3.0/+esm';
+
+      document.addEventListener('clipboard-copy', event => {
+        const button = event.target;
+        const defaultContent = button.textContent;
+        button.textContent = 'Copied Code'
+        setTimeout(() => {
+          button.textContent = defaultContent;
+        }, 1800);
       });
     </script>
   </body>
