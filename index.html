@@ -27,12 +27,11 @@
       toast-queue {
         --toast-color: Canvas;
 
-        width: 300px;
-        padding: 1rem;
-        overflow: visible;
         display: flex;
         flex-direction: column;
         gap: .5rem;
+        width: 300px;
+        padding: 1rem;
       }
 
       toast-queue [data-part="group"] {
@@ -47,10 +46,10 @@
         border-radius: 1rem;
         padding: 1rem;
         gap: .5rem;
-      }
 
-      toast-queue [data-part="toast"]:is([data-dragging]) {
-        opacity: calc(1 - var(--tq-swipe-distance, 0));
+        &:is([data-dragging]) {
+          opacity: calc(1 - var(--tq-swipe-distance, 0));
+        }
       }
 
       toast-queue [data-part="content"] {
@@ -70,10 +69,10 @@
         border: unset;
         align-self: center;
         font-size: 1.4rem;
-      }
 
-      toast-queue [data-part="close-button"]:hover {
-        background-color: var(--toast-color);
+        &:hover {
+          background-color: var(--toast-color);
+        }
       }
 
       toast-queue [data-part="menu"] {

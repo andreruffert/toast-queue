@@ -1,16 +1,11 @@
 @layer toast-queue {
+  toast-queue {
+    --tq-stack-z-base: 1000;
+  }
+
   toast-queue [data-part="group"] {
     display: grid;
     grid-auto-flow: row;
-  }
-
-  /**
-   * A single, shared base for the peek's z-index stack. Defined once here
-   * so the "+N more" badge (below) can derive its z-index from the same
-   * source instead of a disconnected literal.
-   */
-  toast-queue {
-    --tq-stack-z-base: 1000;
   }
 
   toast-queue [data-part="item"] {

@@ -1,53 +1,42 @@
 @layer toast-queue {
   toast-queue {
-    min-width: 200px;
-    max-width: 100%;
-
-    display: none;
+    /* Popover reset */
     margin: unset;
     padding: unset;
     inset: unset;
     background-color: unset;
     border: unset;
-  }
 
-  toast-queue:is(:popover-open) {
-    display: initial;
-  }
+    /** Position **/
+    &[data-placement^="top"] {
+      inset-block-start: env(safe-area-inset-top, 0);
+    }
+    &[data-placement^="bottom"] {
+      inset-block-end: env(safe-area-inset-bottom, 0);
+    }
+    &[data-placement="top-start"],
+    &[data-placement="bottom-start"] {
+      inset-inline-start: env(safe-area-inset-left, 0);
+    }
+    &[data-placement="top-end"],
+    &[data-placement="bottom-end"] {
+      inset-inline-end: env(safe-area-inset-right, 0);
+    }
+    &[data-placement="top-center"],
+    &[data-placement="bottom-center"] {
+      inset-inline: env(safe-area-inset-left, 0);
+      margin-inline: auto;
+    }
+    &[data-placement="center"] {
+      inset: 0;
+      margin: auto;
+    }
 
-  /** Placement **/
-  toast-queue[data-placement^="top"] {
-    inset-block-start: env(safe-area-inset-top, 0);
-  }
-  toast-queue[data-placement^="bottom"] {
-    inset-block-end: env(safe-area-inset-bottom, 0);
-  }
-  toast-queue[data-placement="top-start"],
-  toast-queue[data-placement="bottom-start"] {
-    inset-inline-start: env(safe-area-inset-left, 0);
-  }
-  toast-queue[data-placement="top-end"],
-  toast-queue[data-placement="bottom-end"] {
-    inset-inline-end: env(safe-area-inset-right, 0);
-  }
-  toast-queue[data-placement="top-center"],
-  toast-queue[data-placement="bottom-center"] {
-    inset-inline: env(safe-area-inset-left, 0);
-    margin-inline: auto;
-  }
-  toast-queue[data-placement="center"] {
-    inset: 0;
-    margin: auto;
-  }
-
-  toast-queue:has([data-part="toast"][data-dragging]) {
     /* Prevent content selection relevant for touch devices */
-    user-select: none;
-    -webkit-user-select: none;
-  }
-
-  toast-queue:has([data-part="group"]:empty) {
-    display: none;
+    &:has([data-part="toast"][data-dragging]) {
+      user-select: none;
+      -webkit-user-select: none;
+    }
   }
 
   /** Group */
@@ -62,10 +51,11 @@
   toast-queue [data-part="toast"] {
     background-color: Canvas;
     display: flex;
-  }
-  toast-queue [data-part="toast"]:is([data-swipeable]) {
-    /* Ensure that pointer events work properly on touch devices. */
-    touch-action: none;
+
+    &:is([data-swipeable]) {
+      /* Ensure that pointer events work properly on touch devices. */
+      touch-action: none;
+    }
   }
 
   /** Close button */
