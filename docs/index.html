@@ -2,18 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>toast-queue</title>
+    <title>toast-queue — Accessible, unstyled toast notifications</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <meta name="author" content="André Ruffert">
-    <meta name="description" content="Live playground for toast-queue, an unstyled, accessible toast notification library.">
-    <meta name="keywords" content="toast,notification">
+    <meta name="description" content="Accessible, unstyled toast notifications for modern web apps. A tiny, framework-agnostic JavaScript library with progressive enhancement and optional CSS presets.">
 
-    <meta name="og:title" content="toast-queue">
-    <meta name="og:type" content="website">
-    <meta name="og:url" content="https://toast-queue.js.org">
-    <meta property="og:image" content="https://repository-images.githubusercontent.com/939061098/9b852acf-e1bf-4391-9811-91eca4fd29c7">
-    <meta property="og:image:alt" content="A unstyled, accessible Vanilla JS library to display brief, temporary toast messages.">
+    <meta property="og:title" content="toast-queue — Accessible, unstyled toast notifications">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://toast-queue.js.org">
+    <meta property="og:image" content="https://repository-images.githubusercontent.com/1029697707/219592ab-eb3b-4d41-ae16-fd2c2458d78a">
+    <meta property="og:image:alt" content="Accessible, unstyled toast notifications for modern web apps. A tiny, framework-agnostic JavaScript library with progressive enhancement and optional CSS presets.">
 
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%2224%22 height%3D%2224%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22currentColor%22 stroke-width%3D%222%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Cstyle%3E path%7Bcolor%3Ablack%7D%40media (prefers-color-scheme%3Adark)%7Bpath%7Bcolor%3Awhite%7D%7D%3C%2Fstyle%3E%3Cpath d%3D%22M10.268 21a2 2 0 0 0 3.464 0%22%2F%3E%3Cpath d%3D%22M22 8c0-2.3-.8-4.3-2-6%22%2F%3E%3Cpath d%3D%22M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326%22%2F%3E%3Cpath d%3D%22M4 2C2.8 3.7 2 5.7 2 8%22%2F%3E%3C%2Fsvg%3E" sizes="any" />
     <link rel="canonical" href="https://toast-queue.js.org">
@@ -47,9 +46,6 @@
           <svg class="icon" width="1.1em" height="1.1em" aria-hidden="true"><use xlink:href="#github"></use></svg>
           <span>Source</span>
         </a>
-
-
-
         <color-scheme-switch class="button" title="Toggle light & dark color scheme">
           <svg class="icon" width="1.2em" height="1.2em" aria-hidden="true"><use xlink:href="#sun"></use></svg>
         </color-scheme-switch>
@@ -60,16 +56,14 @@
       <article>
         <div>
           <p class="eyebrow">Live playground</p>
-          <h1 id="trigger-heading">Try the API</h1>
-          <p class="lede">
-            Everything on this page is powered by toast-queue. Try the examples below, change the placement, switch presets, and inspect the markup. The library ships unstyled. This entire UI is just demo CSS.
-          </p>
+          <h1 id="trigger-heading">Accessible toast notifications</h1>
+          <p class="lede">Try toast-queue in the browser. Tiny, unstyled, framework-agnostic, and built on modern web APIs with progressive enhancement and graceful fallbacks.</p>
         </div>
 
         <fieldset>
         <legend>Queue controls</legend>
         <p class="hint">
-          Placement and visible limit are live <code>ToastQueue</code> setters. Toasts pause on hover and focus by default; use Pause to freeze the entire queue.
+          Change the placement, visual preset, and number of visible toasts. Toasts pause while hovered or focused. Pause freezes the entire queue.
         </p>
         <div class="controls-row">
           <label class="field">
@@ -98,10 +92,12 @@
           <button type="button" id="clearAll">Clear all</button>
           <output id="status" aria-live="polite">0 active</output>
         </div>
-        <p class="hint">Extra toasts stay queued until space becomes available.</p>
+        <p class="hint">Additional toasts remain queued until space becomes available.</p>
 
         <button type="button" id="addToast">Show toast</button>
       </fieldset>
+
+      <p>Unstyled by design. toast-queue provides the behavior and accessibility primitives, you provide the look. Optional CSS presets are included if you want a starting point.</p>
 
       <div class="copy-code">
         <syntax-highlight language="css" content-selector="style">
@@ -128,9 +124,10 @@ toast-queue [data-part="toast"] {
   box-shadow: 0 4px 12px rgba(0,0,0,.1);
   border-radius: 1rem;
   padding: 1rem;
-  gap: .5rem;
+  gap: 1rem;
   font-size: smaller;
   flex-wrap: wrap;
+  position: relative;
 }
 
 toast-queue [data-part="toast"]:is([data-dragging]) {
@@ -143,20 +140,13 @@ toast-queue [data-part="content"] {
   gap: .3rem;
   min-inline-size: fit-content;
 }
-toast-queue [data-part="title"],
-toast-queue [data-part="description"] {
-  font-size: inherit;
-  margin: unset;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
+
 toast-queue [data-part="title"] {
   font-weight: 600;
-  -webkit-line-clamp: 1;
 }
-toast-queue [data-part="description"] {
-  -webkit-line-clamp: 3;
+
+toast-queue [data-part="actions"] {
+  flex: 1;
 }
 
 toast-queue [data-part="actions"],
@@ -173,6 +163,12 @@ toast-queue [data-part="close-button"] {
   block-size: 2rem;
 }
 
+toast-queue [data-part="action-button"] {
+  width: 100%;
+  font-size: .8rem;
+  font-weight: 600;
+}
+
 toast-queue [data-part="close-button"] {
   display: flex;
   align-items: center;
@@ -182,16 +178,7 @@ toast-queue [data-part="close-button"] {
   font-weight: 500;
   font-size: 1rem;
 }
-
-toast-queue [data-part="menu"] {
-  display: flex;
-  justify-content: flex-end;
-  margin: unset;
-}
-
-toast-queue:not([data-active]) [data-part="menu"] {
-  display: none;
-}</style>
+</style>
             </syntax-highlight>
             <clipboard-copy for="playground-css" class="button">
               Copy code
@@ -199,24 +186,18 @@ toast-queue:not([data-active]) [data-part="menu"] {
       </div>
       </article>
 
-
-
-
-
       <article>
         <div>
           <p class="eyebrow">Documentation</p>
           <h2 id="docs-heading">Using toast-queue</h2>
           <p class="lede">
-            A quick reference to get started. For the full API (options, per-toast
-            config, and every method), see
-            <a href="https://github.com/andreruffert/toast-queue/blob/main/API.md" target="_blank">API reference</a>.
+            Get started in a few lines, then customize the queue to fit your app. For the complete API, including options, per-toast configuration, and methods, see the <a href="https://github.com/andreruffert/toast-queue/blob/main/API.md" target="_blank">API reference</a>.
           </p>
         </div>
 
         <section>
           <h3>Install</h3>
-          <p class="lede">Install the library via <a href="https://www.npmx.dev/package/toast-queue" target="_blank">npm</a>.</p>
+          <p class="lede">Install toast-queue from <a href="https://www.npmx.dev/package/toast-queue" target="_blank">npm</a>.</p>
           <div class="copy-code">
             <syntax-highlight id="copy-install" language="shell">npm install toast-queue</syntax-highlight>
             <clipboard-copy for="copy-install">Copy code</clipboard-copy>
@@ -224,43 +205,67 @@ toast-queue:not([data-active]) [data-part="menu"] {
         </section>
 
         <section>
-          <h3>Usage</h3>
+          <h3>Quick start</h3>
           <p class="lede">
-            Create a <code>ToastQueue</code> instance. This is where all your toasts render.
+            Create a <code>ToastQueue</code> instance.
           </p>
           <div class="copy-code">
-            <syntax-highlight id="copy-usage-1" language="js">import ToastQueue from 'toast-queue'
+            <syntax-highlight id="copy-usage-1" language="js">import ToastQueue from 'toast-queue';
 
-const tq = new ToastQueue();</syntax-highlight>
+const toastQueue = new ToastQueue();</syntax-highlight>
             <clipboard-copy for="copy-usage-1">Copy code</clipboard-copy>
           </div>
-          <p class="lede">Then trigger a toast from anywhere using the instance.</p>
+          <p class="lede">Add a toast whenever you need one:</p>
           <div class="copy-code">
-            <syntax-highlight id="copy-usage-2" language="js">tq.add('Toast message...');</syntax-highlight>
+            <syntax-highlight id="copy-usage-2" language="js">toastQueue.add('Toast message...');
+
+toastQueue.add({
+  title: 'Changes saved',
+  description: 'Your profile has been updated.',
+});
+
+toastQueue.add(
+  {
+    title: 'Update available',
+    description: 'A new version is ready to install.',
+  },
+  {
+    action: {
+      label: 'Reload',
+      onClick: () => location.reload(),
+    },
+  },
+);</syntax-highlight>
             <clipboard-copy for="copy-usage-2">Copy code</clipboard-copy>
           </div>
         </section>
 
         <section>
-          <h3>Presets</h3>
+          <h3>Styling</h3>
           <p class="lede">
-            <code>toast-queue</code> ships unstyled by default, you own every pixel.
-            Two optional presets are included if you'd rather start from a look and
-            adjust from there: <strong>minimal</strong>, a simple vertical list, and
-            <strong>stacked</strong>, a card-stack "peek" effect where toasts beyond
-            <code>visibleLimit</code> collapse behind the topmost one.
+            `toast-queue` ships unstyled by default, you own every pixel. If you'd rather start from a look and adjust from there, two optional presets are included.
           </p>
           <div class="copy-code">
             <syntax-highlight id="copy-usage-preset" language="css">/* core */
-import 'toast-queue/toast-queue.css';
-
-/* minimal */
-import 'toast-queue/presets/minimal.css';
-
-/* stacked */
-import 'toast-queue/presets/stacked.css';</syntax-highlight>
+import "toast-queue/toast-queue.css";</syntax-highlight>
             <clipboard-copy for="copy-usage-preset">Copy code</clipboard-copy>
           </div>
+
+          <h4>Presets</h4>
+          <div class="copy-code">
+            <syntax-highlight id="copy-usage-preset" language="css">/* minimal */
+import "toast-queue/presets/minimal.css";
+
+/* stacked */
+import "toast-queue/presets/stacked.css";</syntax-highlight>
+            <clipboard-copy for="copy-usage-preset">Copy code</clipboard-copy>
+          </div>
+
+          <ul>
+            <li><b>minimal</b>: a simple vertical list.</li>
+            <li><b>stacked</b>: a card-stack "peek" effect, where toasts beyond `visibleLimit` collapse behind the topmost one.</li>
+          </ul>
+
           <p class="lede">
             Both are plain CSS layered under <code>@layer toast-queue</code>, so your
             own styles win by default. Treat them as a starting point, not a lock-in.
@@ -268,7 +273,8 @@ import 'toast-queue/presets/stacked.css';</syntax-highlight>
         </section>
 
         <section>
-          <h3>Options</h3>
+          <h3>Configuration</h3>
+          <h4>Queue options</h4>
           <p class="lede">Configuration passed to the <code>ToastQueue</code> constructor:</p>
           <div class="copy-code">
             <syntax-highlight id="copy-usage-options" language="js">new ToastQueue({
@@ -283,11 +289,12 @@ import 'toast-queue/presets/stacked.css';</syntax-highlight>
           <p class="lede">
             <code>placement</code> and <code>visibleLimit</code> are also live setters
             (<code>toastQueue.placement = 'bottom-center'</code>) and update everything
-            in place. Per-toast options are passed as the second argument to
-            <code>.add()</code>. See <a href="https://github.com/andreruffert/toast-queue/blob/main/API.md#ToastOptions" target="_blank">API reference</a> for the full list (<code>dismissible</code>,
-            <code>priority</code>, <code>icon</code>, <code>action</code>,
-            <code>onClose</code>, etc.).
+            in place.
           </p>
+
+          <h4>Toast options</h4>
+          <p class="lede">Per-toast options are passed as the second argument to
+            <code>.add()</code>. See <a href="https://github.com/andreruffert/toast-queue/blob/main/API.md#ToastOptions" target="_blank">API reference</a> for the full list.</p>
         </section>
 
         <section>
@@ -300,10 +307,7 @@ import 'toast-queue/presets/stacked.css';</syntax-highlight>
             animation, just without a transition).
           </p>
           <p class="lede">
-            <code>ariaNotify()</code> is the one exception worth calling out: it's how
-            toasts are announced to screen readers. Without it, screen reader users on
-            browsers that haven't shipped it yet won't hear an announcement when a
-            toast appears. If that matters for your app, install the polyfill and load
+            <code>ariaNotify()</code> provides the screen-reader announcement for newly created toasts. Browsers without native support can use a polyfill. Install the polyfill and load
             it conditionally so browsers with native support skip it entirely.
           </p>
           <div class="copy-code">
@@ -316,7 +320,7 @@ import 'toast-queue/presets/stacked.css';</syntax-highlight>
   await import('@github/arianotify-polyfill');
 }
 
-const tq = new ToastQueue();</syntax-highlight>
+const toastQueue = new ToastQueue();</syntax-highlight>
 <clipboard-copy for="copy-polyfill-usage">Copy code</clipboard-copy>
 </div>
         </section>
@@ -464,7 +468,7 @@ const tq = new ToastQueue();</syntax-highlight>
           "Accessible, unstyled toast notifications for modern web apps."
       },
       {
-        duration: 6_000,
+        duration: 10_000,
         action: {
           label: "View on GitHub",
           onClick: () => window.open("https://github.com/andreruffert/toast-queue")
@@ -473,10 +477,15 @@ const tq = new ToastQueue();</syntax-highlight>
       }
     );
 
-      renderStatus();
+      // renderStatus();
 
       addToastButton.addEventListener('click', () => {
-        tq.add({title: 'Toast created', description: new Date(Date.now()).toLocaleTimeString() })
+        tq.add({
+          title: 'Toast created',
+          description: new Date(Date.now()).toLocaleTimeString()
+        }, {
+          onClose: renderStatus,
+        })
         renderStatus();
       });
 

@@ -5,27 +5,28 @@
 [![npm downloads](https://img.shields.io/npm/dm/toast-queue?logo=npm&color=1a1a1a&labelColor=242424)](https://npmx.dev/package/toast-queue)
 [![jsDelivr hits (npm)](https://img.shields.io/jsdelivr/npm/hm/toast-queue?color=1a1a1a&labelColor=242424)](https://www.jsdelivr.com/package/npm/toast-queue)
 
-> A unstyled, accessible Vanilla JS library to display brief, temporary toast messages.
+> Accessible, unstyled toast notifications for modern web apps. `toast-queue` is a tiny, framework-agnostic JavaScript library for managing toast notifications with native web APIs, progressive enhancement, and optional CSS presets.
 
-- Framework agnostic: Vanilla JavaScript without dependencies.
-- Headless UI: Complete styling control without any pre-defined visual styles.
-- Accessible: Toasts are announced to screen readers via [`ariaNotify()`](#browser-support), are keyboard-dismissible (<kbd>Escape</kbd>), and receive focus in document order.
-- Focus management: When a toast closes, focus shifts to the next or previous toast, if available.
-- [View Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API) ready: Smooth animations using modern browser features.
-- Touch-friendly swiping: Native gesture support for dismissing toasts.
+- Framework agnostic: Vanilla JavaScript with zero runtime dependencies.
+- Unstyled by design: Bring your own CSS or start with the included presets.
+- Accessible: Screen-reader announcements via [`ariaNotify()`](#browser-support), keyboard dismissal with <kbd>Escape</kbd>, and focus management.
+- Touch-friendly: Swipe to dismiss on touch devices.
+- Progressively enhanced: uses modern browser APIs where available and falls back where possible.
 
 > [!NOTE]
-> Work in progress.
+> Status: alpha. The API may change before the first stable release.
 
 ## Contents
 
-- [Usage](#usage)
+- [Quick start](#quick-start)
 - [Presets](#presets)
-- [Options](#options)
+- [Configuration](#configuration)
 - [Browser support](#browser-support)
-- [Documentation](#documentation)
+- [API reference](#api-reference)
 
-## Usage
+## Quick start
+
+### Install
 
 To start using the library, install it via npm:
 
@@ -33,25 +34,48 @@ To start using the library, install it via npm:
 npm install toast-queue
 ```
 
-Create a new `ToastQueue` instance. This will be the place where all your toasts will be rendered.
+### Create a queue
+Create a new `ToastQueue` instance.
 
 ```js
 import ToastQueue from 'toast-queue'
 
 // ...
 
-const tq = new ToastQueue();
+const toastQueue = new ToastQueue();
 ```
 
-Then, you can use the provided `ToastQueue` [API](./API.md#ToastQueue+add) to trigger a toast from anywhere.
+### Add a toast
+
+Add a toast whenever you need one:
 
 ```js
-tq.add('Toast message...');
+toastQueue.add('Toast message...');
+
+toastQueue.add({
+  title: 'Changes saved',
+  description: 'Your profile has been updated.',
+});
+
+toastQueue.add(
+  {
+    title: 'Update available',
+    description: 'A new version is ready to install.',
+  },
+  {
+    action: {
+      label: 'Reload',
+      onClick: () => location.reload(),
+    },
+  },
+);
 ```
 
-## Presets
+## Styling
 
-`toast-queue` ships unstyled by default, you own every pixel. If you'd rather start from a look and adjust from there, two optional presets are included:
+`toast-queue` ships unstyled by default, you own every pixel. If you'd rather start from a look and adjust from there, two optional presets are included.
+
+### Presets
 
 ```js
 import 'toast-queue/presets/minimal.css';
@@ -64,7 +88,9 @@ import 'toast-queue/presets/stacked.css';
 
 Both are plain CSS layered under `@layer toast-queue`, so your own styles will win by default. Treat them as a starting point, not a lock-in.
 
-## Options
+## Configuration
+
+### Queue options
 
 ```js
 new ToastQueue({
@@ -78,13 +104,15 @@ new ToastQueue({
 
 `placement` and `visibleLimit` are also live setters (`toastQueue.placement = 'bottom-center'`) and update everything in place.
 
-Per-toast options are passed as the second argument to `.add()`. See [API reference](./API.md#ToastOptions) for the full list (`dismissible`, `priority`, `icon`, `action`, `onClose`, etc.).
+### Toast options
+
+Per-toast options are passed as the second argument to `.add()`. See [API reference](./API.md#ToastOptions) for the full list.
 
 ## Browser support
 
-`toast-queue` uses modern, progressively-enhanced browser features, [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API), [View Transitions API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API), and [`ariaNotify()`](https://developer.mozilla.org/en-US/docs/Web/API/Element/ariaNotify), and it falls back gracefully where a browser doesn't yet support them (e.g. toasts still render and function without animation, just without a transition).
+toast-queue uses modern, progressively-enhanced browser features, [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API), [View Transitions API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API), and [`ariaNotify()`](https://developer.mozilla.org/en-US/docs/Web/API/Element/ariaNotify), and falls back gracefully where a browser doesn't yet support them (toasts still render and function without animation, just without a transition).
 
-`ariaNotify()` is the one exception worth calling out: it's how toasts are announced to screen readers, and without it (or a fallback), screen reader users on browsers that haven't shipped it yet won't hear an announcement when a toast appears. If that matters for your app, install the polyfill and load it conditionally so browsers with native support skip it entirely:
+`ariaNotify()` provides the screen-reader announcement for newly created toasts. Browsers without native support can use a polyfill. Install the polyfill and load it conditionally so browsers with native support skip it entirely.
 
 ```shell
 npm install @github/arianotify-polyfill
@@ -95,10 +123,12 @@ if (typeof HTMLElement.prototype.ariaNotify !== 'function') {
   await import('@github/arianotify-polyfill');
 }
 
-const tq = new ToastQueue();
+const toastQueue = new ToastQueue();
+
+// ...
 ```
 
-## Documentation
+## API reference
 
 - [API reference](./API.md)
 

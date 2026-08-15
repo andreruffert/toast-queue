@@ -57,25 +57,29 @@ const SELECTORS = {
 };
 
 /**
- * Manages a queue of toast notifications including rendering,
- * focus management, swipe dismissal, and auto-dismiss timers.
+ * Manages a queue of toast notifications.
  *
- * Toasts are announced to screen readers via
- * [`ariaNotify()`](https://developer.mozilla.org/en-US/docs/Web/API/Element/ariaNotify)
- * where the browser supports it. On browsers that don't yet, announcements
- * are silently skipped unless a polyfill is loaded beforehand — see
- * [Browser support](README.md#browser-support)
- * in the README.
+ * A queue handles rendering, auto-dismiss timers, focus management,
+ * keyboard dismissal, swipe dismissal, and screen-reader announcements.
+ *
+ * Toasts are announced with the browser's `ariaNotify()` API when available.
+ * Browsers without `ariaNotify()` can use the
+ * [`@github/arianotify-polyfill`](https://github.com/github/aria-notify-polyfill)
+ * before creating the queue.
+ *
+ * The queue is unstyled by default. Use the exposed `data-*` attributes and
+ * CSS custom properties to provide your own presentation, or use one of the
+ * optional CSS presets.
  *
  * @class ToastQueue
+ * @param {ToastQueueOptions} [options] - Queue configuration.
  *
  * @example
- * // Optional: polyfill ariaNotify() on browsers that don't support it yet.
- * if (typeof HTMLElement.prototype.ariaNotify !== 'function') {
- *   await import('@github/arianotify-polyfill');
- * }
+ * import ToastQueue from 'toast-queue';
  *
- * const tq = new ToastQueue();
+ * const toastQueue = new ToastQueue();
+ *
+ * toastQueue.add('Changes saved.');
  */
 export class ToastQueue {
   /** @type {{
@@ -126,9 +130,6 @@ export class ToastQueue {
   /** @type {AbortController} Controls all document/root event listeners added by this instance. */
   #controller = new AbortController();
 
-  /**
-   * @param {ToastQueueOptions} [options] - Configuration options.
-   */
   constructor(options = {}) {
     this.#template.root.innerHTML = options?.template?.root || TEMPLATE.root;
     this.#template.item.innerHTML = options?.template?.item || TEMPLATE.item;
@@ -354,12 +355,36 @@ export class ToastQueue {
   /**
    * Adds a toast notification to the queue.
    *
-   * @param {string|ToastContent} content
-   *   Toast message content.
-   * @param {ToastOptions} [options]
-   *   Per-toast configuration.
-   * @returns {ToastRecord}
-   *   The created toast record.
+   * The toast is rendered immediately when space is available. When the
+   * `visibleLimit` has been reached, additional toasts remain queued until an
+   * earlier toast is closed.
+   *
+   * Pass a string for a simple message or an object for a title and optional
+   * description.
+   *
+   * @param {ToastContent} content - Toast message content.
+   * @param {ToastOptions} [options] - Per-toast configuration.
+   * @returns {ToastRecord} The newly created toast record.
+   *
+   * @example
+   * toastQueue.add('Changes saved.');
+   *
+   * @example
+   * toastQueue.add({
+   *   title: 'Changes saved',
+   *   description: 'Your profile has been updated.',
+   * });
+   *
+   * @example
+   * toastQueue.add('File uploaded.', {
+   *   duration: 3000,
+   *   action: {
+   *     label: 'View',
+   *     onClick: (toast) => {
+   *       console.log(toast);
+   *     },
+   *   },
+   * });
    */
   add(content, options = {}) {
     const id = randomId();
@@ -398,17 +423,21 @@ export class ToastQueue {
   }
 
   /**
-   * Retrieves a toast by id.
+   * Retrieves a toast by its identifier.
    *
-   * @param {string} id
-   * @returns {ToastRecord|undefined}
+   * @param {string} id - Toast identifier.
+   * @returns {ToastRecord|undefined} The matching toast, or `undefined` when no toast with that identifier exists.
    */
   get(id) {
     return this.#queue.get(id);
   }
 
   /**
-   * Removes the specified toast from the queue.
+   * Closes a toast and removes it from the queue.
+   *
+   * Closing a toast also cancels its auto-dismiss timer and updates queue state.
+   * If the toast has an `onClose` callback, it is invoked after the queue has
+   * been updated.
    *
    * @param {string} id - Toast identifier.
    */
@@ -438,7 +467,9 @@ export class ToastQueue {
   }
 
   /**
-   * Removes all toasts from the queue.
+   * Closes all toasts and clears the queue.
+   *
+   * All auto-dismiss timers are cancelled and the queue is reset to its empty state.
    */
   clear() {
     for (const toast of this.#queue.values()) {
@@ -469,50 +500,81 @@ export class ToastQueue {
   }
 
   /**
-   * @returns {boolean} - Whether toast timers are currently paused.
+   * Whether the queue's toast timers are currently paused.
+   *
+   * Timers may be paused explicitly with {@link ToastQueue#pause}, or
+   * automatically while the queue is hovered, focused, or the document is
+   * hidden.
+   *
+   * @readonly
+   * @type {boolean}
    */
   get isPaused() {
     return this.#paused;
   }
 
   /**
-   * @returns {HTMLElement} - The root DOM element for this queue instance.
+   * The root `<toast-queue>` element for this queue instance.
+   *
+   * Use this element to apply instance-specific styles or inspect the queue's
+   * DOM state.
+   *
+   * @readonly
+   * @type {HTMLElement}
    */
   get element() {
     return this.#rootPart;
   }
 
   /**
-   * @returns {number} - The number of toasts currently in the queue.
+   * The number of toasts currently in the queue.
+   *
+   * @readonly
+   * @type {number}
    */
   get size() {
     return this.#queue.size;
   }
 
   /**
-   * Temporarily pauses all toast timers.
+   * Pauses all toast auto-dismiss timers.
+   *
+   * Calling this method does not remove or hide toasts. Timers resume from
+   * their remaining time when {@link ToastQueue#resume} is called.
    */
   pause() {
     this.#setPaused(true);
   }
 
   /**
-   * Resumes all paused toast timers.
+   * Resumes all paused toast auto-dismiss timers.
+   *
+   * Has no effect when the queue is already running.
    */
   resume() {
     this.#setPaused(false);
   }
 
   /**
-   * @returns {ToastQueuePlacement} - The current placement.
+   * Gets or sets the queue placement.
+   *
+   * Supported placements are:
+   *
+   * - `top-start`
+   * - `top-center`
+   * - `top-end`
+   * - `bottom-start`
+   * - `bottom-center`
+   * - `bottom-end`
+   *
+   * Changing the placement updates the queue and existing toasts in place.
+   *
+   * @type {ToastQueuePlacement}
    */
   get placement() {
     return this.#placement;
   }
 
-  /**
-   * @param {ToastQueuePlacement} value - The new placement.
-   */
   set placement(value) {
     this.#placement = value;
     for (const toast of this.#queue.values()) {
@@ -531,22 +593,32 @@ export class ToastQueue {
   }
 
   /**
-   * @returns {number} - The current visible limit.
+   * Gets or sets the number of toasts that are considered visible.
+   *
+   * Toasts beyond this limit remain in the queue but are marked as hidden using
+   * `data-hidden`. The current number of hidden toasts is exposed through
+   * `data-hidden-count` on the queue element.
+   *
+   * CSS presets can use these attributes to create stacked or peek effects.
+   *
+   * @type {number}
    */
   get visibleLimit() {
     return this.#visibleLimit;
   }
 
-  /**
-   * @param {number} value - The number of toasts to render visibly before hiding the rest.
-   */
   set visibleLimit(value) {
     this.#visibleLimit = value;
     wrapInViewTransition(() => this.#syncVisibleLimitState());
   }
 
   /**
-   * Destroys the queue and removes all listeners.
+   * Permanently destroys the queue instance.
+   *
+   * Removes the queue element, clears all auto-dismiss timers, removes event
+   * listeners, and releases the associated resources.
+   *
+   * After calling `destroy()`, the queue instance must not be used again.
    */
   destroy() {
     this.#controller.abort();
@@ -569,18 +641,16 @@ export class ToastQueue {
   /* ---------------------------------------------------------------------- */
 
   /**
-   * Exposes how many toasts exceed the visible limit as `data-hidden-count`,
-   * so CSS presets can render an indicator (e.g. "+2 more") without the
-   * library dictating how it looks. Removes the attribute when nothing is
-   * hidden.
+   * Synchronizes queue visibility state with the current `visibleLimit`.
    *
-   * Also flags each toast item's position in the group so presets can build
-   * a peek effect (z-index, offset, scale) that scales with `visibleLimit`:
-   *  - `--tq-item-index` (0 = topmost/newest) - a CSS custom property,
-   *    usable in `calc()` for z-index/margin/scale formulas.
-   *  - `[data-hidden]` - set on every item beyond `visibleLimit`.
-   *  - `[data-peek]` - set on exactly the first hidden item, so presets can
-   *    override its display for a "the next one's coming" preview animation.
+   * The queue element receives `data-hidden-count` when toasts exceed the
+   * visible limit. Individual items receive:
+   *
+   * - `data-hidden` when they are beyond the visible limit.
+   * - `data-peek` on the first hidden item.
+   * - `--tq-item-index` containing the item's zero-based position.
+   *
+   * These attributes are intended as styling hooks for CSS presets.
    */
   #syncVisibleLimitState() {
     const hidden = Math.max(0, this.#queue.size - this.#visibleLimit);
@@ -737,7 +807,14 @@ export class ToastQueue {
   }
 
   /**
-   * @param {ToastRecord} toast
+   * Announces a toast to assistive technology.
+   *
+   * Uses `Element.ariaNotify()` when available and falls back to
+   * `Document.ariaNotify()`. When neither API is available, no announcement is
+   * made.
+   *
+   * @private
+   * @param {ToastRecord} toast - Toast to announce.
    */
   #announce(toast) {
     const message = this.#getAnnouncementText(toast);

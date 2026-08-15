@@ -1,79 +1,112 @@
 /** @import { Timer } from './utils.js' */
 
 /**
- * @typedef {Object} ToastQueueOptions
- * @property {HTMLElement} [root=document.body] - Container element for the toast queue.
- * @property {number} [duration=6000] - Auto-dismiss duration in milliseconds.
- * @property {ToastQueuePlacement} [placement='top-end'] - Position on screen.
- * @property {number} [visibleLimit=3] - Number of toasts rendered visibly before the rest are hidden (exposed via `data-hidden-count`).
- * @property {ToastQueueTemplate} [template] - HTML templates.
- */
-
-/**
- * Toast queue placement.
+ * Configuration options for a {@link ToastQueue}.
  *
- * @typedef {
- *   'top-start' |
- *   'top-center' |
- *   'top-end' |
- *   'bottom-start' |
- *   'bottom-center' |
- *   'bottom-end'
- * } ToastQueuePlacement
+ * @typedef {Object} ToastQueueOptions
+ * @property {HTMLElement} [root=document.body]
+ *   Container into which the queue is mounted.
+ * @property {number} [duration=6000]
+ *   Default auto-dismiss duration in milliseconds. Use `0` to disable
+ *   automatic dismissal.
+ * @property {ToastQueuePlacement} [placement='top-end']
+ *   Position of the toast queue.
+ * @property {number} [visibleLimit=3]
+ *   Number of toasts considered visible at once. Additional toasts remain
+ *   queued and can be exposed by CSS presets.
+ * @property {ToastQueueTemplate} [template]
+ *   Optional HTML templates used to render the queue, toast items, and
+ *   action buttons.
  */
 
 /**
+ * Position of the toast queue.
+ *
+ * @typedef {'top-start'|'top-center'|'top-end'|'bottom-start'|'bottom-center'|'bottom-end'} ToastQueuePlacement
+ */
+
+/**
+ * HTML templates used to render a toast queue.
+ *
+ * Templates are expected to contain the data-part attributes used by the
+ * library to locate and update their elements.
+ *
  * @typedef {Object} ToastQueueTemplate
- * @property {string} [root] - HTML for the toast container.
- * @property {string} [item] - HTML for individual toast items.
- * @property {string} [actionButton] - HTML for action buttons.
+ * @property {string} [root]
+ *   HTML for the queue root and toast group.
+ * @property {string} [item]
+ *   HTML for an individual toast item.
+ * @property {string} [actionButton]
+ *   HTML for an individual action button.
  */
 
 /**
- * @typedef {'normal' | 'high'} ToastPriority
+ * Content displayed by a toast.
+ *
+ * @typedef {string | ToastContentObject} ToastContent
  */
 
 /**
+ * @typedef {Object} ToastContentObject
+ * @property {string} title
+ *   Primary toast message.
+ * @property {string} [description]
+ *   Optional supporting text displayed below the title.
+ */
+
+/**
+ * Configuration for an individual toast.
+ *
  * @typedef {Object} ToastOptions
  * @property {number} [duration]
- *  Override the queue default auto-dismiss duration in milliseconds.
- *  Use 0 to disable automatic dismissal.
- * @property {boolean} [dismissible=true] - Whether toast can be manually closed.
+ *   Auto-dismiss duration in milliseconds. `0` disables automatic dismissal.
+ * @property {boolean} [dismissible=true]
+ *   Whether the toast can be manually dismissed.
  * @property {ToastPriority} [priority='normal']
- * @property {string} [className] - Additional CSS class.
- * @property {string} [icon] - HTML markup rendered into the icon slot.
- * @property {ToastAction} [action] - Action button configuration.
- * @property {ToastCloseHandler} [onClose] - Called when the toast is closed.
+ *   Announcement priority passed to `ariaNotify()`.
+ * @property {string} [className]
+ *   Additional CSS class names applied to the toast.
+ * @property {string} [icon]
+ *   HTML markup rendered in the toast's icon slot.
+ * @property {ToastAction} [action]
+ *   Optional action button configuration.
+ * @property {ToastCloseHandler} [onClose]
+ *   Called after the toast has been closed and removed from the queue.
  */
 
 /**
- * @typedef {Object} ToastContent
- * @property {string} title - Primary toast message.
- * @property {string} [description] - Additional supporting text.
+ * Toast priority used for screen-reader announcements.
+ *
+ * `high` requests a higher announcement priority from `ariaNotify()`.
+ *
+ * @typedef {'normal'|'high'} ToastPriority
  */
 
+/**
+ * Configuration for an optional toast action button.
+ *
+ * @typedef {Object} ToastAction
+ * @property {string} label
+ *   Text displayed in the action button.
+ * @property {ToastActionHandler} [onClick]
+ *   Called when the action button is clicked.
+ */
 /**
  * Called when a toast action button is clicked.
  *
  * @callback ToastActionHandler
- * @param {ToastRecord} toast - The toast associated with the action.
+ * @param {ToastRecord} toast
+ *   The toast associated with the action.
  * @returns {void}
  */
 
 /**
- * Called when a toast is closed.
+ * Called after a toast is closed and removed from the queue.
  *
  * @callback ToastCloseHandler
  * @param {ToastRecord} toast
+ *   The toast that was closed.
  * @returns {void}
- */
-
-/**
- * Action button configuration.
- *
- * @typedef {Object} ToastAction
- * @property {string} label - Text displayed in the action button.
- * @property {ToastActionHandler} [onClick]
  */
 
 /**

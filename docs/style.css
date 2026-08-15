@@ -24,7 +24,7 @@
 
   :any-link {
     color: inherit;
-    text-decoration-color: light-dark(var(--light-accent), var(--dark-accent));
+    text-decoration-color: var(--accent);
     text-decoration-line: underline;
     text-underline-offset: var(--spacing-1);
   }
@@ -71,7 +71,7 @@
 
     syntax-highlight:not([content-selector="style"]),
     syntax-highlight:is([content-selector="style"]) style {
-      border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+      border: 1px solid color-mix(in srgb, currentColor, transparent 87%);
       border-radius: 0.5rem;
       padding: var(--spacing-4);
     }
@@ -217,7 +217,7 @@
   }
 
   main fieldset {
-    border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+    border: 1px solid color-mix(in srgb, currentColor, transparent 87%);
     border-radius: 0.5rem;
     padding: var(--spacing-4);
     background-color: light-dark(#fdfdfd, #000000);
