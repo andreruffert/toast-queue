@@ -19,7 +19,7 @@
 ## Contents
 
 - [Quick start](#quick-start)
-- [Presets](#presets)
+- [Styling](#styling)
 - [Configuration](#configuration)
 - [Browser support](#browser-support)
 - [API reference](#api-reference)

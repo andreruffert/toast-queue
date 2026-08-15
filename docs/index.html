@@ -63,16 +63,9 @@
         <fieldset>
         <legend>Queue controls</legend>
         <p class="hint">
-          Change the placement, visual preset, and number of visible toasts. Toasts pause while hovered or focused. Pause freezes the entire queue.
+          Change the placement, and number of visible toasts. Toasts pause while hovered or focused. Pause freezes the entire queue.
         </p>
         <div class="controls-row">
-          <label class="field">
-            Preset
-            <select id="preset" aria-label="Style preset">
-              <option value="stacked" selected>Stacked</option>
-              <option value="minimal">Minimal</option>
-            </select>
-          </label>
           <label class="field">
             Placement
             <select id="placement" aria-label="Toast placement">
@@ -97,20 +90,26 @@
         <button type="button" id="addToast">Show toast</button>
       </fieldset>
 
-      <p>Unstyled by design. toast-queue provides the behavior and accessibility primitives, you provide the look. Optional CSS presets are included if you want a starting point.</p>
+      <div>
+        <p>Unstyled by design. toast-queue provides the behavior and accessibility primitives, you provide the look. Optional CSS presets are included if you want a starting point.</p>
 
-      <div class="copy-code">
-        <syntax-highlight language="css" content-selector="style">
-            <style id="playground-css" type="text/css" spellcheck="false">/* toast-queue customization */
+         <label class="field">
+            Preset
+            <select id="preset" aria-label="Style preset">
+              <option value="stacked" selected>Stacked</option>
+              <option value="minimal">Minimal</option>
+            </select>
+          </label>
+
+        <div class="copy-code">
+          <syntax-highlight language="css" content-selector="style">
+              <style id="playground-css" type="text/css" spellcheck="false">/* toast-queue customization */
 toast-queue {
   --toast-color: light-dark(#ffffff, #171717);
 
   width: 300px;
   padding: 1rem;
   overflow: visible;
-  display: flex;
-  flex-direction: column;
-  gap: .5rem;
 }
 
 toast-queue [data-part="group"] {
@@ -121,17 +120,16 @@ toast-queue [data-part="toast"] {
   color: contrast-color(var(--toast-color));
   border: 1px solid color-mix(in srgb, currentColor, transparent 87%);
   background: var(--toast-color);
-  box-shadow: 0 4px 12px rgba(0,0,0,.1);
+  box-shadow: 0 4px 12px rgb(0, 0, 0, .1);
   border-radius: 1rem;
   padding: 1rem;
   gap: 1rem;
   font-size: smaller;
   flex-wrap: wrap;
-  position: relative;
-}
 
-toast-queue [data-part="toast"]:is([data-dragging]) {
-  opacity: calc(1 - var(--tq-swipe-distance, 0));
+  &:is([data-dragging]) {
+    opacity: calc(1 - var(--tq-swipe-distance, 0));
+  }
 }
 
 toast-queue [data-part="content"] {
@@ -177,13 +175,13 @@ toast-queue [data-part="close-button"] {
   aspect-ratio: 1;
   font-weight: 500;
   font-size: 1rem;
-}
-</style>
+}</style>
             </syntax-highlight>
             <clipboard-copy for="playground-css" class="button">
               Copy code
             </clipboard-copy>
-      </div>
+          </div>
+        </div>
       </article>
 
       <article>
