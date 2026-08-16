@@ -10,6 +10,7 @@
 
   toast-queue [data-part="item"] {
     height: fit-content;
+
     /* Topmost item (--tq-item-index: 0) sits highest; each item behind it
        drops one z-index step, however many are visible. */
     z-index: calc(var(--tq-stack-z-base) - var(--tq-item-index, 0));
@@ -31,10 +32,8 @@
   }
 
   /**
-   * The first hidden item (exactly one past `visibleLimit`) gets a preview
-   * treatment — briefly rendered small and transparent as a hint that
-   * another toast is queued up behind the stack — instead of disappearing
-   * outright like the rest of `[data-hidden]`.
+   * The first hidden item gets a small preview as a hint
+   * that another toast is queued behind the stack.
    */
   toast-queue[data-placement]:not([data-active="true"]) [data-part="item"][data-peek] {
     display: initial;
@@ -43,43 +42,51 @@
   }
 
   ::view-transition-group(.tq-item) {
-    animation-duration: 0.3s;
+    animation-duration: 0.35s;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   }
+
   ::view-transition-group(.tq-item.block-end) {
-    --slideX: 0;
-    --slideY: calc(100%);
+    --tq-slide-x: 0;
+    --tq-slide-y: 80%;
   }
+
   ::view-transition-group(.tq-item.block-start) {
-    --slideX: 0;
-    --slideY: calc(-100%);
+    --tq-slide-x: 0;
+    --tq-slide-y: -80%;
   }
+
   ::view-transition-group(.tq-item.inline-start) {
-    --slideX: calc(-100%);
-    --slideY: 0;
+    --tq-slide-x: -80%;
+    --tq-slide-y: 0;
   }
+
   ::view-transition-group(.tq-item.inline-end) {
-    --slideX: calc(100%);
-    --slideY: 0;
+    --tq-slide-x: 80%;
+    --tq-slide-y: 0;
   }
 
   ::view-transition-new(.tq-item):only-child {
-    animation-name: enter;
-  }
-  ::view-transition-old(.tq-item):only-child {
-    animation-name: exit;
+    animation: tq-stacked-enter 350ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
-  @keyframes enter {
+  ::view-transition-old(.tq-item):only-child {
+    animation: tq-stacked-exit 220ms cubic-bezier(0.4, 0, 1, 1) both;
+  }
+
+  @keyframes tq-stacked-enter {
     from {
-      translate: var(--slideX) var(--slideY);
+      translate: var(--tq-slide-x) var(--tq-slide-y);
       opacity: 0;
+      filter: blur(8px);
     }
   }
 
-  @keyframes exit {
+  @keyframes tq-stacked-exit {
     to {
-      translate: var(--slideX) var(--slideY);
+      translate: var(--tq-slide-x) var(--tq-slide-y);
       opacity: 0;
+      filter: blur(8px);
     }
   }
 }

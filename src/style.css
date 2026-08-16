@@ -6,34 +6,41 @@
     inset: unset;
     background-color: unset;
     border: unset;
+    overflow: visible;
 
     /** Position **/
+    --tq-offset: 1rem;
+    --tq-offset-inline: var(--tq-offset);
+    --tq-offset-block: var(--tq-offset);
+
     &[data-placement^="top"] {
-      inset-block-start: env(safe-area-inset-top, 0);
+      inset-block-start: max(var(--tq-offset-block), env(safe-area-inset-top, 0px));
     }
     &[data-placement^="bottom"] {
-      inset-block-end: env(safe-area-inset-bottom, 0);
+      inset-block-end: max(var(--tq-offset-block), env(safe-area-inset-bottom, 0px));
     }
-    &[data-placement="top-start"],
-    &[data-placement="bottom-start"] {
-      inset-inline-start: env(safe-area-inset-left, 0);
+    &[data-placement$="-start"] {
+      inset-inline-start: max(var(--tq-offset-inline), env(safe-area-inset-left, 0px));
     }
-    &[data-placement="top-end"],
-    &[data-placement="bottom-end"] {
-      inset-inline-end: env(safe-area-inset-right, 0);
+    &[data-placement$="-end"] {
+      inset-inline-end: max(var(--tq-offset-inline), env(safe-area-inset-right, 0px));
     }
     &[data-placement="top-center"],
     &[data-placement="bottom-center"] {
-      inset-inline: env(safe-area-inset-left, 0);
+      inset-inline-start: max(var(--tq-offset-inline), env(safe-area-inset-left, 0px));
+      inset-inline-end: max(var(--tq-offset-inline), env(safe-area-inset-right, 0px));
       margin-inline: auto;
     }
     &[data-placement="center"] {
-      inset: 0;
+      inset-block-start: max(var(--tq-offset-block), env(safe-area-inset-top, 0px));
+      inset-block-end: max(var(--tq-offset-block), env(safe-area-inset-bottom, 0px));
+      inset-inline-start: max(var(--tq-offset-inline), env(safe-area-inset-left, 0px));
+      inset-inline-end: max(var(--tq-offset-inline), env(safe-area-inset-right, 0px));
       margin: auto;
     }
 
-    /* Prevent content selection relevant for touch devices */
     &:has([data-part="toast"][data-dragging]) {
+      /* Prevent content selection relevant for touch devices */
       user-select: none;
       -webkit-user-select: none;
     }
@@ -41,10 +48,13 @@
 
   /** Group */
   toast-queue [data-part="group"] {
-    display: contents;
-    list-style: none;
+    /* Reset */
     margin: unset;
     padding: unset;
+    list-style: none;
+
+    /* The group is layout-transparent by default. Presets are responsible for defining the queue layout. */
+    display: contents;
   }
 
   /** Toast **/
@@ -67,6 +77,7 @@
   toast-queue [data-part="content"] {
     display: flex;
     flex-direction: column;
+    min-inline-size: 0;
   }
 
   /**

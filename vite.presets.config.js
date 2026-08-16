@@ -5,7 +5,7 @@ import { defineConfig } from 'vite';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const presets = [
-  resolve(__dirname, 'src/presets/minimal.css'),
+  resolve(__dirname, 'src/presets/list.css'),
   resolve(__dirname, 'src/presets/stacked.css'),
 ];
 

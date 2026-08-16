@@ -31,7 +31,6 @@
         flex-direction: column;
         gap: .5rem;
         width: 300px;
-        padding: 1rem;
       }
 
       toast-queue [data-part="group"] {
@@ -56,6 +55,10 @@
         align-items: flex-start;
         flex: 1;
         gap: .3rem;
+      }
+
+      toast-queue [data-part="actions"] {
+        align-self: center;
       }
 
       toast-queue [data-part="close-button"] {
@@ -84,31 +87,123 @@
       toast-queue:not([data-active]) [data-part="menu"] {
         display: none;
       }
+
+      [data-controls] {
+        display: grid;
+        gap: .5rem;
+      }
+
+      [data-controls] [data-row] {
+        display: grid;
+        grid-template-columns: 5rem 1fr 3rem;
+        gap: .5rem;
+        align-items: center;
+      }
+
+      [data-controls] output {
+        text-align: end;
+        font-variant-numeric: tabular-nums;
+      }
+
+      [data-actions] {
+        display: flex;
+        gap: .5rem;
+        flex-wrap: wrap;
+      }
     </style>
   </head>
   <body>
     <main>
-      <button type="button" data-action="add-toast">🔔</button>
-      <select id="toastPlacementMenu" aria-label="Toast placement">
-        <option value="top-start">top start</option>
-        <option value="top-center">top center</option>
-        <option value="top-end">top end</option>
-        <option value="bottom-start">bottom start</option>
-        <option value="bottom-center">bottom center</option>
-        <option value="bottom-end">bottom end</option>
-      </select>
+      <div data-controls>
+        <label>
+          Preset
+          <select id="toastPresetMenu" aria-label="Toast preset">
+            <option value="list">list</option>
+            <option value="stacked">stacked</option>
+          </select>
+        </label>
+
+        <label>
+          Placement
+          <select id="toastPlacementMenu" aria-label="Toast placement">
+            <option value="top-start">top start</option>
+            <option value="top-center">top center</option>
+            <option value="top-end">top end</option>
+            <option value="center">center</option>
+            <option value="bottom-start">bottom start</option>
+            <option value="bottom-center">bottom center</option>
+            <option value="bottom-end">bottom end</option>
+          </select>
+        </label>
+
+        <div data-row>
+          <label for="toastOffsetInline">inline</label>
+          <input
+            id="toastOffsetInline"
+            type="range"
+            min="0"
+            max="64"
+            step="1"
+            value="16"
+          />
+          <output id="toastOffsetInlineValue">16px</output>
+        </div>
+
+        <div data-row>
+          <label for="toastOffsetBlock">block</label>
+          <input
+            id="toastOffsetBlock"
+            type="range"
+            min="0"
+            max="64"
+            step="1"
+            value="16"
+          />
+          <output id="toastOffsetBlockValue">16px</output>
+        </div>
+      </div>
+
+      <div data-actions>
+        <button type="button" data-action="add-toast">Add toast</button>
+        <button type="button" data-action="add-burst">Add 5</button>
+        <button type="button" data-action="add-long">Long</button>
+        <button type="button" data-action="add-unbroken">Unbroken</button>
+        <button type="button" data-action="add-no-dismiss">No dismiss</button>
+        <button type="button" data-action="add-action">Action</button>
+      </div>
     </main>
 
     <script type="module">
       import ToastQueue from './src/index.js';
-      // import './src/presets/minimal.css';
-      import './src/presets/stacked.css';
+
+      import listPreset from './src/presets/list.css?url';
+      import stackedPreset from './src/presets/stacked.css?url';
 
       if (typeof HTMLElement.prototype.ariaNotify !== 'function') {
         await import('https://cdn.jsdelivr.net/npm/@github/arianotify-polyfill');
       }
 
+      const presetUrls = {
+        list: listPreset,
+        stacked: stackedPreset,
+      };
+
+      const toastPreset = localStorage.getItem('tq-preset') || 'list';
       const toastPlacement = localStorage.getItem('tq-placement') || 'top-center';
+      const toastOffsetInline = localStorage.getItem('tq-offset-inline') || '16';
+      const toastOffsetBlock = localStorage.getItem('tq-offset-block') || '16';
+
+      const toastPresetMenu = document.querySelector('#toastPresetMenu');
+      const toastPlacementMenu = document.querySelector('#toastPlacementMenu');
+      const toastOffsetInlineInput = document.querySelector('#toastOffsetInline');
+      const toastOffsetInlineValue = document.querySelector('#toastOffsetInlineValue');
+      const toastOffsetBlockInput = document.querySelector('#toastOffsetBlock');
+      const toastOffsetBlockValue = document.querySelector('#toastOffsetBlockValue');
+
+      const presetLink = document.createElement('link');
+      presetLink.rel = 'stylesheet';
+      presetLink.href = presetUrls[toastPreset];
+      document.head.appendChild(presetLink);
 
       window.tq = new ToastQueue({
         // duration: false,
@@ -123,41 +218,163 @@
         },
       });
 
-      window.setToastPlacement = (value) => {
+      const toastQueue = tq.element;
+
+      toastQueue.style.setProperty(
+        '--tq-offset-inline',
+        `${toastOffsetInline}px`,
+      );
+
+      toastQueue.style.setProperty(
+        '--tq-offset-block',
+        `${toastOffsetBlock}px`,
+      );
+
+      const setToastPlacement = (value) => {
         tq.placement = value;
         localStorage.setItem('tq-placement', value);
-      }
+      };
 
+      const setToastPreset = (value) => {
+        presetLink.href = presetUrls[value];
+        localStorage.setItem('tq-preset', value);
+      };
+
+      const setToastOffset = (axis, value) => {
+        toastQueue.style.setProperty(
+          `--tq-offset-${axis}`,
+          `${value}px`,
+        );
+
+        localStorage.setItem(`tq-offset-${axis}`, value);
+      };
+
+      window.setToastPlacement = setToastPlacement;
+      window.setToastPreset = setToastPreset;
+      window.setToastOffset = setToastOffset;
+
+      toastPresetMenu.value = toastPreset;
       toastPlacementMenu.value = toastPlacement;
+
+      toastOffsetInlineInput.value = toastOffsetInline;
+      toastOffsetBlockInput.value = toastOffsetBlock;
+
+      toastOffsetInlineValue.value = `${toastOffsetInline}px`;
+      toastOffsetBlockValue.value = `${toastOffsetBlock}px`;
+
+      toastPresetMenu.addEventListener('change', event => {
+        setToastPreset(event.target.value);
+      });
+
       toastPlacementMenu.addEventListener('change', event => {
         const selectedValue = event.target.value;
         setToastPlacement(selectedValue);
-      })
+      });
+
+      toastOffsetInlineInput.addEventListener('input', event => {
+        const value = event.target.value;
+        toastOffsetInlineValue.value = `${value}px`;
+        setToastOffset('inline', value);
+      });
+
+      toastOffsetBlockInput.addEventListener('input', event => {
+        const value = event.target.value;
+        toastOffsetBlockValue.value = `${value}px`;
+        setToastOffset('block', value);
+      });
+
+      const addToast = (content, options = {}) => {
+        tq.add(content, {
+          duration: 0,
+          ...options,
+        });
+      };
 
       document.addEventListener('click', event => {
-        if (event.target.dataset.action === 'add-toast') {
-          // event.preventDefault();
+        const action = event.target.closest('[data-action]')?.dataset.action;
 
-          tq.add(
-            // 'Desc...',
+        if (!action) return;
+
+        if (action === 'add-toast') {
+          addToast(
             {
               title: 'Title',
-              description: Date.now()
+              description: Date.now(),
             },
             {
-            icon: 'ℹ️',
-            className: 'my-toast',
-            // dismissible: false,
-            duration: 0,
-            action: {
-              label: 'Action',
-              onClick: (toast) => {
-                console.log(toast)
-                tq.close(toast.id)
-              }
+              icon: 'ℹ️',
+              className: 'my-toast',
+              action: {
+                label: 'Action',
+                onClick: (toast) => {
+                  console.log(toast);
+                  tq.close(toast.id);
+                },
+              },
             },
+          );
+          return;
+        }
+
+        if (action === 'add-burst') {
+          for (let index = 1; index <= 5; index++) {
+            addToast({
+              title: `Toast ${index}`,
+              description: Date.now(),
+            });
+          }
+          return;
+        }
+
+        if (action === 'add-long') {
+          addToast({
+            title: 'A deliberately long toast title that should wrap',
+            description:
+              'This description is intentionally long so we can test wrapping, queue sizing, animation and how the toast behaves when there is substantially more content than usual.',
           });
           return;
+        }
+
+        if (action === 'add-unbroken') {
+          addToast({
+            title: 'Unbroken content',
+            description:
+              'https://example.com/really-long-path/with-a-very-long-unbroken-string-that-should-not-break-the-queue-layout',
+          });
+          return;
+        }
+
+        if (action === 'add-no-dismiss') {
+          addToast(
+            {
+              title: 'Persistent toast',
+              description:
+                'This toast cannot be dismissed by swipe or close.',
+            },
+            {
+              dismissible: false,
+            },
+          );
+          return;
+        }
+
+        if (action === 'add-action') {
+          addToast(
+            {
+              title: 'Action toast',
+              description:
+                'Test focus, keyboard and action handling.',
+            },
+            {
+              icon: '⚡',
+              action: {
+                label: 'Run',
+                onClick: (toast) => {
+                  console.log('Action clicked', toast);
+                },
+              },
+            },
+          );
         }
       });
     </script>

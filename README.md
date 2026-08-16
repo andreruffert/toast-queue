@@ -5,7 +5,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/toast-queue?logo=npm&color=1a1a1a&labelColor=242424)](https://npmx.dev/package/toast-queue)
 [![jsDelivr hits (npm)](https://img.shields.io/jsdelivr/npm/hm/toast-queue?color=1a1a1a&labelColor=242424)](https://www.jsdelivr.com/package/npm/toast-queue)
 
-> Accessible, unstyled toast notifications for modern web apps. `toast-queue` is a tiny, framework-agnostic JavaScript library for managing toast notifications with native web APIs, progressive enhancement, and optional CSS presets.
+> Accessible, unstyled toast notifications for modern web apps.
 
 - Framework agnostic: Vanilla JavaScript with zero runtime dependencies.
 - Unstyled by design: Bring your own CSS or start with the included presets.
@@ -96,7 +96,7 @@ Both are plain CSS layered under `@layer toast-queue`, so your own styles will w
 new ToastQueue({
   root: document.body,      // Container element for the toast queue
   duration: 6000,            // Auto-dismiss duration in ms (0 disables it)
-  placement: 'top-end',      // 'top-start' | 'top-center' | 'top-end' | 'bottom-start' | 'bottom-center' | 'bottom-end'
+  placement: 'top-end',      // 'top-start' | 'top-center' | 'top-end' | 'center' | 'bottom-start' | 'bottom-center' | 'bottom-end'
   visibleLimit: 3,           // Toasts rendered before the rest are flagged hidden
   template: { root, item, actionButton }, // Override the default markup
 });

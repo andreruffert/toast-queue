@@ -11,7 +11,7 @@
 <dt><a href="#ToastQueueOptions">ToastQueueOptions</a> : <code>Object</code></dt>
 <dd><p>Configuration options for a <a href="#ToastQueue">ToastQueue</a>.</p>
 </dd>
-<dt><a href="#ToastQueuePlacement">ToastQueuePlacement</a> : <code>&#x27;top-start&#x27;</code> | <code>&#x27;top-center&#x27;</code> | <code>&#x27;top-end&#x27;</code> | <code>&#x27;bottom-start&#x27;</code> | <code>&#x27;bottom-center&#x27;</code> | <code>&#x27;bottom-end&#x27;</code></dt>
+<dt><a href="#ToastQueuePlacement">ToastQueuePlacement</a> : <code>&#x27;top-start&#x27;</code> | <code>&#x27;top-center&#x27;</code> | <code>&#x27;top-end&#x27;</code> | <code>&#x27;center&#x27;</code> | <code>&#x27;bottom-start&#x27;</code> | <code>&#x27;bottom-center&#x27;</code> | <code>&#x27;bottom-end&#x27;</code></dt>
 <dd><p>Position of the toast queue.</p>
 </dd>
 <dt><a href="#ToastQueueTemplate">ToastQueueTemplate</a> : <code>Object</code></dt>
@@ -273,7 +273,7 @@ Configuration options for a [ToastQueue](#ToastQueue).
 
 <a name="ToastQueuePlacement"></a>
 
-## ToastQueuePlacement : <code>&#x27;top-start&#x27;</code> \| <code>&#x27;top-center&#x27;</code> \| <code>&#x27;top-end&#x27;</code> \| <code>&#x27;bottom-start&#x27;</code> \| <code>&#x27;bottom-center&#x27;</code> \| <code>&#x27;bottom-end&#x27;</code>
+## ToastQueuePlacement : <code>&#x27;top-start&#x27;</code> \| <code>&#x27;top-center&#x27;</code> \| <code>&#x27;top-end&#x27;</code> \| <code>&#x27;center&#x27;</code> \| <code>&#x27;bottom-start&#x27;</code> \| <code>&#x27;bottom-center&#x27;</code> \| <code>&#x27;bottom-end&#x27;</code>
 Position of the toast queue.
 
 **Kind**: global typedef  

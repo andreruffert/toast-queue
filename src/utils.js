@@ -22,10 +22,10 @@ const swipeableDirectionPlacementTypes = {
   'top-start': 'left',
   'top-center': 'up',
   'top-end': 'right',
+  center: 'inline',
   'bottom-start': 'left',
   'bottom-center': 'down',
   'bottom-end': 'right',
-  center: 'inline',
 };
 
 /**
