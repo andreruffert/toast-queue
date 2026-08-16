@@ -35,12 +35,11 @@ npm install toast-queue
 ```
 
 ### Create a queue
+
 Create a new `ToastQueue` instance.
 
 ```js
 import ToastQueue from 'toast-queue'
-
-// ...
 
 const toastQueue = new ToastQueue();
 ```
@@ -73,20 +72,49 @@ toastQueue.add(
 
 ## Styling
 
-`toast-queue` ships unstyled by default, you own every pixel. If you'd rather start from a look and adjust from there, two optional presets are included.
+`toast-queue` ships unstyled by default, so you own the presentation. The core stylesheet provides the structural styles needed by the queue, while optional presets add ready-made layout and transition treatments.
+
+```js
+import 'toast-queue/toast-queue.css';
+```
 
 ### Presets
 
+Two optional CSS presets are included:
+
 ```js
-import 'toast-queue/presets/minimal.css';
-// or
+// Conventional vertical queue
+import 'toast-queue/presets/list.css';
+
+// Compact overlapping queue
 import 'toast-queue/presets/stacked.css';
 ```
 
-- **minimal**: a simple vertical list.
-- **stacked**: a card-stack "peek" effect, where toasts beyond `visibleLimit` collapse behind the topmost one.
+- **list**: a conventional vertical toast queue where each toast occupies its own space.
+- **stacked**: a compact card stack where queued toasts overlap behind the active toast.
 
 Both are plain CSS layered under `@layer toast-queue`, so your own styles will win by default. Treat them as a starting point, not a lock-in.
+
+### Positioning
+
+Use the logical offset variables to control the inset from the viewport. Set `--tq-offset` for a uniform inset, or customize the inline and block axes independently.
+
+```css
+toast-queue {
+  --tq-offset: 1rem;
+  --tq-offset-inline: var(--tq-offset);
+  --tq-offset-block: var(--tq-offset);
+}
+```
+
+For example:
+
+```css
+toast-queue {
+  --tq-offset-inline: 2rem;
+  --tq-offset-block: 1rem;
+}
+```
 
 ## Configuration
 
@@ -95,14 +123,14 @@ Both are plain CSS layered under `@layer toast-queue`, so your own styles will w
 ```js
 new ToastQueue({
   root: document.body,      // Container element for the toast queue
-  duration: 6000,            // Auto-dismiss duration in ms (0 disables it)
-  placement: 'top-end',      // 'top-start' | 'top-center' | 'top-end' | 'center' | 'bottom-start' | 'bottom-center' | 'bottom-end'
-  visibleLimit: 3,           // Toasts rendered before the rest are flagged hidden
+  duration: 6000,           // Auto-dismiss duration in ms (0 disables it)
+  placement: 'top-end',     // 'top-start' | 'top-center' | 'top-end' | 'center' | 'bottom-start' | 'bottom-center' | 'bottom-end'
+  visibleLimit: 3,          // Toasts rendered before the rest are flagged hidden
   template: { root, item, actionButton }, // Override the default markup
 });
 ```
 
-`placement` and `visibleLimit` are also live setters (`toastQueue.placement = 'bottom-center'`) and update everything in place.
+`placement` and `visibleLimit` are also live setters (`toastQueue.placement = 'bottom-center'`) and update everything in place. See [API reference](./API.md#ToastQueueOptions) for the full list.
 
 ### Toast options
 
@@ -110,7 +138,9 @@ Per-toast options are passed as the second argument to `.add()`. See [API refere
 
 ## Browser support
 
-toast-queue uses modern, progressively-enhanced browser features, [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API), [View Transitions API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API), and [`ariaNotify()`](https://developer.mozilla.org/en-US/docs/Web/API/Element/ariaNotify), and falls back gracefully where a browser doesn't yet support them (toasts still render and function without animation, just without a transition).
+toast-queue uses modern, progressively-enhanced browser features, [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API), [View Transitions API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API), and [`ariaNotify()`](https://developer.mozilla.org/en-US/docs/Web/API/Element/ariaNotify), and falls back gracefully where a browser doesn't yet support them.
+
+Toasts still render and function without animation when View Transitions aren't available.
 
 `ariaNotify()` provides the screen-reader announcement for newly created toasts. Browsers without native support can use a polyfill. Install the polyfill and load it conditionally so browsers with native support skip it entirely.
 

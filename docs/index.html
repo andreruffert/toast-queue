@@ -51,7 +51,6 @@
         </color-scheme-switch>
       </div>
     </header>
-
     <main>
       <article>
         <div>
@@ -59,7 +58,6 @@
           <h1 id="trigger-heading">Accessible toast notifications</h1>
           <p class="lede">Try toast-queue in the browser. Tiny, unstyled, framework-agnostic, and built on modern web APIs with progressive enhancement and graceful fallbacks.</p>
         </div>
-
         <fieldset>
         <legend>Queue controls</legend>
         <p class="hint">
@@ -72,6 +70,7 @@
               <option value="top-start">top start</option>
               <option value="top-center">top center</option>
               <option value="top-end">top end</option>
+              <option value="center">center</option>
               <option value="bottom-start">bottom start</option>
               <option value="bottom-center">bottom center</option>
               <option value="bottom-end">bottom end</option>
@@ -86,21 +85,18 @@
           <output id="status" aria-live="polite">0 active</output>
         </div>
         <p class="hint">Additional toasts remain queued until space becomes available.</p>
-
         <button type="button" id="addToast">Show toast</button>
       </fieldset>
 
       <div>
         <p>Unstyled by design. toast-queue provides the behavior and accessibility primitives, you provide the look. Optional CSS presets are included if you want a starting point.</p>
-
         <label class="field">
           Preset
           <select id="preset" aria-label="Style preset">
-            <option value="stacked" selected>Stacked</option>
-            <option value="minimal">Minimal</option>
+            <option value="list" selected>List</option>
+            <option value="stacked">Stacked</option>
           </select>
         </label>
-
         <div class="copy-code">
           <syntax-highlight language="css" content-selector="style">
               <style id="playground-css" type="text/css" spellcheck="false">/* toast-queue customization */
@@ -108,14 +104,11 @@ toast-queue {
   --toast-color: light-dark(#ffffff, #171717);
 
   width: 300px;
-  padding: 1rem;
-  overflow: visible;
 }
 
 toast-queue [data-part="group"] {
   gap: .6rem;
 }
-
 toast-queue [data-part="toast"] {
   color: contrast-color(var(--toast-color));
   border: 1px solid color-mix(in srgb, currentColor, transparent 87%);
@@ -131,7 +124,6 @@ toast-queue [data-part="toast"] {
     opacity: calc(1 - var(--tq-swipe-distance, 0));
   }
 }
-
 toast-queue [data-part="content"] {
   align-items: flex-start;
   flex: 1;
@@ -166,7 +158,6 @@ toast-queue [data-part="action-button"] {
   font-size: .8rem;
   font-weight: 600;
 }
-
 toast-queue [data-part="close-button"] {
   display: flex;
   align-items: center;
@@ -183,7 +174,6 @@ toast-queue [data-part="close-button"] {
           </div>
         </div>
       </article>
-
       <article>
         <div>
           <p class="eyebrow">Documentation</p>
@@ -192,7 +182,6 @@ toast-queue [data-part="close-button"] {
             Get started in a few lines, then customize the queue to fit your app. For the complete API, including options, per-toast configuration, and methods, see the <a href="https://github.com/andreruffert/toast-queue/blob/main/API.md" target="_blank">API reference</a>.
           </p>
         </div>
-
         <section>
           <h3>Install</h3>
           <p class="lede">Install toast-queue from <a href="https://www.npmx.dev/package/toast-queue" target="_blank">npm</a>.</p>
@@ -201,7 +190,6 @@ toast-queue [data-part="close-button"] {
             <clipboard-copy for="copy-install">Copy code</clipboard-copy>
           </div>
         </section>
-
         <section>
           <h3>Quick start</h3>
           <p class="lede">
@@ -237,39 +225,59 @@ toastQueue.add(
             <clipboard-copy for="copy-usage-2">Copy code</clipboard-copy>
           </div>
         </section>
-
         <section>
           <h3>Styling</h3>
           <p class="lede">
-            `toast-queue` ships unstyled by default, you own every pixel. If you'd rather start from a look and adjust from there, two optional presets are included.
+            <code>toast-queue</code> ships unstyled by default, so you own the presentation. The core stylesheet provides the structural styles needed by the queue, while optional presets add ready-made layout and transition treatments.
           </p>
           <div class="copy-code">
-            <syntax-highlight id="copy-usage-preset" language="css">/* core */
+            <syntax-highlight id="copy-usage-core" language="css">/* core */
 import "toast-queue/toast-queue.css";</syntax-highlight>
-            <clipboard-copy for="copy-usage-preset">Copy code</clipboard-copy>
+            <clipboard-copy for="copy-usage-core">Copy code</clipboard-copy>
           </div>
 
           <h4>Presets</h4>
           <div class="copy-code">
-            <syntax-highlight id="copy-usage-preset" language="css">/* minimal */
-import "toast-queue/presets/minimal.css";
+            <syntax-highlight id="copy-usage-presets" language="css">/* list */
+import "toast-queue/presets/list.css";
 
 /* stacked */
 import "toast-queue/presets/stacked.css";</syntax-highlight>
-            <clipboard-copy for="copy-usage-preset">Copy code</clipboard-copy>
+            <clipboard-copy for="copy-usage-presets">Copy code</clipboard-copy>
           </div>
-
           <ul>
-            <li><b>minimal</b>: a simple vertical list.</li>
-            <li><b>stacked</b>: a card-stack "peek" effect, where toasts beyond `visibleLimit` collapse behind the topmost one.</li>
+            <li><b>list</b>: a conventional vertical toast queue where each toast occupies its own space.</li>
+            <li><b>stacked</b>: a compact card stack where queued toasts overlap behind the active toast.</li>
           </ul>
 
           <p class="lede">
-            Both are plain CSS layered under <code>@layer toast-queue</code>, so your
-            own styles win by default. Treat them as a starting point, not a lock-in.
+            Both are plain CSS layered under <code>@layer toast-queue</code>, so your own styles win by default. Treat them as a starting point, not a lock-in.
           </p>
-        </section>
 
+          <h4>Positioning</h4>
+          <p class="lede">
+            Use the logical offset variables to control the inset from the viewport. Set <code>--tq-offset</code> for a uniform inset, or customize the inline and block axes independently.
+          </p>
+          <div class="copy-code">
+            <syntax-highlight id="copy-usage-offset" language="css">toast-queue {
+  --tq-offset: 1rem;
+  --tq-offset-inline: var(--tq-offset);
+  --tq-offset-block: var(--tq-offset);
+}</syntax-highlight>
+            <clipboard-copy for="copy-usage-offset">Copy code</clipboard-copy>
+          </div>
+
+          <p class="lede">
+            For example, this keeps the queue closer to the viewport edge vertically while giving it more horizontal breathing room:
+          </p>
+          <div class="copy-code">
+            <syntax-highlight id="copy-usage-offset-custom" language="css">toast-queue {
+  --tq-offset-inline: 2rem;
+  --tq-offset-block: 1rem;
+}</syntax-highlight>
+            <clipboard-copy for="copy-usage-offset-custom">Copy code</clipboard-copy>
+          </div>
+        </section>
         <section>
           <h3>Configuration</h3>
           <h4>Queue options</h4>
@@ -278,7 +286,7 @@ import "toast-queue/presets/stacked.css";</syntax-highlight>
             <syntax-highlight id="copy-usage-options" language="js">new ToastQueue({
   root: document.body,      // Container element for the toast queue
   duration: 6000,           // Auto-dismiss duration in ms (0 disables it)
-  placement: 'top-end',     // 'top-start' | 'top-center' | 'top-end' | 'bottom-start' | 'bottom-center' | 'bottom-end'
+  placement: 'top-end',     // 'top-start' | 'top-center' | 'top-end' | 'center' | 'bottom-start' | 'bottom-center' | 'bottom-end'
   visibleLimit: 3,          // Toasts rendered before the rest are flagged hidden
   template: { root, item, actionButton }, // Override the default markup
 });</syntax-highlight>
@@ -287,14 +295,12 @@ import "toast-queue/presets/stacked.css";</syntax-highlight>
           <p class="lede">
             <code>placement</code> and <code>visibleLimit</code> are also live setters
             (<code>toastQueue.placement = 'bottom-center'</code>) and update everything
-            in place.
+            in place. See <a href="https://github.com/andreruffert/toast-queue/blob/main/API.md#ToastQueueOptions" target="_blank">API reference</a> for the full list.
           </p>
-
           <h4>Toast options</h4>
           <p class="lede">Per-toast options are passed as the second argument to
             <code>.add()</code>. See <a href="https://github.com/andreruffert/toast-queue/blob/main/API.md#ToastOptions" target="_blank">API reference</a> for the full list.</p>
         </section>
-
         <section>
           <h3>Browser support</h3>
           <p class="lede">
@@ -312,7 +318,6 @@ import "toast-queue/presets/stacked.css";</syntax-highlight>
             <syntax-highlight id="copy-polyfill-install" language="shell">npm install @github/arianotify-polyfill</syntax-highlight>
             <clipboard-copy for="copy-polyfill-install">Copy code</clipboard-copy>
           </div>
-
           <div class="copy-code">
           <syntax-highlight id="copy-polyfill-usage" language="js">if (typeof HTMLElement.prototype.ariaNotify !== 'function') {
   await import('@github/arianotify-polyfill');
@@ -324,7 +329,6 @@ const toastQueue = new ToastQueue();</syntax-highlight>
         </section>
       </article>
     </main>
-
     <footer>
       <p>
         An open source project by <a href="https://andreruffert.com" target="_blank" rel="noopener">André Ruffert</a>.
@@ -339,7 +343,6 @@ const toastQueue = new ToastQueue();</syntax-highlight>
         <span>MIT License</span>
       </p>
     </footer>
-
     <svg width="0" height="0" aria-hidden="true" hidden>
       <symbol id="sun" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="4"></circle>
@@ -359,14 +362,12 @@ const toastQueue = new ToastQueue();</syntax-highlight>
         <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.09 3.29 9.4 7.86 10.93.57.1.78-.25.78-.55 0-.27-.01-1.16-.02-2.11-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.71 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.64 1.59.24 2.77.12 3.06.74.81 1.18 1.84 1.18 3.1 0 4.44-2.7 5.42-5.27 5.7.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .3.2.66.79.55A10.51 10.51 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"></path>
       </symbol>
     </svg>
-
     <script type="module">
       import ToastQueue from 'https://cdn.jsdelivr.net/npm/toast-queue/+esm';
 
       if (typeof HTMLElement.prototype.ariaNotify !== 'function') {
         await import('https://cdn.jsdelivr.net/npm/@github/arianotify-polyfill@1/+esm');
       }
-
       const placementSelect = document.querySelector('#placement');
       const presetSelect = document.querySelector('#preset');
       const visibleLimitInput = document.querySelector('#visibleLimit');
@@ -374,7 +375,6 @@ const toastQueue = new ToastQueue();</syntax-highlight>
       const clearAllButton = document.querySelector('#clearAll');
       const statusOutput = document.querySelector('#status');
       const addToastButton = document.querySelector('#addToast');
-
 
       const playgroundCss = document.querySelector('#playground-css');
       /**
@@ -386,7 +386,6 @@ const toastQueue = new ToastQueue();</syntax-highlight>
         if (playgroundCss.contentEditable !== 'plaintext-only') {
           playgroundCss.setAttribute('contenteditable', 'true');
         }
-
         // Update syntax highlighting on input
         playgroundCss.addEventListener('input', event => {
           if (SUPPORTS_CSS_HIGHLIGHTS) {
@@ -394,7 +393,6 @@ const toastQueue = new ToastQueue();</syntax-highlight>
             event.target.closest('syntax-highlight')?.update();
           }
         });
-
         // Enhance content-editable functionality
         playgroundCss.addEventListener('keydown', (event) => {
           // The tab key should insert a tab character
@@ -407,7 +405,6 @@ const toastQueue = new ToastQueue();</syntax-highlight>
             const range = selection.getRangeAt(0);
             const tabNode = document.createTextNode('  '); // two spaces
             range.insertNode(tabNode);
-
             // Move the caret after the inserted spaces
             range.setStartAfter(tabNode);
             range.setEndAfter(tabNode);
@@ -418,7 +415,6 @@ const toastQueue = new ToastQueue();</syntax-highlight>
 
       const loadPreset = async (name) => {
         presetSelect.disabled = true;
-
         const oldThemeStyles = document.querySelector('[data-tq-preset]');
         const link = document.createElement('link');
         link.rel = 'stylesheet';
@@ -435,7 +431,6 @@ const toastQueue = new ToastQueue();</syntax-highlight>
         link.href = `https://cdn.jsdelivr.net/npm/toast-queue@latest/dist/presets/${name}.min.css`;
         document.head.appendChild(link);
       };
-
       const storedPlacement = localStorage.getItem('tq-placement') || 'bottom-end';
       placementSelect.value = storedPlacement;
 
@@ -448,7 +443,6 @@ const toastQueue = new ToastQueue();</syntax-highlight>
         if (tq.isPaused) parts.push('paused');
         statusOutput.textContent = parts.join(' · ');
       }
-
       tq.add(
       {
         title: "toast-queue",
@@ -466,7 +460,6 @@ const toastQueue = new ToastQueue();</syntax-highlight>
     );
 
       renderStatus();
-
       addToastButton.addEventListener('click', () => {
         tq.add({
           title: 'Toast created',
@@ -482,7 +475,6 @@ const toastQueue = new ToastQueue();</syntax-highlight>
         tq.placement = value;
         localStorage.setItem('tq-placement', value);
       });
-
       presetSelect.addEventListener('change', (event) => {
         const value = event.target.value;
         loadPreset(value);
@@ -494,7 +486,6 @@ const toastQueue = new ToastQueue();</syntax-highlight>
           tq.visibleLimit = value;
         }
       });
-
       togglePauseButton.addEventListener('click', () => {
         tq.isPaused ? tq.resume() : tq.pause();
         togglePauseButton.textContent = tq.isPaused ? 'Resume' : 'Pause';
@@ -507,7 +498,6 @@ const toastQueue = new ToastQueue();</syntax-highlight>
         renderStatus();
       });
     </script>
-
     <script type="module">
       import 'https://cdn.jsdelivr.net/npm/syntax-highlight-element@1/+esm';
       import 'https://cdn.jsdelivr.net/npm/@github/clipboard-copy-element@1/+esm';
