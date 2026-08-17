@@ -114,6 +114,12 @@
     border-radius: 0.25rem;
     color: light-dark(#111111, #ffffff);
     padding: var(--spacing-0\.5) var(--spacing-1);
+    text-wrap: nowrap;
+  }
+
+  input,
+  select {
+    font-size: 1rem;
   }
 
   header {
@@ -212,15 +218,69 @@
     padding-inline-start: var(--spacing-4);
   }
 
+  main .control-actions {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-4);
+    gap: var(--spacing-2);
+    background-color: color-mix(in srgb, currentColor, transparent 98%);
+    border: 1px solid color-mix(in srgb, currentColor, transparent 96%);
+    border-radius: 0.5rem;
+
+    button {
+      border: 1px solid color-mix(in srgb, currentColor, transparent 87%);
+      font-size: 1rem;
+    }
+
+    output {
+      margin-inline-start: auto;
+      font-size: smaller;
+    }
+  }
+
   main legend {
     font-size: smaller;
   }
 
   main fieldset {
-    border: 1px solid color-mix(in srgb, currentColor, transparent 87%);
+    background-color: color-mix(in srgb, currentColor, transparent 98%);
+    border: 1px solid color-mix(in srgb, currentColor, transparent 96%);
     border-radius: 0.5rem;
     padding: var(--spacing-4);
-    background-color: light-dark(#fdfdfd, #000000);
+  }
+
+  main fieldset p:first-of-type {
+    margin-block-start: unset;
+  }
+
+  main label {
+    font-size: smaller;
+    font-weight: 500;
+  }
+
+  main .controls {
+    display: grid;
+    /* grid-template-columns: minmax(0, 4fr) minmax(0, 5fr); */
+    grid-template-columns: auto;
+    gap: var(--spacing-4);
+  }
+
+  main .controls .copy-code {
+    margin: unset;
+
+    syntax-highlight {
+      border-radius: 0.5rem;
+    }
+  }
+
+  main .controls-row {
+    display: flex;
+    gap: var(--spacing-4);
+    align-items: center;
+  }
+
+  #visibleLimit {
+    field-sizing: content;
   }
 
   main article {
@@ -229,12 +289,6 @@
     align-self: stretch;
     gap: var(--spacing-10);
   }
-
-  /* main article:first-of-type {
-    background-color: color-mix(in srgb, currentColor, transparent 96%);
-    padding: 2rem;
-    border-radius: 1rem;
-  } */
 
   main article > section:has(section) {
     display: flex;

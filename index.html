@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>">
+    <meta charset="utf-8" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg width%3D%22512%22 height%3D%22512%22 viewBox%3D%220 0 512 512%22 fill%3D%22none%22 xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cstyle%3E path%7Bcolor%3Ablack%7D%40media (prefers-color-scheme%3Adark)%7Bpath%7Bcolor%3Awhite%7D%7D%3C%2Fstyle%3E%3Crect width%3D%22512%22 height%3D%22512%22 rx%3D%22120%22 fill%3D%22url(%23paint0_linear_2_2)%22 fill-opacity%3D%220.3%22%2F%3E%3Cpath d%3D%22M304.877 355.467C311.87 381.538 296.382 408.336 270.283 415.323C244.183 422.308 217.355 406.836 210.362 380.764M247.806 155.519C252.767 146.603 254.402 135.827 251.551 125.196C245.722 103.47 223.367 90.5763 201.617 96.3979C179.867 102.219 166.96 124.551 172.787 146.277C175.639 156.908 182.448 165.424 191.208 170.668M334.964 215.866C329.144 194.165 313.602 176.018 291.762 165.417C269.92 154.816 243.568 152.63 218.5 159.339C193.433 166.049 171.705 181.104 158.096 201.193C144.487 221.283 140.112 244.76 145.933 266.462C155.565 302.366 153.694 331.011 147.612 352.777C140.68 377.586 137.214 389.99 138.151 392.48C139.222 395.33 139.997 396.113 142.838 397.213C145.322 398.174 155.755 395.38 176.622 389.796L370.122 338.005C390.988 332.419 401.422 329.627 403.092 327.553C405.002 325.181 405.281 324.117 404.784 321.115C404.348 318.489 395.137 309.479 376.715 291.456C360.554 275.643 344.596 251.771 334.964 215.866Z%22 stroke%3D%22currentColor%22 stroke-width%3D%2233%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%2F%3E%3Cdefs%3E%3ClinearGradient id%3D%22paint0_linear_2_2%22 x1%3D%22256%22 y1%3D%220%22 x2%3D%22256%22 y2%3D%22512%22 gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop stop-color%3D%22%23666666%22%2F%3E%3Cstop offset%3D%221%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3C%2Fsvg%3E" sizes="any" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>toast-queue</title>
     <style>
@@ -124,8 +124,8 @@
         </label>
 
         <label>
-          Placement
-          <select id="toastPlacementMenu" aria-label="Toast placement">
+          Position
+          <select id="toastPositionMenu" aria-label="Toast position">
             <option value="top-start">top start</option>
             <option value="top-center">top center</option>
             <option value="top-end">top end</option>
@@ -189,12 +189,12 @@
       };
 
       const toastPreset = localStorage.getItem('tq-preset') || 'list';
-      const toastPlacement = localStorage.getItem('tq-placement') || 'top-center';
+      const toastPosition = localStorage.getItem('tq-position') || 'top-end';
       const toastOffsetInline = localStorage.getItem('tq-offset-inline') || '16';
       const toastOffsetBlock = localStorage.getItem('tq-offset-block') || '16';
 
       const toastPresetMenu = document.querySelector('#toastPresetMenu');
-      const toastPlacementMenu = document.querySelector('#toastPlacementMenu');
+      const toastPositionMenu = document.querySelector('#toastPositionMenu');
       const toastOffsetInlineInput = document.querySelector('#toastOffsetInline');
       const toastOffsetInlineValue = document.querySelector('#toastOffsetInlineValue');
       const toastOffsetBlockInput = document.querySelector('#toastOffsetBlock');
@@ -207,7 +207,7 @@
 
       window.tq = new ToastQueue({
         // duration: false,
-        placement: toastPlacement,
+        position: toastPosition,
         template: {
           root: `<toast-queue>
             <menu data-part="menu">
@@ -230,9 +230,9 @@
         `${toastOffsetBlock}px`,
       );
 
-      const setToastPlacement = (value) => {
-        tq.placement = value;
-        localStorage.setItem('tq-placement', value);
+      const setToastPosition = (value) => {
+        tq.position = value;
+        localStorage.setItem('tq-position', value);
       };
 
       const setToastPreset = (value) => {
@@ -249,12 +249,12 @@
         localStorage.setItem(`tq-offset-${axis}`, value);
       };
 
-      window.setToastPlacement = setToastPlacement;
+      window.setToastPosition = setToastPosition;
       window.setToastPreset = setToastPreset;
       window.setToastOffset = setToastOffset;
 
       toastPresetMenu.value = toastPreset;
-      toastPlacementMenu.value = toastPlacement;
+      toastPositionMenu.value = toastPosition;
 
       toastOffsetInlineInput.value = toastOffsetInline;
       toastOffsetBlockInput.value = toastOffsetBlock;
@@ -266,9 +266,9 @@
         setToastPreset(event.target.value);
       });
 
-      toastPlacementMenu.addEventListener('change', event => {
+      toastPositionMenu.addEventListener('change', event => {
         const selectedValue = event.target.value;
-        setToastPlacement(selectedValue);
+        setToastPosition(selectedValue);
       });
 
       toastOffsetInlineInput.addEventListener('input', event => {

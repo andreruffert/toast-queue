@@ -9,7 +9,7 @@
  * @property {number} [duration=6000]
  *   Default auto-dismiss duration in milliseconds. Use `0` to disable
  *   automatic dismissal.
- * @property {ToastQueuePlacement} [placement='top-end']
+ * @property {ToastQueuePosition} [position='top-end']
  *   Position of the toast queue.
  * @property {number} [visibleLimit=3]
  *   Number of toasts considered visible at once. Additional toasts remain
@@ -22,7 +22,7 @@
 /**
  * Position of the toast queue.
  *
- * @typedef {'top-start'|'top-center'|'top-end'|'center'|'bottom-start'|'bottom-center'|'bottom-end'} ToastQueuePlacement
+ * @typedef {'top-start'|'top-center'|'top-end'|'center'|'bottom-start'|'bottom-center'|'bottom-end'} ToastQueuePosition
  */
 
 /**

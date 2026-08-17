@@ -11,7 +11,7 @@
 <dt><a href="#ToastQueueOptions">ToastQueueOptions</a> : <code>Object</code></dt>
 <dd><p>Configuration options for a <a href="#ToastQueue">ToastQueue</a>.</p>
 </dd>
-<dt><a href="#ToastQueuePlacement">ToastQueuePlacement</a> : <code>&#x27;top-start&#x27;</code> | <code>&#x27;top-center&#x27;</code> | <code>&#x27;top-end&#x27;</code> | <code>&#x27;center&#x27;</code> | <code>&#x27;bottom-start&#x27;</code> | <code>&#x27;bottom-center&#x27;</code> | <code>&#x27;bottom-end&#x27;</code></dt>
+<dt><a href="#ToastQueuePosition">ToastQueuePosition</a> : <code>&#x27;top-start&#x27;</code> | <code>&#x27;top-center&#x27;</code> | <code>&#x27;top-end&#x27;</code> | <code>&#x27;center&#x27;</code> | <code>&#x27;bottom-start&#x27;</code> | <code>&#x27;bottom-center&#x27;</code> | <code>&#x27;bottom-end&#x27;</code></dt>
 <dd><p>Position of the toast queue.</p>
 </dd>
 <dt><a href="#ToastQueueTemplate">ToastQueueTemplate</a> : <code>Object</code></dt>
@@ -52,7 +52,7 @@ library to locate and update their elements.</p>
     * [.isPaused](#ToastQueue+isPaused) : <code>boolean</code>
     * [.element](#ToastQueue+element) : <code>HTMLElement</code>
     * [.size](#ToastQueue+size) : <code>number</code>
-    * [.placement](#ToastQueue+placement) : [<code>ToastQueuePlacement</code>](#ToastQueuePlacement)
+    * [.position](#ToastQueue+position) : [<code>ToastQueuePosition</code>](#ToastQueuePosition)
     * [.visibleLimit](#ToastQueue+visibleLimit) : <code>number</code>
     * [.add(content, [options])](#ToastQueue+add) ⇒ <code>ToastRecord</code>
     * [.get(id)](#ToastQueue+get) ⇒ <code>ToastRecord</code> \| <code>undefined</code>
@@ -120,21 +120,22 @@ The number of toasts currently in the queue.
 
 **Kind**: instance property of [<code>ToastQueue</code>](#ToastQueue)  
 **Read only**: true  
-<a name="ToastQueue+placement"></a>
+<a name="ToastQueue+position"></a>
 
-### toastQueue.placement : [<code>ToastQueuePlacement</code>](#ToastQueuePlacement)
-Gets or sets the queue placement.
+### toastQueue.position : [<code>ToastQueuePosition</code>](#ToastQueuePosition)
+Gets or sets the queue position.
 
-Supported placements are:
+Supported positions are:
 
 - `top-start`
 - `top-center`
 - `top-end`
+- `center`
 - `bottom-start`
 - `bottom-center`
 - `bottom-end`
 
-Changing the placement updates the queue and existing toasts in place.
+Changing the position updates the queue and existing toasts in place.
 
 **Kind**: instance property of [<code>ToastQueue</code>](#ToastQueue)  
 <a name="ToastQueue+visibleLimit"></a>
@@ -267,13 +268,13 @@ Configuration options for a [ToastQueue](#ToastQueue).
 | --- | --- | --- | --- |
 | [root] | <code>HTMLElement</code> | <code>document.body</code> | Container into which the queue is mounted. |
 | [duration] | <code>number</code> | <code>6000</code> | Default auto-dismiss duration in milliseconds. Use `0` to disable   automatic dismissal. |
-| [placement] | [<code>ToastQueuePlacement</code>](#ToastQueuePlacement) | <code>&#x27;top-end&#x27;</code> | Position of the toast queue. |
+| [position] | [<code>ToastQueuePosition</code>](#ToastQueuePosition) | <code>&#x27;top-end&#x27;</code> | Position of the toast queue. |
 | [visibleLimit] | <code>number</code> | <code>3</code> | Number of toasts considered visible at once. Additional toasts remain   queued and can be exposed by CSS presets. |
 | [template] | [<code>ToastQueueTemplate</code>](#ToastQueueTemplate) |  | Optional HTML templates used to render the queue, toast items, and   action buttons. |
 
-<a name="ToastQueuePlacement"></a>
+<a name="ToastQueuePosition"></a>
 
-## ToastQueuePlacement : <code>&#x27;top-start&#x27;</code> \| <code>&#x27;top-center&#x27;</code> \| <code>&#x27;top-end&#x27;</code> \| <code>&#x27;center&#x27;</code> \| <code>&#x27;bottom-start&#x27;</code> \| <code>&#x27;bottom-center&#x27;</code> \| <code>&#x27;bottom-end&#x27;</code>
+## ToastQueuePosition : <code>&#x27;top-start&#x27;</code> \| <code>&#x27;top-center&#x27;</code> \| <code>&#x27;top-end&#x27;</code> \| <code>&#x27;center&#x27;</code> \| <code>&#x27;bottom-start&#x27;</code> \| <code>&#x27;bottom-center&#x27;</code> \| <code>&#x27;bottom-end&#x27;</code>
 Position of the toast queue.
 
 **Kind**: global typedef  

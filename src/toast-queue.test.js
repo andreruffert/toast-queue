@@ -24,7 +24,7 @@ describe('ToastQueue', () => {
     expect(root).toBeTruthy();
     expect(root).toHaveAttribute('popover', 'manual');
     expect(root).toHaveAttribute('tabindex', '-1');
-    expect(root).toHaveAttribute('data-placement', 'top-end');
+    expect(root).toHaveAttribute('data-position', 'top-end');
   });
 
   test('renders toast content', async () => {
@@ -166,15 +166,15 @@ describe('ToastQueue', () => {
     expect(toastQueue.get(toastRef.id)).toBe(toastRef);
   });
 
-  test('updates placement and swipe direction', async () => {
+  test('updates position and swipe direction', async () => {
     const toastRef = toastQueue.add('Toast message');
 
     await expect.element(page.getByText('Toast message')).toBeInTheDocument();
 
-    toastQueue.placement = 'bottom-center';
+    toastQueue.position = 'bottom-center';
 
     await vi.waitFor(() => {
-      expect(toastQueue.element).toHaveAttribute('data-placement', 'bottom-center');
+      expect(toastQueue.element).toHaveAttribute('data-position', 'bottom-center');
     });
 
     const toastPart = document.querySelector(`[data-part="toast"][data-id="${toastRef.id}"]`);

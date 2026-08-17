@@ -1,6 +1,6 @@
 import { Swipeable } from './swipeable.js';
 import {
-  getPlacementViewTransitionClass,
+  getPositionViewTransitionClass,
   getSwipeableDirection,
   randomId,
   Timer,
@@ -9,7 +9,7 @@ import {
 
 /** @import {
  *   ToastQueueOptions,
- *   ToastQueuePlacement,
+ *   ToastQueuePosition,
  *   ToastQueueTemplate,
  *   ToastOptions,
  *   ToastRecord,
@@ -106,8 +106,8 @@ export class ToastQueue {
   /** @type {number} */
   #duration = 6000;
 
-  /** @type {ToastQueuePlacement} */
-  #placement = 'top-end';
+  /** @type {ToastQueuePosition} */
+  #position = 'top-end';
 
   /**
    * Number of toasts rendered visibly at once before the rest are hidden.
@@ -137,7 +137,7 @@ export class ToastQueue {
       options?.template?.actionButton || TEMPLATE.actionButton;
 
     this.#duration = typeof options?.duration !== 'undefined' ? options.duration : this.#duration;
-    this.#placement = options.placement ?? this.#placement;
+    this.#position = options.position ?? this.#position;
     this.#visibleLimit = options.visibleLimit ?? this.#visibleLimit;
 
     this.#mount(options.root || document.body);
@@ -167,7 +167,7 @@ export class ToastQueue {
 
     this.#rootPart.setAttribute('popover', 'manual');
     this.#rootPart.setAttribute('tabindex', '-1');
-    this.#rootPart.dataset.placement = this.#placement;
+    this.#rootPart.dataset.position = this.#position;
 
     this.#groupPart.setAttribute('reversed', '');
 
@@ -556,31 +556,32 @@ export class ToastQueue {
   }
 
   /**
-   * Gets or sets the queue placement.
+   * Gets or sets the queue position.
    *
-   * Supported placements are:
+   * Supported positions are:
    *
    * - `top-start`
    * - `top-center`
    * - `top-end`
+   * - `center`
    * - `bottom-start`
    * - `bottom-center`
    * - `bottom-end`
    *
-   * Changing the placement updates the queue and existing toasts in place.
+   * Changing the position updates the queue and existing toasts in place.
    *
-   * @type {ToastQueuePlacement}
+   * @type {ToastQueuePosition}
    */
-  get placement() {
-    return this.#placement;
+  get position() {
+    return this.#position;
   }
 
-  set placement(value) {
-    this.#placement = value;
+  set position(value) {
+    this.#position = value;
     for (const toast of this.#queue.values()) {
       toast.itemRef.style.setProperty(
         'view-transition-class',
-        `tq-item ${getPlacementViewTransitionClass(this.#placement)}`,
+        `tq-item ${getPositionViewTransitionClass(this.#position)}`,
       );
       if (toast.dismissible) {
         const toastPart = toast.itemRef.querySelector(SELECTORS.toast);
@@ -588,7 +589,7 @@ export class ToastQueue {
       }
     }
     wrapInViewTransition(() => {
-      this.#rootPart.dataset.placement = this.#placement;
+      this.#rootPart.dataset.position = this.#position;
     });
   }
 
@@ -722,7 +723,7 @@ export class ToastQueue {
     item.style.setProperty('view-transition-name', `tq-item-${toast.id}`);
     item.style.setProperty(
       'view-transition-class',
-      `tq-item ${getPlacementViewTransitionClass(this.#placement)}`,
+      `tq-item ${getPositionViewTransitionClass(this.#position)}`,
     );
     const toastPart = item.querySelector(SELECTORS.toast);
     toastPart.tabIndex = 0;
@@ -730,7 +731,7 @@ export class ToastQueue {
     toastPart.dataset.dismissible = toast.dismissible;
     toastPart.setAttribute('aria-labelledby', titleId);
 
-    if (toast.dismissible) toastPart.dataset.swipeable = getSwipeableDirection(this.#placement);
+    if (toast.dismissible) toastPart.dataset.swipeable = getSwipeableDirection(this.#position);
     if (toast.dismissible === false) toastPart.querySelector(SELECTORS.closeButton).remove();
     if (toast.className) toastPart.classList.add(...toast.className.split(' '));
     if (toast.content?.description) toastPart.setAttribute('aria-describedby', descId);

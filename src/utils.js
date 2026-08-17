@@ -1,9 +1,9 @@
 /**
- * Maps placement strings to View Transition class values.
+ * Maps position strings to View Transition class values.
  * @type {Object<string, string>}
  * @private
  */
-const viewTransitionPlacementTypes = {
+const viewTransitionPositionTypes = {
   'top-start': 'block-start inline-start',
   'top-center': 'block-start',
   'top-end': 'block-start inline-end',
@@ -14,11 +14,11 @@ const viewTransitionPlacementTypes = {
 };
 
 /**
- * Maps placement strings to swipeable direction values.
+ * Maps position strings to swipeable direction values.
  * @type {Object<string, string>}
  * @private
  */
-const swipeableDirectionPlacementTypes = {
+const swipeableDirectionPositionTypes = {
   'top-start': 'left',
   'top-center': 'up',
   'top-end': 'right',
@@ -29,25 +29,25 @@ const swipeableDirectionPlacementTypes = {
 };
 
 /**
- * Gets the View Transition class for a given placement.
+ * Gets the View Transition class for a given position.
  *
- * @param {string} placement - The placement (e.g., 'top-center', 'bottom-end').
+ * @param {string} position - The position (e.g., 'top-center', 'bottom-end').
  * @returns {string|undefined} The corresponding class string, or undefined if not found.
  * @private
  */
-export function getPlacementViewTransitionClass(placement) {
-  return viewTransitionPlacementTypes[placement];
+export function getPositionViewTransitionClass(position) {
+  return viewTransitionPositionTypes[position];
 }
 
 /**
- * Gets the swipeable direction for a given placement.
+ * Gets the swipeable direction for a given position.
  *
- * @param {string} placement - The placement (e.g., 'top-center', 'bottom-end').
+ * @param {string} position - The position (e.g., 'top-center', 'bottom-end').
  * @returns {string|undefined} The corresponding direction ('up', 'down', 'left', 'right', 'inline'), or undefined if not found.
  * @private
  */
-export function getSwipeableDirection(placement) {
-  return swipeableDirectionPlacementTypes[placement];
+export function getSwipeableDirection(position) {
+  return swipeableDirectionPositionTypes[position];
 }
 
 /**
