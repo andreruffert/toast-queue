@@ -1,4 +1,14 @@
 @layer toast-queue {
+  /* Disable document-wide transitions. */
+  :root {
+    view-transition-name: none;
+  }
+
+  /* Keep the underlying page interactive while transitions are rendered. */
+  ::view-transition {
+    pointer-events: none;
+  }
+
   toast-queue {
     /* Popover reset */
     margin: unset;

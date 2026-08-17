@@ -232,7 +232,7 @@ export class ToastQueue {
       } else {
         delete this.#rootPart.dataset.active;
       }
-    });
+    }, this.#rootPart);
   }
 
   /* ---------------------------------------------------------------------- */
@@ -610,7 +610,7 @@ export class ToastQueue {
 
   set visibleLimit(value) {
     this.#visibleLimit = value;
-    wrapInViewTransition(() => this.#syncVisibleLimitState());
+    wrapInViewTransition(() => this.#syncVisibleLimitState(), this.#rootPart);
   }
 
   /**
@@ -695,7 +695,7 @@ export class ToastQueue {
     if (skipTransition) {
       applyUpdate();
     } else {
-      await wrapInViewTransition(applyUpdate).finished;
+      await wrapInViewTransition(applyUpdate, this.#rootPart).finished;
     }
 
     if (this.#queue.size === 0) {
