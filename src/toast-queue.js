@@ -11,6 +11,7 @@ import {
  *   ToastQueueOptions,
  *   ToastQueuePosition,
  *   ToastQueueTemplate,
+ *   ToastContent,
  *   ToastOptions,
  *   ToastRecord,
  *   ActivationReason

@@ -48,7 +48,7 @@
 
 /**
  * @typedef {Object} ToastContentObject
- * @property {string} title
+ * @property {string} [title]
  *   Primary toast message.
  * @property {string} [description]
  *   Optional supporting text displayed below the title.
@@ -67,7 +67,8 @@
  * @property {string} [className]
  *   Additional CSS class names applied to the toast.
  * @property {string} [icon]
- *   HTML markup rendered in the toast's icon slot.
+ *   Trusted HTML markup rendered in the toast's icon slot.
+ *   Do not pass user-controlled or unsanitized content.
  * @property {ToastAction} [action]
  *   Optional action button configuration.
  * @property {ToastCloseHandler} [onClose]
@@ -91,6 +92,7 @@
  * @property {ToastActionHandler} [onClick]
  *   Called when the action button is clicked.
  */
+
 /**
  * Called when a toast action button is clicked.
  *
@@ -110,13 +112,13 @@
  */
 
 /**
- * Internal representation of a toast notification.
+ * Record representing a toast managed by a {@link ToastQueue}.
  *
  * @typedef {Object} ToastRecord
  * @property {string} id
  * @property {number} index - Queue insertion index.
  * @property {number} timestamp - Creation timestamp in milliseconds.
- * @property {string|ToastContent} content
+ * @property {ToastContent} content
  * @property {string} [icon]
  * @property {ToastAction} [action]
  * @property {boolean} dismissible
@@ -125,7 +127,6 @@
  * @property {ToastCloseHandler} [onClose]
  * @property {Timer} [timer] - Auto-dismiss timer.
  * @property {HTMLLIElement} itemRef - Associated DOM element.
- * @private
  */
 
 /**

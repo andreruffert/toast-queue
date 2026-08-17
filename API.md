@@ -40,6 +40,9 @@ library to locate and update their elements.</p>
 <dt><a href="#ToastCloseHandler">ToastCloseHandler</a> ⇒ <code>void</code></dt>
 <dd><p>Called after a toast is closed and removed from the queue.</p>
 </dd>
+<dt><a href="#ToastRecord">ToastRecord</a> : <code>Object</code></dt>
+<dd><p>Record representing a toast managed by a <a href="#ToastQueue">ToastQueue</a>.</p>
+</dd>
 </dl>
 
 <a name="ToastQueue"></a>
@@ -54,8 +57,8 @@ library to locate and update their elements.</p>
     * [.size](#ToastQueue+size) : <code>number</code>
     * [.position](#ToastQueue+position) : [<code>ToastQueuePosition</code>](#ToastQueuePosition)
     * [.visibleLimit](#ToastQueue+visibleLimit) : <code>number</code>
-    * [.add(content, [options])](#ToastQueue+add) ⇒ <code>ToastRecord</code>
-    * [.get(id)](#ToastQueue+get) ⇒ <code>ToastRecord</code> \| <code>undefined</code>
+    * [.add(content, [options])](#ToastQueue+add) ⇒ [<code>ToastRecord</code>](#ToastRecord)
+    * [.get(id)](#ToastQueue+get) ⇒ [<code>ToastRecord</code>](#ToastRecord) \| <code>undefined</code>
     * [.close(id)](#ToastQueue+close)
     * [.clear()](#ToastQueue+clear)
     * [.pause()](#ToastQueue+pause)
@@ -152,7 +155,7 @@ CSS presets can use these attributes to create stacked or peek effects.
 **Kind**: instance property of [<code>ToastQueue</code>](#ToastQueue)  
 <a name="ToastQueue+add"></a>
 
-### toastQueue.add(content, [options]) ⇒ <code>ToastRecord</code>
+### toastQueue.add(content, [options]) ⇒ [<code>ToastRecord</code>](#ToastRecord)
 Adds a toast notification to the queue.
 
 The toast is rendered immediately when space is available. When the
@@ -163,7 +166,7 @@ Pass a string for a simple message or an object for a title and optional
 description.
 
 **Kind**: instance method of [<code>ToastQueue</code>](#ToastQueue)  
-**Returns**: <code>ToastRecord</code> - The newly created toast record.  
+**Returns**: [<code>ToastRecord</code>](#ToastRecord) - The newly created toast record.  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -195,11 +198,11 @@ toastQueue.add('File uploaded.', {
 ```
 <a name="ToastQueue+get"></a>
 
-### toastQueue.get(id) ⇒ <code>ToastRecord</code> \| <code>undefined</code>
+### toastQueue.get(id) ⇒ [<code>ToastRecord</code>](#ToastRecord) \| <code>undefined</code>
 Retrieves a toast by its identifier.
 
 **Kind**: instance method of [<code>ToastQueue</code>](#ToastQueue)  
-**Returns**: <code>ToastRecord</code> \| <code>undefined</code> - The matching toast, or `undefined` when no toast with that identifier exists.  
+**Returns**: [<code>ToastRecord</code>](#ToastRecord) \| <code>undefined</code> - The matching toast, or `undefined` when no toast with that identifier exists.  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -309,7 +312,7 @@ Content displayed by a toast.
 
 | Name | Type | Description |
 | --- | --- | --- |
-| title | <code>string</code> | Primary toast message. |
+| [title] | <code>string</code> | Primary toast message. |
 | [description] | <code>string</code> | Optional supporting text displayed below the title. |
 
 <a name="ToastOptions"></a>
@@ -326,7 +329,7 @@ Configuration for an individual toast.
 | [dismissible] | <code>boolean</code> | <code>true</code> | Whether the toast can be manually dismissed. |
 | [priority] | [<code>ToastPriority</code>](#ToastPriority) | <code>&#x27;normal&#x27;</code> | Announcement priority passed to `ariaNotify()`. |
 | [className] | <code>string</code> |  | Additional CSS class names applied to the toast. |
-| [icon] | <code>string</code> |  | HTML markup rendered in the toast's icon slot. |
+| [icon] | <code>string</code> |  | Trusted HTML markup rendered in the toast's icon slot.   Do not pass user-controlled or unsanitized content. |
 | [action] | [<code>ToastAction</code>](#ToastAction) |  | Optional action button configuration. |
 | [onClose] | [<code>ToastCloseHandler</code>](#ToastCloseHandler) |  | Called after the toast has been closed and removed from the queue. |
 
@@ -360,7 +363,7 @@ Called when a toast action button is clicked.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| toast | <code>ToastRecord</code> | The toast associated with the action. |
+| toast | [<code>ToastRecord</code>](#ToastRecord) | The toast associated with the action. |
 
 <a name="ToastCloseHandler"></a>
 
@@ -371,5 +374,28 @@ Called after a toast is closed and removed from the queue.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| toast | <code>ToastRecord</code> | The toast that was closed. |
+| toast | [<code>ToastRecord</code>](#ToastRecord) | The toast that was closed. |
+
+<a name="ToastRecord"></a>
+
+## ToastRecord : <code>Object</code>
+Record representing a toast managed by a [ToastQueue](#ToastQueue).
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| id | <code>string</code> |  |
+| index | <code>number</code> | Queue insertion index. |
+| timestamp | <code>number</code> | Creation timestamp in milliseconds. |
+| content | [<code>ToastContent</code>](#ToastContent) |  |
+| [icon] | <code>string</code> |  |
+| [action] | [<code>ToastAction</code>](#ToastAction) |  |
+| dismissible | <code>boolean</code> |  |
+| priority | [<code>ToastPriority</code>](#ToastPriority) |  |
+| [className] | <code>string</code> |  |
+| [onClose] | [<code>ToastCloseHandler</code>](#ToastCloseHandler) |  |
+| [timer] | <code>Timer</code> | Auto-dismiss timer. |
+| itemRef | <code>HTMLLIElement</code> | Associated DOM element. |
 
