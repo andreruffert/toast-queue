@@ -448,7 +448,12 @@ export class ToastQueue {
     this.#queue.delete(id);
     toast.timer?.clear();
     this.#moveFocusAfterClose(toast);
-    this.#syncRootState(() => toast.itemRef.remove());
+
+    this.#syncRootState(
+      () => toast.itemRef.remove(),
+      // Skip transition for hidden elements
+      toast.itemRef.hasAttribute('data-hidden'),
+    );
 
     // Run after internal cleanup so a throwing consumer callback can't leave
     // the DOM/popover out of sync with `#queue`.
@@ -704,7 +709,7 @@ export class ToastQueue {
       return Promise.resolve();
     }
 
-    return wrapInViewTransition(applyUpdate, this.#rootPart).finished;
+    return wrapInViewTransition(applyUpdate).finished;
   }
 
   /* ---------------------------------------------------------------------- */

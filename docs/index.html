@@ -136,8 +136,8 @@ toast-queue {
     flex-wrap: wrap;
   }
 
-  [data-part="toast"]&:is([data-dragging]) {
-    opacity: calc(1 - var(--tq-swipe-distance, 0));
+  [data-part="toast"]:is([data-dragging]) {
+    opacity: clamp(0.4, calc(1 - var(--tq-swipe-distance, 0)), 1);
   }
 
   [data-part="content"] {
