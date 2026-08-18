@@ -572,6 +572,8 @@ export class ToastQueue {
   }
 
   set position(value) {
+    if (this.#position === value) return;
+
     this.#position = value;
     for (const toast of this.#queue.values()) {
       toast.itemRef.style.setProperty(
@@ -584,7 +586,7 @@ export class ToastQueue {
       }
     }
     wrapInViewTransition(() => {
-      this.#rootPart.dataset.position = this.#position;
+      this.#rootPart.dataset.position = value;
     });
   }
 
@@ -604,6 +606,8 @@ export class ToastQueue {
   }
 
   set visibleLimit(value) {
+    if (this.#visibleLimit === value) return;
+
     this.#visibleLimit = value;
     wrapInViewTransition(() => this.#syncVisibleLimitState(), this.#rootPart);
   }
@@ -809,11 +813,9 @@ export class ToastQueue {
   /**
    * Announces a toast to assistive technology.
    *
-   * Uses `Element.ariaNotify()` when available and falls back to
-   * `Document.ariaNotify()`. When neither API is available, no announcement is
-   * made.
+   * Prefers `Element.ariaNotify()` and falls back to `Document.ariaNotify()`.
+   * No announcement is made when neither API is available.
    *
-   * @private
    * @param {ToastRecord} toast - Toast to announce.
    */
   #announce(toast) {
