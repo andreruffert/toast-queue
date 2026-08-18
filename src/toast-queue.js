@@ -267,6 +267,7 @@ export class ToastQueue {
 
   /** @param {FocusEvent} event */
   #onFocusIn = (event) => {
+    // Ignore action/close buttons
     if (event.target.matches('[data-command]')) return;
 
     // Ignore focus moving within the queue
@@ -286,8 +287,6 @@ export class ToastQueue {
     queueMicrotask(() => {
       this.#deactivate('focus');
     });
-
-    console.debug('[toast-queue] onFocusOut', event);
   };
 
   /** @param {PointerEvent} event */
@@ -449,12 +448,7 @@ export class ToastQueue {
     this.#queue.delete(id);
     toast.timer?.clear();
     this.#moveFocusAfterClose(toast);
-
-    this.#syncRootState(
-      () => toast.itemRef.remove(),
-      // Skip transition for invisible elements
-      !toast.itemRef.checkVisibility?.(),
-    );
+    this.#syncRootState(() => toast.itemRef.remove());
 
     // Run after internal cleanup so a throwing consumer callback can't leave
     // the DOM/popover out of sync with `#queue`.
@@ -678,31 +672,35 @@ export class ToastQueue {
    * @returns {Promise<void>}
    */
   async #syncRootState(update = () => {}, skipTransition = false) {
-    if (this.#queue.size >= 1 && !this.#rootPart.matches(':popover-open')) {
-      this.#rootPart.showPopover();
-    }
-
-    // `#syncVisibleLimitState` reads live DOM order to decide which items are
-    // past the limit, so it must run *after* `update()` has actually
-    // mutated the DOM (not before) — otherwise it flags items based on
-    // the previous state, one step behind the queue it's counting
-    // against. Bundling both into a single callback also keeps them
-    // inside the same view-transition snapshot.
     const applyUpdate = () => {
+      if (this.#queue.size > 0) {
+        if (!this.#rootPart.matches(':popover-open')) {
+          this.#rootPart.showPopover();
+        }
+      }
+
       update();
       this.#syncVisibleLimitState();
+
+      if (this.#queue.size === 0) {
+        if (this.#rootPart.matches(':popover-open')) {
+          this.#rootPart.hidePopover();
+        }
+
+        if (this.#active) {
+          this.resume();
+          this.#activationReasons.clear();
+          delete this.#rootPart.dataset.active;
+        }
+      }
     };
 
     if (skipTransition) {
       applyUpdate();
-    } else {
-      await wrapInViewTransition(applyUpdate, this.#rootPart).finished;
+      return Promise.resolve();
     }
 
-    if (this.#queue.size === 0) {
-      this.#rootPart.hidePopover();
-      this.#clearActivation();
-    }
+    return wrapInViewTransition(applyUpdate, this.#rootPart).finished;
   }
 
   /* ---------------------------------------------------------------------- */
