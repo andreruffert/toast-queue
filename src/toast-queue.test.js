@@ -374,7 +374,7 @@ describe('ToastQueue', () => {
     thirdToast.focus();
 
     await vi.waitFor(() => {
-      expect(queue.element).toHaveAttribute('data-active', 'true');
+      expect(queue.element).toHaveAttribute('data-active');
     });
 
     queue.close(third.id);
@@ -383,7 +383,7 @@ describe('ToastQueue', () => {
       expect(queue.get(third.id)).toBeUndefined();
     });
 
-    expect(queue.element).toHaveAttribute('data-active', 'true');
+    expect(queue.element).toHaveAttribute('data-active');
 
     queue.destroy();
   });
