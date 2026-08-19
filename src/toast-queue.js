@@ -57,11 +57,19 @@ const SELECTORS = {
   actionButton: '[data-part="action-button"]',
 };
 
+const DEFAULT_DURATION = 6000;
+const DEFAULT_POSITION = 'top-end';
+const DEFAULT_VISIBLE_LIMIT = 3;
+
 /**
  * Manages a queue of toast notifications.
  *
- * A queue handles rendering, auto-dismiss timers, focus management,
- * keyboard dismissal, swipe dismissal, and screen-reader announcements.
+ * The queue handles rendering, auto-dismiss timers, pause/resume behavior,
+ * focus management, keyboard dismissal, pointer interaction, touch swipes,
+ * and screen-reader announcements.
+ *
+ * Auto-dismiss timers are paused while the queue is hovered or focused and
+ * while the document is hidden.
  *
  * Toasts are announced with the browser's `ariaNotify()` API when available.
  * Browsers without `ariaNotify()` can use the
@@ -105,10 +113,10 @@ export class ToastQueue {
   #queue = new Map();
 
   /** @type {number} */
-  #duration = 6000;
+  #duration = DEFAULT_DURATION;
 
   /** @type {ToastQueuePosition} */
-  #position = 'top-end';
+  #position = DEFAULT_POSITION;
 
   /**
    * Number of toasts rendered visibly at once before the rest are hidden.
@@ -117,7 +125,7 @@ export class ToastQueue {
    * can build their own cutoff/peek treatment.
    * @type {number}
    */
-  #visibleLimit = 3;
+  #visibleLimit = DEFAULT_VISIBLE_LIMIT;
 
   /** @type {boolean} */
   #paused = false;
@@ -142,6 +150,9 @@ export class ToastQueue {
     this.#visibleLimit = options.visibleLimit ?? this.#visibleLimit;
 
     this.#mount(options.root || document.body);
+    this.#duration = options.duration ?? DEFAULT_DURATION;
+    this.#position = options.position ?? DEFAULT_POSITION;
+    this.#visibleLimit = Math.max(0, options.visibleLimit ?? DEFAULT_VISIBLE_LIMIT);
 
     this.#swipeable = new Swipeable({
       root: this.#rootPart,
@@ -159,7 +170,9 @@ export class ToastQueue {
   /* ---------------------------------------------------------------------- */
 
   /**
-   * @param {HTMLElement} root
+   * Mounts the queue into the supplied root element.
+   *
+   * @param {HTMLElement} root - Element to which the queue is appended.
    */
   #mount(root) {
     const fragment = this.#template.root.content.cloneNode(true);
@@ -179,7 +192,13 @@ export class ToastQueue {
   /* Derived state                                                         */
   /* ---------------------------------------------------------------------- */
 
-  /** @returns {boolean} */
+  /**
+   * Whether the queue is currently interaction-active.
+   *
+   * The queue is active when one or more activation reasons are present.
+   *
+   * @returns {boolean}
+   */
   get #active() {
     return this.#activationReasons.size > 0;
   }
@@ -228,11 +247,7 @@ export class ToastQueue {
 
   #syncActivationState() {
     wrapInViewTransition(() => {
-      if (this.#active) {
-        this.#rootPart.dataset.active = 'true';
-      } else {
-        delete this.#rootPart.dataset.active;
-      }
+      this.#rootPart.toggleAttribute('data-active', this.#active);
     }, this.#rootPart);
   }
 

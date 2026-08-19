@@ -16,17 +16,17 @@
     z-index: calc(var(--tq-stack-z-base) - var(--tq-item-index, 0));
   }
 
-  toast-queue[data-position^="top"]:not([data-active="true"]) [data-part="item"] {
+  toast-queue[data-position^="top"]:not([data-active]) [data-part="item"] {
     margin-block-start: calc(var(--tq-item-index, 0) * 10px);
   }
-  toast-queue[data-position^="bottom"]:not([data-active="true"]) [data-part="item"] {
+  toast-queue[data-position^="bottom"]:not([data-active]) [data-part="item"] {
     margin-block-start: calc(var(--tq-item-index, 0) * -10px);
   }
 
-  toast-queue:not([data-active="true"]) [data-part="item"]:not(:first-child) {
+  toast-queue:not([data-active]) [data-part="item"]:not(:first-child) {
     pointer-events: none;
   }
-  toast-queue:not([data-active="true"]) [data-part="item"] {
+  toast-queue:not([data-active]) [data-part="item"] {
     grid-area: 1 / 1;
     scale: calc(1 - (var(--tq-item-index, 0) * 0.05));
   }
@@ -35,7 +35,7 @@
    * The first hidden item gets a small preview as a hint
    * that another toast is queued behind the stack.
    */
-  toast-queue[data-position]:not([data-active="true"]) [data-part="item"][data-peek] {
+  toast-queue[data-position]:not([data-active]) [data-part="item"][data-peek] {
     display: initial;
     scale: 0.8;
     opacity: 0;
