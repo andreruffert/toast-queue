@@ -55,6 +55,7 @@ const SELECTORS = {
   closeButton: '[data-part="close-button"]',
   actions: '[data-part="actions"]',
   actionButton: '[data-part="action-button"]',
+  command: '[data-command]',
 };
 
 const DEFAULT_DURATION = 6000;
@@ -142,15 +143,15 @@ export class ToastQueue {
   constructor(options = {}) {
     const templates = options.template ?? {};
 
+    this.#duration = options.duration ?? DEFAULT_DURATION;
+    this.#position = options.position ?? DEFAULT_POSITION;
+    this.#visibleLimit = Math.max(0, options.visibleLimit ?? DEFAULT_VISIBLE_LIMIT);
+
     this.#template.root.innerHTML = templates.root ?? TEMPLATE.root;
     this.#template.item.innerHTML = templates.item ?? TEMPLATE.item;
     this.#template.actionButton.innerHTML = templates.actionButton ?? TEMPLATE.actionButton;
 
     this.#mount(options.root ?? document.body);
-    this.#duration = options.duration ?? DEFAULT_DURATION;
-    this.#position = options.position ?? DEFAULT_POSITION;
-    this.#visibleLimit = Math.max(0, options.visibleLimit ?? DEFAULT_VISIBLE_LIMIT);
-
     this.#swipeable = new Swipeable({
       root: this.#rootPart,
       onSwipe: ({ target }) => {
@@ -186,200 +187,7 @@ export class ToastQueue {
   }
 
   /* ---------------------------------------------------------------------- */
-  /* Derived state                                                         */
-  /* ---------------------------------------------------------------------- */
-
-  /**
-   * Whether the queue is currently interaction-active.
-   *
-   * The queue is active when one or more activation reasons are present.
-   *
-   * @returns {boolean}
-   */
-  get #active() {
-    return this.#activationReasons.size > 0;
-  }
-
-  /* ---------------------------------------------------------------------- */
-  /* Activation                                                             */
-  /* ---------------------------------------------------------------------- */
-
-  #updateActivation(reason, active) {
-    if (active) {
-      if (this.#activationReasons.has(reason)) return;
-
-      const wasActive = this.#active;
-      this.#activationReasons.add(reason);
-
-      if (!wasActive) {
-        this.pause();
-        this.#syncActivationState();
-      }
-    } else {
-      if (!this.#activationReasons.delete(reason)) return;
-
-      if (!this.#active) {
-        this.resume();
-        this.#syncActivationState();
-      }
-    }
-
-    console.debug('[toast-queue] activation', active ? 'add' : 'remove', reason, [
-      ...this.#activationReasons,
-    ]);
-  }
-
-  /**
-   * Activates the queue for the given interaction reason.
-   *
-   * Multiple interaction reasons can be active simultaneously. Timers are
-   * paused when the first reason is added and resumed when the last reason
-   * is removed.
-   *
-   * @param {ActivationReason} reason - Reason the queue should remain active.
-   */
-  #activate = (reason) => this.#updateActivation(reason, true);
-
-  /**
-   * Deactivates the queue for the given interaction reason.
-   *
-   * Timers resume only after all active interaction reasons have been removed.
-   *
-   * @param {ActivationReason} reason - Reason to remove.
-   */
-  #deactivate = (reason) => this.#updateActivation(reason, false);
-
-  /**
-   * Clears all interaction activation reasons and resumes the queue.
-   */
-  #clearActivation() {
-    if (!this.#active) return;
-
-    this.#activationReasons.clear();
-    this.resume();
-    this.#syncActivationState();
-  }
-
-  #syncActivationState() {
-    wrapInViewTransition(() => {
-      this.#rootPart.toggleAttribute('data-active', this.#active);
-    }, this.#rootPart);
-  }
-
-  /* ---------------------------------------------------------------------- */
-  /* Events                                                                */
-  /* ---------------------------------------------------------------------- */
-
-  #bindEvents() {
-    const { signal } = this.#controller;
-
-    document.addEventListener('visibilitychange', this.#onVisibility, { signal });
-    document.addEventListener('pointerdown', this.#onOutsidePointer, { signal });
-
-    this.#rootPart.addEventListener('click', this.#onClick, { signal });
-    this.#rootPart.addEventListener('pointerenter', this.#onEnter, { signal });
-    this.#rootPart.addEventListener('pointerleave', this.#onLeave, { signal });
-    this.#rootPart.addEventListener('pointercancel', this.#onLeave, { signal });
-    this.#rootPart.addEventListener('focusin', this.#onFocusIn, { signal });
-    this.#rootPart.addEventListener('focusout', this.#onFocusOut, { signal });
-    this.#rootPart.addEventListener('keydown', this.#onKeydown, { signal });
-  }
-
-  #onEnter = () => {
-    if (this.#active) return;
-    this.pause();
-  };
-
-  #onLeave = () => {
-    if (this.#active) return;
-    this.resume();
-  };
-
-  /** @param {FocusEvent} event */
-  #onFocusIn = (event) => {
-    // Ignore action/close buttons
-    if (event.target.matches('[data-command]')) return;
-
-    // Ignore focus moving within the queue
-    if (this.#rootPart.contains(event.relatedTarget)) return;
-
-    this.#activate('focus');
-  };
-
-  /** @param {FocusEvent} event */
-  #onFocusOut = (event) => {
-    // Ignore focus leaving the document (e.g. dev tools)
-    if (!document.hasFocus()) return;
-
-    // Ignore focus moving within the queue
-    if (this.#rootPart.contains(event.relatedTarget)) return;
-
-    queueMicrotask(() => {
-      this.#deactivate('focus');
-    });
-  };
-
-  /** @param {PointerEvent} event */
-  #onOutsidePointer = (event) => {
-    if (!this.#active) return;
-    if (this.#rootPart.contains(event.target)) return;
-    this.#clearActivation();
-  };
-
-  #onVisibility = () => {
-    document.visibilityState === 'hidden' ? this.pause() : this.resume();
-  };
-
-  /** @param {KeyboardEvent} event */
-  #onKeydown = (event) => {
-    if (event.key !== 'Escape') return;
-
-    const toastPart = event.target.closest(SELECTORS.toast);
-    if (!toastPart) return;
-
-    const id = toastPart.dataset.id;
-    const toast = this.#queue.get(id);
-    if (!toast || toast.dismissible === false) return;
-
-    event.stopPropagation();
-    this.close(id);
-  };
-
-  /** @param {MouseEvent} event */
-  #onClick = (event) => {
-    const cmd = event.target.dataset?.command;
-
-    console.debug('[toast-queue] onClick', cmd);
-
-    if (cmd === 'close') {
-      event.stopPropagation();
-      const id = event.target.closest(SELECTORS.toast).dataset.id;
-      this.close(id);
-      return;
-    }
-
-    if (cmd === 'action') {
-      event.stopPropagation();
-      const id = event.target.closest(SELECTORS.toast)?.dataset.id;
-      const toast = this.#queue.get(id);
-      try {
-        toast?.action?.onClick?.(toast);
-      } catch (error) {
-        console.error('[toast-queue] action onClick callback threw', error);
-      }
-      return;
-    }
-
-    if (cmd === 'clear') {
-      this.clear();
-      return;
-    }
-
-    this.#activate('click');
-  };
-
-  /* ---------------------------------------------------------------------- */
-  /* Core API                                                              */
+  /* Public API                                                              */
   /* ---------------------------------------------------------------------- */
 
   /**
@@ -501,32 +309,55 @@ export class ToastQueue {
    * All auto-dismiss timers are cancelled and the queue is reset to its empty state.
    */
   clear() {
-    for (const toast of this.#queue.values()) {
-      toast.timer?.clear();
-    }
-    this.#queue.clear();
+    this.#clearActivation();
+    this.#clearQueue();
+
     this.#syncRootState(() => {
       this.#groupPart.replaceChildren();
     });
-    this.#clearActivation();
+
     console.debug('[toast-queue] clear');
   }
 
   /**
-   * @param {boolean} value
+   * Pauses all toast auto-dismiss timers.
+   *
+   * Calling this method does not remove or hide toasts. Timers resume from
+   * their remaining time when {@link ToastQueue#resume} is called.
    */
-  #setPaused(value) {
-    if (!this.#duration) return;
-    if (this.#paused === value) return;
-
-    this.#paused = value;
-
-    for (const toast of this.#queue.values()) {
-      toast.timer?.[value ? 'pause' : 'resume']?.();
-    }
-
-    console.debug(`[toast-queue] ${value ? 'pause' : 'resume'}`);
+  pause() {
+    this.#setPaused(true);
   }
+
+  /**
+   * Resumes all paused toast auto-dismiss timers.
+   *
+   * Has no effect when the queue is already running.
+   */
+  resume() {
+    this.#setPaused(false);
+  }
+
+  /**
+   * Permanently destroys the queue instance.
+   *
+   * Removes the queue element, clears all auto-dismiss timers, removes event
+   * listeners, and releases the associated resources.
+   *
+   * After calling `destroy()`, the queue instance must not be used again.
+   */
+  destroy() {
+    this.#controller.abort();
+    this.#clearQueue();
+    this.#rootPart.remove();
+    this.#swipeable.destroy();
+
+    console.debug('[toast-queue] destroy');
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Properties.                                                            */
+  /* ---------------------------------------------------------------------- */
 
   /**
    * Whether the queue's toast timers are currently paused.
@@ -566,25 +397,6 @@ export class ToastQueue {
   }
 
   /**
-   * Pauses all toast auto-dismiss timers.
-   *
-   * Calling this method does not remove or hide toasts. Timers resume from
-   * their remaining time when {@link ToastQueue#resume} is called.
-   */
-  pause() {
-    this.#setPaused(true);
-  }
-
-  /**
-   * Resumes all paused toast auto-dismiss timers.
-   *
-   * Has no effect when the queue is already running.
-   */
-  resume() {
-    this.#setPaused(false);
-  }
-
-  /**
    * Gets or sets the queue position.
    *
    * Supported positions are:
@@ -610,14 +422,7 @@ export class ToastQueue {
 
     this.#position = value;
     for (const toast of this.#queue.values()) {
-      toast.itemRef.style.setProperty(
-        'view-transition-class',
-        `tq-item ${getPositionViewTransitionClass(this.#position)}`,
-      );
-      if (toast.dismissible) {
-        const toastPart = toast.itemRef.querySelector(SELECTORS.toast);
-        toastPart.dataset.swipeable = getSwipeableDirection(value);
-      }
+      this.#syncItemPosition(toast.itemRef, toast.dismissible);
     }
     wrapInViewTransition(() => {
       this.#rootPart.dataset.position = value;
@@ -647,28 +452,237 @@ export class ToastQueue {
     wrapInViewTransition(() => this.#syncVisibleLimitState(), this.#rootPart);
   }
 
-  /**
-   * Permanently destroys the queue instance.
-   *
-   * Removes the queue element, clears all auto-dismiss timers, removes event
-   * listeners, and releases the associated resources.
-   *
-   * After calling `destroy()`, the queue instance must not be used again.
-   */
-  destroy() {
-    this.#controller.abort();
+  /* ---------------------------------------------------------------------- */
+  /* Events                                                                */
+  /* ---------------------------------------------------------------------- */
 
+  #bindEvents() {
+    const { signal } = this.#controller;
+
+    document.addEventListener('visibilitychange', this.#onVisibility, { signal });
+    document.addEventListener('pointerdown', this.#onOutsidePointer, { signal });
+
+    this.#rootPart.addEventListener('pointerenter', this.#onEnter, { signal });
+    this.#rootPart.addEventListener('pointerleave', this.#onLeave, { signal });
+    this.#rootPart.addEventListener('pointercancel', this.#onLeave, { signal });
+    this.#rootPart.addEventListener('click', this.#onClick, { signal });
+    this.#rootPart.addEventListener('focusin', this.#onFocusIn, { signal });
+    this.#rootPart.addEventListener('focusout', this.#onFocusOut, { signal });
+    this.#rootPart.addEventListener('keydown', this.#onKeydown, { signal });
+  }
+
+  /** @param {PointerEvent} event */
+  #onEnter = () => {
+    if (this.#active) return;
+
+    this.pause();
+  };
+
+  /** @param {PointerEvent} event */
+  #onLeave = () => {
+    if (this.#active) return;
+
+    this.resume();
+  };
+
+  /** @param {FocusEvent} event */
+  #onFocusIn = (event) => {
+    // Ignore action/close buttons
+    if (event.target.closest(SELECTORS.command)) return;
+
+    // Ignore focus moving within the queue
+    if (this.#rootPart.contains(event.relatedTarget)) return;
+
+    this.#activate('focus');
+  };
+
+  /** @param {FocusEvent} event */
+  #onFocusOut = (event) => {
+    // Ignore focus leaving the document (e.g. dev tools)
+    if (!document.hasFocus()) return;
+
+    // Ignore focus moving within the queue
+    if (this.#rootPart.contains(event.relatedTarget)) return;
+
+    queueMicrotask(() => {
+      if (!this.#rootPart.contains(document.activeElement)) {
+        this.#deactivate('focus');
+      }
+    });
+  };
+
+  /** @param {PointerEvent} event */
+  #onOutsidePointer = (event) => {
+    if (!this.#active) return;
+    if (this.#rootPart.contains(event.target)) return;
+    this.#clearActivation();
+  };
+
+  #onVisibility = () => {
+    document.visibilityState === 'hidden' ? this.pause() : this.resume();
+  };
+
+  /** @param {KeyboardEvent} event */
+  #onKeydown = (event) => {
+    if (event.key !== 'Escape') return;
+
+    const toastPart = event.target.closest(SELECTORS.toast);
+    const id = toastPart?.dataset.id;
+
+    if (!id) return;
+
+    const toast = this.#queue.get(id);
+    if (!toast || toast.dismissible === false) return;
+
+    event.stopPropagation();
+    this.close(id);
+  };
+
+  /** @param {MouseEvent} event */
+  #onClick = (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const command = target?.closest(SELECTORS.command)?.dataset.command;
+
+    switch (command) {
+      case 'close':
+        event.stopPropagation();
+        this.close(target.closest(SELECTORS.toast)?.dataset.id);
+        break;
+
+      case 'action': {
+        event.stopPropagation();
+
+        const id = target.closest(SELECTORS.toast)?.dataset.id;
+        const toast = this.#queue.get(id);
+        try {
+          toast?.action?.onClick?.(toast);
+        } catch (error) {
+          console.error('[toast-queue] action onClick callback threw', error);
+        }
+
+        break;
+      }
+
+      case 'clear':
+        this.clear();
+        break;
+
+      default:
+        this.#activate('click');
+    }
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /* Activation                                                             */
+  /* ---------------------------------------------------------------------- */
+
+  /**
+   * Whether the queue is currently interaction-active.
+   *
+   * The queue is active when one or more activation reasons are present.
+   *
+   * @returns {boolean}
+   */
+  get #active() {
+    return this.#activationReasons.size > 0;
+  }
+
+  #updateActivation(reason, active) {
+    if (active) {
+      if (this.#activationReasons.has(reason)) return;
+
+      const wasActive = this.#active;
+      this.#activationReasons.add(reason);
+
+      if (!wasActive) {
+        this.pause();
+        this.#syncActivationState();
+      }
+    } else {
+      if (!this.#activationReasons.delete(reason)) return;
+
+      if (!this.#active) {
+        this.resume();
+        this.#syncActivationState();
+      }
+    }
+
+    console.debug('[toast-queue] activation', active ? 'add' : 'remove', reason, [
+      ...this.#activationReasons,
+    ]);
+  }
+
+  /**
+   * Activates the queue for the given interaction reason.
+   *
+   * Multiple interaction reasons can be active simultaneously. Timers are
+   * paused when the first reason is added and resumed when the last reason
+   * is removed.
+   *
+   * @param {ActivationReason} reason - Reason the queue should remain active.
+   */
+  #activate(reason) {
+    this.#updateActivation(reason, true);
+  }
+
+  /**
+   * Deactivates the queue for the given interaction reason.
+   *
+   * Timers resume only after all active interaction reasons have been removed.
+   *
+   * @param {ActivationReason} reason - Reason to remove.
+   */
+  #deactivate(reason) {
+    this.#updateActivation(reason, false);
+  }
+
+  /**
+   * Clears all interaction activation reasons and resumes the queue.
+   */
+  #clearActivation() {
+    if (!this.#active) return;
+
+    this.#activationReasons.clear();
+    this.resume();
+    this.#syncActivationState();
+
+    console.debug('[toast-queue] activation clear');
+  }
+
+  #syncActivationState() {
+    wrapInViewTransition(() => {
+      this.#rootPart.toggleAttribute('data-active', this.#active);
+    }, this.#rootPart);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Timers / lifecycle state                                               */
+  /* ---------------------------------------------------------------------- */
+
+  #clearQueue() {
     for (const toast of this.#queue.values()) {
       toast.timer?.clear();
     }
 
-    this.#rootPart.remove();
-
     this.#queue.clear();
-    this.#clearActivation();
-    this.#swipeable.destroy();
+  }
 
-    console.debug('[toast-queue] destroy');
+  #syncTimers() {
+    for (const toast of this.#queue.values()) {
+      this.#paused ? toast.timer?.pause() : toast.timer?.resume();
+    }
+  }
+
+  /**
+   * @param {boolean} value
+   */
+  #setPaused(value) {
+    if (this.#paused === value) return;
+
+    this.#paused = value;
+    this.#syncTimers();
+
+    console.debug(`[toast-queue] ${value ? 'pause' : 'resume'}`);
   }
 
   /* ---------------------------------------------------------------------- */
@@ -714,10 +728,11 @@ export class ToastQueue {
    * Applies the update inside a view transition unless transitions are skipped.
    * Resolves when the transition has finished.
    *
-   * @param {function(): void} [update] - DOM update to apply.
+   * @param {() => void} [update] - DOM update to apply.
+   * @param {boolean} [skipTransition=false] - Whether to skip the view transition.
    * @returns {Promise<void>}
    */
-  async #syncRootState(update = () => {}, skipTransition = false) {
+  #syncRootState(update = () => {}, skipTransition = false) {
     const applyUpdate = () => {
       if (this.#queue.size > 0) {
         if (!this.#rootPart.matches(':popover-open')) {
@@ -773,17 +788,12 @@ export class ToastQueue {
     const closeButton = toastPart.querySelector(SELECTORS.closeButton);
 
     item.style.setProperty('view-transition-name', `tq-item-${toast.id}`);
-    item.style.setProperty(
-      'view-transition-class',
-      `tq-item ${getPositionViewTransitionClass(this.#position)}`,
-    );
 
     toastPart.tabIndex = 0;
     toastPart.dataset.id = toast.id;
     toastPart.dataset.dismissible = toast.dismissible;
     toastPart.setAttribute('aria-labelledby', titleId);
 
-    if (toast.dismissible) toastPart.dataset.swipeable = getSwipeableDirection(this.#position);
     if (toast.dismissible === false) closeButton.remove();
     if (toast.className) toastPart.classList.add(...toast.className.split(' '));
     if (toast.content?.description) toastPart.setAttribute('aria-describedby', descId);
@@ -817,11 +827,24 @@ export class ToastQueue {
       actionsPart.remove();
     }
 
+    this.#syncItemPosition(item, toast.dismissible);
+
     return item;
   }
 
+  #syncItemPosition(item, dismissible) {
+    item.style.setProperty(
+      'view-transition-class',
+      `tq-item ${getPositionViewTransitionClass(this.#position)}`,
+    );
+
+    if (!dismissible) return;
+
+    item.querySelector(SELECTORS.toast).dataset.swipeable = getSwipeableDirection(this.#position);
+  }
+
   /* ---------------------------------------------------------------------- */
-  /* Focus handling                                                       */
+  /* Focus                                                                  */
   /* ---------------------------------------------------------------------- */
 
   /**
