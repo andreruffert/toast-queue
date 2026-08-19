@@ -1,12 +1,16 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { ToastQueue } from './index.js';
 import { getSwipeableDirection } from './utils.js';
 
 describe('ToastQueue', () => {
   let toastQueue;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Reset the browser pointer between tests so a toast isn't immediately hovered
+    // when it is rendered, which would pause its auto-dismiss timer.
+    await userEvent.unhover(document.body);
+
     toastQueue = new ToastQueue();
   });
 
