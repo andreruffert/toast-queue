@@ -115,18 +115,17 @@
  * Record representing a toast managed by a {@link ToastQueue}.
  *
  * @typedef {Object} ToastRecord
- * @property {string} id
- * @property {number} index - Queue insertion index.
+ * @property {string} id - Unique identifier for the toast.
  * @property {number} timestamp - Creation timestamp in milliseconds.
- * @property {ToastContent} content
- * @property {string} [icon]
- * @property {ToastAction} [action]
- * @property {boolean} dismissible
- * @property {ToastPriority} priority
- * @property {string} [className]
- * @property {ToastCloseHandler} [onClose]
+ * @property {ToastContent} content - Content displayed by the toast.
+ * @property {string} [icon] - Trusted HTML markup for the toast icon.
+ * @property {ToastAction} [action] - Optional action button configuration.
+ * @property {boolean} dismissible - Whether the toast can be manually dismissed.
+ * @property {ToastPriority} priority - Screen-reader announcement priority.
+ * @property {string} [className] - Additional CSS classes applied to the toast.
+ * @property {ToastCloseHandler} [onClose] - Called after the toast is closed.
  * @property {Timer} [timer] - Auto-dismiss timer.
- * @property {HTMLLIElement} itemRef - Associated DOM element.
+ * @property {HTMLLIElement} itemRef - Associated toast item in the DOM.
  */
 
 /**

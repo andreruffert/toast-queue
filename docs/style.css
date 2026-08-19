@@ -54,6 +54,7 @@
     cursor: pointer;
     transition: border-color 0.25s ease;
     text-decoration: unset;
+    touch-action: manipulation;
   }
   button:hover,
   .button:hover,

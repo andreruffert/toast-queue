@@ -206,7 +206,7 @@
       document.head.appendChild(presetLink);
 
       window.tq = new ToastQueue({
-        // duration: false,
+        // duration: 0,
         position: toastPosition,
         template: {
           root: `<toast-queue>
@@ -285,7 +285,6 @@
 
       const addToast = (content, options = {}) => {
         tq.add(content, {
-          // duration: 0,
           ...options,
         });
       };

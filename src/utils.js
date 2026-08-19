@@ -1,6 +1,10 @@
+/** @import { ToastQueuePosition } from './types.js' */
+
 /**
- * Maps position strings to View Transition class values.
- * @type {Object<string, string>}
+ * Maps each toast queue position to the logical block/inline direction
+ * used by the View Transition API.
+ *
+ * @type {Record<ToastQueuePosition, string>}
  * @private
  */
 const viewTransitionPositionTypes = {
@@ -14,8 +18,10 @@ const viewTransitionPositionTypes = {
 };
 
 /**
- * Maps position strings to swipeable direction values.
- * @type {Object<string, string>}
+ * Maps each toast queue position to the direction in which a toast can
+ * be swiped away.
+ *
+ * @type {Record<ToastQueuePosition, string>}
  * @private
  */
 const swipeableDirectionPositionTypes = {
@@ -29,10 +35,10 @@ const swipeableDirectionPositionTypes = {
 };
 
 /**
- * Gets the View Transition class for a given position.
+ * Returns the View Transition class for a toast queue position.
  *
- * @param {string} position - The position (e.g., 'top-center', 'bottom-end').
- * @returns {string|undefined} The corresponding class string, or undefined if not found.
+ * @param {ToastQueuePosition} position
+ * @returns {string} The logical block/inline direction for the position.
  * @private
  */
 export function getPositionViewTransitionClass(position) {
@@ -40,10 +46,10 @@ export function getPositionViewTransitionClass(position) {
 }
 
 /**
- * Gets the swipeable direction for a given position.
+ * Returns the swipe direction for a toast queue position.
  *
- * @param {string} position - The position (e.g., 'top-center', 'bottom-end').
- * @returns {string|undefined} The corresponding direction ('up', 'down', 'left', 'right', 'inline'), or undefined if not found.
+ * @param {ToastQueuePosition} position
+ * @returns {string} The direction in which the toast can be swiped away.
  * @private
  */
 export function getSwipeableDirection(position) {
@@ -51,53 +57,58 @@ export function getSwipeableDirection(position) {
 }
 
 /**
- * Executes a DOM update with a view transition when supported and appropriate.
- * Skips transitions if disabled by user preferences.
+ * Result returned by {@link wrapInViewTransition}.
  *
- * @param {Function} updateDOM - Function that performs DOM updates (required).
- * @param {Element} root - scope
- * @returns {Object} A transition-like object with `ready` and `finished` promises.
- *                   Returns immediate-resolving promises when transitions are skipped.
+ * @typedef {Object} TransitionResult
+ * @property {Promise<void>} ready
+ *   Resolves when the transition is ready.
+ * @property {Promise<void>} finished
+ *   Resolves when the transition finishes or is aborted.
  * @private
  */
-export function wrapInViewTransition(updateDOM, root = document) {
-  const immediate = { ready: Promise.resolve(), finished: Promise.resolve() };
 
-  // Skip transition if user prefers reduced motion
+/** @type {TransitionResult} */
+const immediateTransition = () => ({
+  ready: Promise.resolve(),
+  finished: Promise.resolve(),
+});
+
+/**
+ * Runs a DOM update inside a View Transition when supported.
+ *
+ * Transitions are skipped when the user prefers reduced motion or when the
+ * View Transition API is unavailable. In either case, the DOM update runs
+ * synchronously and the returned promises resolve immediately.
+ *
+ * When a transition is aborted, its `finished` promise resolves instead of
+ * rejecting. Other transition errors are propagated.
+ *
+ * When the provided root supports scoped View Transitions, the transition
+ * is scoped to that element. Otherwise, the document is used.
+ *
+ * @param {() => void} update - Callback that performs the DOM update.
+ * @param {Element} [root=document] - Element used to scope the transition.
+ * @returns {TransitionResult} - Transition lifecycle promises.
+ * @private
+ */
+export function wrapInViewTransition(update, root = document) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    updateDOM();
-    return immediate;
+    update();
+    return immediateTransition();
   }
 
-  // Prefer scoping the transition to `root` — isolates snapshotting and
-  // pointer-event blocking to this subtree instead of the whole document,
-  // and lets multiple ToastQueue instances animate independently instead
-  // of contending for the document's single transition slot.
   const scope = typeof root.startViewTransition === 'function' ? root : document;
 
-  // Skip if View Transition API is not supported
   if (typeof scope.startViewTransition !== 'function') {
-    updateDOM();
-    console.debug('[toast-queue] skipping transition');
-    return immediate;
+    update();
+    return immediateTransition();
   }
 
-  const transition = scope.startViewTransition(updateDOM);
-
-  // `ready` isn't consumed anywhere, but the browser still
-  // reports it as an unhandled rejection when a transition is skipped (e.g.
-  // superseded by another transition, or the tab is backgrounded mid-flight).
-  // A skip is expected, benign behavior of the View Transitions API, not a
-  // bug — mark it handled so it doesn't surface in the console.
+  const transition = scope.startViewTransition(update);
   transition.ready.catch(() => {});
 
   return {
     ready: transition.ready,
-    // Callers await `finished` purely for sequencing (e.g. to hide the
-    // popover after the DOM settles). The DOM update itself already ran by
-    // this point regardless of whether the animation was skipped, so treat
-    // an expected skip (AbortError) as a no-op instead of propagating it as
-    // an unhandled rejection. Any other error still propagates.
     finished: transition.finished.catch((error) => {
       if (error?.name !== 'AbortError') throw error;
     }),
@@ -105,56 +116,69 @@ export function wrapInViewTransition(updateDOM, root = document) {
 }
 
 /**
- * A timer that can be paused, resumed, and cleared.
+ * A timer that can be paused, resumed, and cleared while preserving its
+ * remaining duration.
+ *
  * @private
  */
 export class Timer {
-  #timerId;
+  #timerId = null;
   #startTime;
   #functionRef;
   #remainingTime;
 
   /**
-   * Creates a new Timer.
-   * @param {Function} functionRef - The function to execute when the timer completes.
-   * @param {number} delay - The delay in milliseconds before the function is called.
+   * Creates a new timer and starts it immediately.
+   *
+   * @param {() => void} functionRef - Function called when the timer expires.
+   * @param {number} delay - Initial duration in milliseconds.
    */
   constructor(functionRef, delay) {
     this.#functionRef = functionRef;
-    this.#remainingTime = delay;
+    this.#remainingTime = Math.max(0, delay);
     this.resume();
   }
 
   /**
-   * Resumes the timer. If already running, does nothing.
-   * Sets the start time and creates a new timeout based on remaining time.
+   * Resumes the timer using its remaining duration.
+   *
+   * Has no effect if the timer is already running.
+   *
    * @returns {void}
    */
   resume() {
-    if (this.#timerId) return;
+    if (this.#timerId !== null) return;
+
     this.#startTime = Date.now();
     this.#timerId = setTimeout(this.#functionRef, this.#remainingTime);
   }
 
   /**
-   * Pauses the timer. If not running, does nothing.
-   * Clears the current timeout and updates the remaining time.
+   * Pauses the timer and preserves the time remaining.
+   *
+   * Has no effect if the timer is already paused.
+   *
    * @returns {void}
    */
   pause() {
-    if (!this.#timerId) return;
+    if (this.#timerId === null) return;
+
     clearTimeout(this.#timerId);
     this.#timerId = null;
-    this.#remainingTime -= Date.now() - this.#startTime;
+    this.#remainingTime = Math.max(0, this.#remainingTime - (Date.now() - this.#startTime));
   }
 
   /**
-   * Clears and stops the timer permanently.
-   * Clears the timeout and resets the timer state.
+   * Stops the timer.
+   *
+   * The timer cannot fire after being cleared, but it may be resumed by
+   * calling {@link Timer#resume}.
+   *
    * @returns {void}
    */
   clear() {
-    if (!this.#timerId) return;
+    if (this.#timerId === null) return;
+
     clearTimeout(this.#timerId);
     this.#timerId = null;
   }
@@ -162,7 +186,8 @@ export class Timer {
 
 /**
  * Generates a random string ID.
- * @returns {string} A random alphanumeric string.
+ *
+ * @returns {string} A random alphanumeric identifier.
  * @private
  */
 export function randomId() {
