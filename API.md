@@ -70,8 +70,12 @@ library to locate and update their elements.</p>
 ### new ToastQueue([options])
 Manages a queue of toast notifications.
 
-A queue handles rendering, auto-dismiss timers, focus management,
-keyboard dismissal, swipe dismissal, and screen-reader announcements.
+The queue handles rendering, auto-dismiss timers, pause/resume behavior,
+focus management, keyboard dismissal, pointer interaction, touch swipes,
+and screen-reader announcements.
+
+Auto-dismiss timers are paused while the queue is hovered or focused and
+while the document is hidden.
 
 Toasts are announced with the browser's `ariaNotify()` API when available.
 Browsers without `ariaNotify()` can use the
@@ -386,16 +390,15 @@ Record representing a toast managed by a [ToastQueue](#ToastQueue).
 
 | Name | Type | Description |
 | --- | --- | --- |
-| id | <code>string</code> |  |
-| index | <code>number</code> | Queue insertion index. |
+| id | <code>string</code> | Unique identifier for the toast. |
 | timestamp | <code>number</code> | Creation timestamp in milliseconds. |
-| content | [<code>ToastContent</code>](#ToastContent) |  |
-| [icon] | <code>string</code> |  |
-| [action] | [<code>ToastAction</code>](#ToastAction) |  |
-| dismissible | <code>boolean</code> |  |
-| priority | [<code>ToastPriority</code>](#ToastPriority) |  |
-| [className] | <code>string</code> |  |
-| [onClose] | [<code>ToastCloseHandler</code>](#ToastCloseHandler) |  |
+| content | [<code>ToastContent</code>](#ToastContent) | Content displayed by the toast. |
+| [icon] | <code>string</code> | Trusted HTML markup for the toast icon. |
+| [action] | [<code>ToastAction</code>](#ToastAction) | Optional action button configuration. |
+| dismissible | <code>boolean</code> | Whether the toast can be manually dismissed. |
+| priority | [<code>ToastPriority</code>](#ToastPriority) | Screen-reader announcement priority. |
+| [className] | <code>string</code> | Additional CSS classes applied to the toast. |
+| [onClose] | [<code>ToastCloseHandler</code>](#ToastCloseHandler) | Called after the toast is closed. |
 | [timer] | <code>Timer</code> | Auto-dismiss timer. |
-| itemRef | <code>HTMLLIElement</code> | Associated DOM element. |
+| itemRef | <code>HTMLLIElement</code> | Associated toast item in the DOM. |
 

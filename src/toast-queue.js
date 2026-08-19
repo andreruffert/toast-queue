@@ -662,13 +662,21 @@ export class ToastQueue {
 
   /**
    * Synchronizes queue visibility state with the current `visibleLimit`.
+   * Synchronizes visibility-related attributes and CSS properties with the
+   * current `visibleLimit`.
    *
    * The queue element receives `data-hidden-count` when toasts exceed the
-   * visible limit. Individual items receive:
+   * Each item receives:
    *
    * - `data-hidden` when they are beyond the visible limit.
+   * - `data-hidden` when it exceeds the visible limit.
    * - `data-peek` on the first hidden item.
    * - `--tq-item-index` containing the item's zero-based position.
+   * - `--tq-item-index` containing its zero-based position.
+   *
+   * The queue receives `data-hidden-count` when hidden items exist.
+   *
+   * These attributes and properties are styling hooks for CSS presets.
    *
    * These attributes are intended as styling hooks for CSS presets.
    */
@@ -692,7 +700,12 @@ export class ToastQueue {
 
   /**
    * @param {function(): void} [update]
-   * @param {boolean} [skipTransition]
+   * Synchronizes the queue's DOM and popover state.
+   *
+   * Applies the update inside a view transition unless transitions are skipped.
+   * Resolves when the transition has finished.
+   *
+   * @param {function(): void} [update] - DOM update to apply.
    * @returns {Promise<void>}
    */
   async #syncRootState(update = () => {}, skipTransition = false) {
@@ -733,7 +746,10 @@ export class ToastQueue {
 
   /**
    * @param {ToastRecord} toast
-   * @returns {HTMLLIElement}
+   * Creates and populates a toast item from a toast record.
+   *
+   * @param {ToastRecord} toast - Toast data to render.
+   * @returns {HTMLLIElement} The newly created toast item.
    */
   #createItem(toast) {
     const titleId = `tq:${toast.id}:title`;
@@ -805,6 +821,12 @@ export class ToastQueue {
 
   /**
    * @param {ToastRecord} toast
+   * Moves focus to the next visible toast after closing the focused toast.
+   *
+   * Falls back to the previous visible toast when no next toast is available.
+   * Focus is moved only when the queue currently owns focus and is active.
+   *
+   * @param {ToastRecord} toast - Toast being closed.
    */
   #moveFocusAfterClose(toast) {
     if (!this.#rootPart.contains(document.activeElement)) return;
@@ -822,6 +844,11 @@ export class ToastQueue {
 
   /**
    * @param {ToastRecord} toast
+   * Converts toast content into a string suitable for screen-reader
+   * announcement.
+   *
+   * @param {ToastRecord} toast - Toast whose content should be announced.
+   * @returns {string} Announcement text.
    */
   #getAnnouncementText(toast) {
     if (typeof toast.content === 'string') return toast.content;
