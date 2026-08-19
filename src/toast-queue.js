@@ -204,41 +204,59 @@ export class ToastQueue {
   /* Activation                                                             */
   /* ---------------------------------------------------------------------- */
 
-  /**
-   * @param {ActivationReason} reason
-   */
-  #activate(reason) {
-    const wasActive = this.#active;
-    this.#activationReasons.add(reason);
+  #updateActivation(reason, active) {
+    if (active) {
+      if (this.#activationReasons.has(reason)) return;
 
-    if (!wasActive && this.#active) {
-      this.pause();
-      this.#syncActivationState();
+      const wasActive = this.#active;
+      this.#activationReasons.add(reason);
+
+      if (!wasActive) {
+        this.pause();
+        this.#syncActivationState();
+      }
+    } else {
+      if (!this.#activationReasons.delete(reason)) return;
+
+      if (!this.#active) {
+        this.resume();
+        this.#syncActivationState();
+      }
     }
 
-    console.debug('[toast-queue] activate', reason, [...this.#activationReasons]);
+    console.debug('[toast-queue] activation', active ? 'add' : 'remove', reason, [
+      ...this.#activationReasons,
+    ]);
   }
 
   /**
-   * @param {ActivationReason} reason
+   * Activates the queue for the given interaction reason.
+   *
+   * Multiple interaction reasons can be active simultaneously. Timers are
+   * paused when the first reason is added and resumed when the last reason
+   * is removed.
+   *
+   * @param {ActivationReason} reason - Reason the queue should remain active.
    */
-  #deactivate(reason) {
-    const wasActive = this.#active;
-    this.#activationReasons.delete(reason);
+  #activate = (reason) => this.#updateActivation(reason, true);
 
-    if (wasActive && !this.#active) {
-      this.resume();
-      this.#syncActivationState();
-    }
+  /**
+   * Deactivates the queue for the given interaction reason.
+   *
+   * Timers resume only after all active interaction reasons have been removed.
+   *
+   * @param {ActivationReason} reason - Reason to remove.
+   */
+  #deactivate = (reason) => this.#updateActivation(reason, false);
 
-    console.debug('[toast-queue] deactivate', reason, [...this.#activationReasons]);
-  }
-
+  /**
+   * Clears all interaction activation reasons and resumes the queue.
+   */
   #clearActivation() {
     if (!this.#active) return;
 
-    this.resume();
     this.#activationReasons.clear();
+    this.resume();
     this.#syncActivationState();
   }
 
