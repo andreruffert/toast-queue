@@ -140,16 +140,13 @@ export class ToastQueue {
   #controller = new AbortController();
 
   constructor(options = {}) {
-    this.#template.root.innerHTML = options?.template?.root || TEMPLATE.root;
-    this.#template.item.innerHTML = options?.template?.item || TEMPLATE.item;
-    this.#template.actionButton.innerHTML =
-      options?.template?.actionButton || TEMPLATE.actionButton;
+    const templates = options.template ?? {};
 
-    this.#duration = typeof options?.duration !== 'undefined' ? options.duration : this.#duration;
-    this.#position = options.position ?? this.#position;
-    this.#visibleLimit = options.visibleLimit ?? this.#visibleLimit;
+    this.#template.root.innerHTML = templates.root ?? TEMPLATE.root;
+    this.#template.item.innerHTML = templates.item ?? TEMPLATE.item;
+    this.#template.actionButton.innerHTML = templates.actionButton ?? TEMPLATE.actionButton;
 
-    this.#mount(options.root || document.body);
+    this.#mount(options.root ?? document.body);
     this.#duration = options.duration ?? DEFAULT_DURATION;
     this.#position = options.position ?? DEFAULT_POSITION;
     this.#visibleLimit = Math.max(0, options.visibleLimit ?? DEFAULT_VISIBLE_LIMIT);
