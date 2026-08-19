@@ -86,7 +86,7 @@ const immediateTransition = () => ({
  * When the provided root supports scoped View Transitions, the transition
  * is scoped to that element. Otherwise, the document is used.
  *
- * @param {() => void} update - Callback that performs the DOM update.
+ * @param {function(): void} update - Callback that performs the DOM update.
  * @param {Element} [root=document] - Element used to scope the transition.
  * @returns {TransitionResult} - Transition lifecycle promises.
  * @private
@@ -130,7 +130,7 @@ export class Timer {
   /**
    * Creates a new timer and starts it immediately.
    *
-   * @param {() => void} functionRef - Function called when the timer expires.
+   * @param {function(): void} functionRef - Function called when the timer expires.
    * @param {number} delay - Initial duration in milliseconds.
    */
   constructor(functionRef, delay) {

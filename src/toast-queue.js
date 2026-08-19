@@ -728,7 +728,7 @@ export class ToastQueue {
    * Applies the update inside a view transition unless transitions are skipped.
    * Resolves when the transition has finished.
    *
-   * @param {() => void} [update] - DOM update to apply.
+   * @param {function(): void} [update] - DOM update to apply.
    * @param {boolean} [skipTransition=false] - Whether to skip the view transition.
    * @returns {Promise<void>}
    */
