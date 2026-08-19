@@ -1,5 +1,9 @@
 /** @import { Timer } from './utils.js' */
 
+/* -------------------------------------------------------------------------- */
+/* Public API                                                                 */
+/* -------------------------------------------------------------------------- */
+
 /**
  * Configuration options for a {@link ToastQueue}.
  *
@@ -48,7 +52,7 @@
 
 /**
  * @typedef {Object} ToastContentObject
- * @property {string} [title]
+ * @property {string} title
  *   Primary toast message.
  * @property {string} [description]
  *   Optional supporting text displayed below the title.
@@ -115,23 +119,101 @@
  * Record representing a toast managed by a {@link ToastQueue}.
  *
  * @typedef {Object} ToastRecord
- * @property {string} id - Unique identifier for the toast.
- * @property {number} timestamp - Creation timestamp in milliseconds.
- * @property {ToastContent} content - Content displayed by the toast.
- * @property {string} [icon] - Trusted HTML markup for the toast icon.
- * @property {ToastAction} [action] - Optional action button configuration.
- * @property {boolean} dismissible - Whether the toast can be manually dismissed.
- * @property {ToastPriority} priority - Screen-reader announcement priority.
- * @property {string} [className] - Additional CSS classes applied to the toast.
- * @property {ToastCloseHandler} [onClose] - Called after the toast is closed.
- * @property {Timer} [timer] - Auto-dismiss timer.
- * @property {HTMLLIElement} itemRef - Associated toast item in the DOM.
+ * @property {string} id
+ *   Unique identifier for the toast.
+ * @property {number} timestamp
+ *   Creation timestamp in milliseconds.
+ * @property {ToastContent} content
+ *   Content displayed by the toast.
+ * @property {string} [icon]
+ *   Trusted HTML markup for the toast icon.
+ * @property {ToastAction} [action]
+ *   Optional action button configuration.
+ * @property {boolean} dismissible
+ *   Whether the toast can be manually dismissed.
+ * @property {ToastPriority} priority
+ *   Screen-reader announcement priority.
+ * @property {string} [className]
+ *   Additional CSS classes applied to the toast.
+ * @property {ToastCloseHandler} [onClose]
+ *   Called after the toast is closed.
+ * @property {Timer} [timer]
+ *   Auto-dismiss timer.
+ * @property {HTMLLIElement} itemRef
+ *   Associated toast item in the DOM.
  */
 
 /**
+ * Reason a toast was closed.
+ *
+ * @typedef {'timeout'|'button'|'escape'|'swipe'|'manual'} CloseReason
+ */
+
+/**
+ * Reason the queue becomes interaction-active.
+ *
  * @typedef {'focus'|'click'} ActivationReason
+ */
+
+/* -------------------------------------------------------------------------- */
+/* Events                                                                     */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Detail payload for the `toast-add` event.
+ *
+ * @typedef {Object} ToastAddEventDetail
+ * @property {ToastRecord} toast
+ *   The toast that was added to the queue.
+ */
+
+/**
+ * Detail payload for the `toast-close` event.
+ *
+ * @typedef {Object} ToastCloseEventDetail
+ * @property {ToastRecord} toast
+ *   The toast that was closed.
+ * @property {CloseReason} reason
+ *   The reason the toast was closed.
+ */
+
+/**
+ * Detail payload for the `toast-action` event.
+ *
+ * @typedef {{
+ *   toast: ToastRecord
+ * }} ToastActionEventDetail
+ */
+
+/**
+ * Detail payload for the `activate` event.
+ *
+ * @typedef {{
+ *   reason: ActivationReason,
+ *   reasons: ActivationReason[]
+ * }} ToastActivateEventDetail
+ */
+
+/**
+ * Detail payload for the `deactivate` event.
+ *
+ * @typedef {{
+ *   reason: ActivationReason
+ * }} ToastDeactivateEventDetail
+ */
+
+/* -------------------------------------------------------------------------- */
+/* Internal                                                                   */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * @typedef {'manual'|'hover'|'visibility'|'focus'|'click'} PauseReason
  * @private
  */
+
+/* -------------------------------------------------------------------------- */
+/* Module                                                                     */
+/* -------------------------------------------------------------------------- */
 
 // Essential: Export an empty object to make this a module
 export {};

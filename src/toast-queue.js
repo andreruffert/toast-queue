@@ -14,7 +14,14 @@ import {
  *   ToastContent,
  *   ToastOptions,
  *   ToastRecord,
- *   ActivationReason
+ *   PauseReason,
+ *   ActivationReason,
+ *   CloseReason,
+ *   ToastAddEventDetail,
+ *   ToastCloseEventDetail,
+ *   ToastActionEventDetail,
+ *   ToastActivateEventDetail,
+ *   ToastDeactivateEventDetail
  * } from './types.js'
  */
 
@@ -81,6 +88,43 @@ const DEFAULT_VISIBLE_LIMIT = 3;
  * CSS custom properties to provide your own presentation, or use one of the
  * optional CSS presets.
  *
+ * ## Public API
+ *
+ * ### Methods
+ *
+ * - {@link ToastQueue#add}
+ * - {@link ToastQueue#get}
+ * - {@link ToastQueue#close}
+ * - {@link ToastQueue#clear}
+ * - {@link ToastQueue#pause}
+ * - {@link ToastQueue#resume}
+ * - {@link ToastQueue#destroy}
+ *
+ * ### Properties
+ *
+ * - {@link ToastQueue#element}
+ * - {@link ToastQueue#size}
+ * - {@link ToastQueue#position}
+ * - {@link ToastQueue#visibleLimit}
+ *
+ * ### Custom events
+ *
+ * The queue dispatches the following bubbling custom events from its
+ * root `<toast-queue>` element:
+ *
+ * - `toast-add` — {@link ToastAddEventDetail}
+ *    Dispatched after a toast is added to the queue.
+ * - `toast-close` — {@link ToastCloseEventDetail}
+ *    Dispatched when a toast is closed.
+ * - `toast-action` — {@link ToastActionEventDetail}
+ *    Dispatched when a toast action button is clicked.
+ * - `activate` — {@link ToastActivateEventDetail}
+ *    Dispatched when the queue becomes interaction-active.
+ * - `deactivate` — {@link ToastDeactivateEventDetail}
+ *    Dispatched when the queue is no longer interaction-active.
+ * - `pause` — No detail payload. Dispatched when timers become paused.
+ * - `resume` — No detail payload. Dispatched when timers resume.
+ *
  * @class ToastQueue
  * @param {ToastQueueOptions} [options] - Queue configuration.
  *
@@ -120,16 +164,17 @@ export class ToastQueue {
   #position = DEFAULT_POSITION;
 
   /**
-   * Number of toasts rendered visibly at once before the rest are hidden.
-   * Exposed to presets via `data-hidden-count`, `[data-hidden]`,
-   * `[data-peek]`, and `--tq-item-index` (see `#syncVisibleLimitState`) so they
-   * can build their own cutoff/peek treatment.
+   * Maximum number of toasts considered visible at once.
+   *
+   * Additional toasts remain in the queue but receive visibility-related
+   * attributes that CSS presets can use for stacking or peek effects.
+   *
    * @type {number}
    */
   #visibleLimit = DEFAULT_VISIBLE_LIMIT;
 
-  /** @type {boolean} */
-  #paused = false;
+  /** @type {Set<PauseReason>} */
+  #pauseReasons = new Set();
 
   /** @type {Set<ActivationReason>} */
   #activationReasons = new Set();
@@ -156,7 +201,7 @@ export class ToastQueue {
       root: this.#rootPart,
       onSwipe: ({ target }) => {
         const id = target?.dataset?.id;
-        if (id) this.close(id);
+        if (id) this.close(id, 'swipe');
       },
     });
 
@@ -168,7 +213,7 @@ export class ToastQueue {
   /* ---------------------------------------------------------------------- */
 
   /**
-   * Mounts the queue into the supplied root element.
+   * Creates the queue DOM and mounts it into the supplied root element.
    *
    * @param {HTMLElement} root - Element to which the queue is appended.
    */
@@ -193,12 +238,14 @@ export class ToastQueue {
   /**
    * Adds a toast notification to the queue.
    *
-   * The toast is rendered immediately when space is available. When the
-   * `visibleLimit` has been reached, additional toasts remain queued until an
-   * earlier toast is closed.
+   * Toasts are added immediately. When the `visibleLimit` is exceeded, additional
+   * toasts remain in the queue but are marked hidden until the visible limit
+   * allows them to be shown.
    *
    * Pass a string for a simple message or an object for a title and optional
    * description.
+   *
+   * @fires ToastQueue#toast-add
    *
    * @param {ToastContent} content - Toast message content.
    * @param {ToastOptions} [options] - Per-toast configuration.
@@ -239,7 +286,7 @@ export class ToastQueue {
       dismissible: options.dismissible ?? true,
       priority: options.priority ?? 'normal',
       onClose: options.onClose,
-      timer: duration > 0 ? new Timer(() => this.close(id), duration) : undefined,
+      timer: duration > 0 ? new Timer(() => this.close(id, 'timeout'), duration) : undefined,
       itemRef: null,
     };
 
@@ -254,7 +301,7 @@ export class ToastQueue {
       this.#announce(toast);
     });
 
-    console.debug('[toast-queue] add', toast.id);
+    this.#dispatch('toast-add', { toast });
 
     return toast;
   }
@@ -276,9 +323,13 @@ export class ToastQueue {
    * If the toast has an `onClose` callback, it is invoked after the queue has
    * been updated.
    *
+   * @fires ToastQueue#toast-close
+   *
    * @param {string} id - Toast identifier.
+   * @param {CloseReason} [reason='manual'] - Reason the toast was closed.
+   * @returns {void}
    */
-  close(id) {
+  close(id, reason = 'manual') {
     const toast = this.#queue.get(id);
     if (!toast) return;
 
@@ -286,11 +337,19 @@ export class ToastQueue {
     toast.timer?.clear();
     this.#moveFocusAfterClose(toast);
 
+    const wasLastToast = this.#queue.size === 0;
+
+    if (wasLastToast) {
+      this.#clearActivation({ transition: false });
+    }
+
     this.#syncRootState(
       () => toast.itemRef.remove(),
       // Skip transition for hidden elements
       toast.itemRef.hasAttribute('data-hidden'),
     );
+
+    this.#dispatch('toast-close', { toast, reason });
 
     // Run after internal cleanup so a throwing consumer callback can't leave
     // the DOM/popover out of sync with `#queue`.
@@ -299,14 +358,15 @@ export class ToastQueue {
     } catch (error) {
       console.error('[toast-queue] onClose callback threw', error);
     }
-
-    console.debug('[toast-queue] close', id);
   }
 
   /**
    * Closes all toasts and clears the queue.
    *
-   * All auto-dismiss timers are cancelled and the queue is reset to its empty state.
+   * All auto-dismiss timers are cancelled and the queue is reset to its empty
+   * state. Individual `onClose` callbacks are not invoked.
+   *
+   * @returns {void}
    */
   clear() {
     this.#clearActivation();
@@ -315,63 +375,54 @@ export class ToastQueue {
     this.#syncRootState(() => {
       this.#groupPart.replaceChildren();
     });
-
-    console.debug('[toast-queue] clear');
   }
 
   /**
-   * Pauses all toast auto-dismiss timers.
+   * Manually pauses all toast auto-dismiss timers.
    *
-   * Calling this method does not remove or hide toasts. Timers resume from
-   * their remaining time when {@link ToastQueue#resume} is called.
+   * The manual pause remains active until {@link ToastQueue#resume} is called.
+   * Other pause reasons, such as hover or document visibility, are independent.
+   *
+   * @fires ToastQueue#pause
+   * @returns {void}
    */
   pause() {
-    this.#setPaused(true);
+    this.#setPauseReason('manual', true);
   }
 
   /**
-   * Resumes all paused toast auto-dismiss timers.
+   * Removes the queue's manual pause.
    *
-   * Has no effect when the queue is already running.
+   * Auto-dismiss timers remain paused while another pause reason is active,
+   * such as hover, focus, or document visibility.
+   *
+   * @fires ToastQueue#resume
+   * @returns {void}
    */
   resume() {
-    this.#setPaused(false);
+    this.#setPauseReason('manual', false);
   }
 
   /**
    * Permanently destroys the queue instance.
    *
    * Removes the queue element, clears all auto-dismiss timers, removes event
-   * listeners, and releases the associated resources.
+   * listeners, and releases associated resources.
    *
-   * After calling `destroy()`, the queue instance must not be used again.
+   * The instance must not be used after calling `destroy()`.
+   *
+   * @returns {void}
    */
   destroy() {
     this.#controller.abort();
     this.#clearQueue();
     this.#rootPart.remove();
     this.#swipeable.destroy();
-
-    console.debug('[toast-queue] destroy');
   }
 
   /* ---------------------------------------------------------------------- */
-  /* Properties.                                                            */
+  /* Properties                                                             */
   /* ---------------------------------------------------------------------- */
-
-  /**
-   * Whether the queue's toast timers are currently paused.
-   *
-   * Timers may be paused explicitly with {@link ToastQueue#pause}, or
-   * automatically while the queue is hovered, focused, or the document is
-   * hidden.
-   *
-   * @readonly
-   * @type {boolean}
-   */
-  get isPaused() {
-    return this.#paused;
-  }
 
   /**
    * The root `<toast-queue>` element for this queue instance.
@@ -430,10 +481,10 @@ export class ToastQueue {
   }
 
   /**
-   * Gets or sets the number of toasts that are considered visible.
+   * Gets or sets the number of toasts considered visible.
    *
-   * Toasts beyond this limit remain in the queue but are marked as hidden using
-   * `data-hidden`. The current number of hidden toasts is exposed through
+   * Toasts beyond this limit remain rendered and in the queue, but are marked
+   * with `data-hidden`. The number of hidden toasts is exposed through
    * `data-hidden-count` on the queue element.
    *
    * CSS presets can use these attributes to create stacked or peek effects.
@@ -453,7 +504,7 @@ export class ToastQueue {
   }
 
   /* ---------------------------------------------------------------------- */
-  /* Events                                                                */
+  /* Events                                                                 */
   /* ---------------------------------------------------------------------- */
 
   #bindEvents() {
@@ -471,26 +522,22 @@ export class ToastQueue {
     this.#rootPart.addEventListener('keydown', this.#onKeydown, { signal });
   }
 
-  /** @param {PointerEvent} event */
   #onEnter = () => {
-    if (this.#active) return;
-
-    this.pause();
+    this.#setPauseReason('hover', true);
   };
 
-  /** @param {PointerEvent} event */
   #onLeave = () => {
-    if (this.#active) return;
-
-    this.resume();
+    this.#setPauseReason('hover', false);
   };
 
   /** @param {FocusEvent} event */
   #onFocusIn = (event) => {
-    // Ignore action/close buttons
-    if (event.target.closest(SELECTORS.command)) return;
+    const target = event.target instanceof Element ? event.target : null;
 
-    // Ignore focus moving within the queue
+    // Command controls should never activate the queue.
+    if (target?.closest(SELECTORS.command)) return;
+
+    // Ignore focus moving within the queue.
     if (this.#rootPart.contains(event.relatedTarget)) return;
 
     this.#activate('focus');
@@ -513,20 +560,24 @@ export class ToastQueue {
 
   /** @param {PointerEvent} event */
   #onOutsidePointer = (event) => {
-    if (!this.#active) return;
+    if (!this.#isActive) return;
     if (this.#rootPart.contains(event.target)) return;
-    this.#clearActivation();
+
+    // Pointer interaction can dismiss click activation,
+    // but must not cancel focus activation while focus remains inside.
+    this.#deactivate('click');
   };
 
   #onVisibility = () => {
-    document.visibilityState === 'hidden' ? this.pause() : this.resume();
+    this.#setPauseReason('visibility', document.visibilityState === 'hidden');
   };
 
   /** @param {KeyboardEvent} event */
   #onKeydown = (event) => {
     if (event.key !== 'Escape') return;
 
-    const toastPart = event.target.closest(SELECTORS.toast);
+    const target = event.target instanceof Element ? event.target : null;
+    const toastPart = target?.closest(SELECTORS.toast);
     const id = toastPart?.dataset.id;
 
     if (!id) return;
@@ -535,25 +586,35 @@ export class ToastQueue {
     if (!toast || toast.dismissible === false) return;
 
     event.stopPropagation();
-    this.close(id);
+    this.close(id, 'escape');
   };
 
   /** @param {MouseEvent} event */
   #onClick = (event) => {
     const target = event.target instanceof Element ? event.target : null;
-    const command = target?.closest(SELECTORS.command)?.dataset.command;
+    const commandTarget = target?.closest(SELECTORS.command);
+    const command = commandTarget?.dataset.command;
+
+    if (commandTarget) {
+      event.stopPropagation();
+    }
 
     switch (command) {
-      case 'close':
-        event.stopPropagation();
-        this.close(target.closest(SELECTORS.toast)?.dataset.id);
+      case 'close': {
+        const id = commandTarget?.closest(SELECTORS.toast)?.dataset.id;
+
+        this.close(id, 'button');
+
         break;
+      }
 
       case 'action': {
-        event.stopPropagation();
+        const id = commandTarget?.closest(SELECTORS.toast)?.dataset.id;
 
-        const id = target.closest(SELECTORS.toast)?.dataset.id;
         const toast = this.#queue.get(id);
+
+        this.#dispatch('toast-action', { toast });
+
         try {
           toast?.action?.onClick?.(toast);
         } catch (error) {
@@ -572,44 +633,61 @@ export class ToastQueue {
     }
   };
 
+  /**
+   * Dispatches a custom queue event from the root element.
+   *
+   * @param {string} type
+   * @param {Record<string, unknown>} [detail]
+   */
+  #dispatch(type, detail = {}) {
+    this.#rootPart.dispatchEvent(
+      new CustomEvent(type, {
+        bubbles: true,
+        detail,
+      }),
+    );
+  }
+
   /* ---------------------------------------------------------------------- */
   /* Activation                                                             */
   /* ---------------------------------------------------------------------- */
 
-  /**
-   * Whether the queue is currently interaction-active.
-   *
-   * The queue is active when one or more activation reasons are present.
-   *
-   * @returns {boolean}
-   */
-  get #active() {
+  /** @returns {boolean} Whether the queue is currently interaction-active. */
+  get #isActive() {
     return this.#activationReasons.size > 0;
   }
 
-  #updateActivation(reason, active) {
+  #setActivation(reason, active, transition = true) {
+    const wasActive = this.#isActive;
+
     if (active) {
       if (this.#activationReasons.has(reason)) return;
 
-      const wasActive = this.#active;
       this.#activationReasons.add(reason);
-
-      if (!wasActive) {
-        this.pause();
-        this.#syncActivationState();
-      }
+      this.#setPauseReason(reason, true);
     } else {
-      if (!this.#activationReasons.delete(reason)) return;
+      if (!this.#activationReasons.has(reason)) return;
 
-      if (!this.#active) {
-        this.resume();
-        this.#syncActivationState();
-      }
+      this.#activationReasons.delete(reason);
+      this.#setPauseReason(reason, false);
     }
 
-    console.debug('[toast-queue] activation', active ? 'add' : 'remove', reason, [
-      ...this.#activationReasons,
-    ]);
+    if (wasActive === this.#isActive) return;
+
+    if (transition) {
+      this.#syncActivationState();
+    } else {
+      this.#rootPart.toggleAttribute('data-active', this.#isActive);
+    }
+
+    if (this.#isActive) {
+      this.#dispatch('activate', {
+        reason,
+        reasons: [...this.#activationReasons],
+      });
+    } else {
+      this.#dispatch('deactivate', { reason });
+    }
   }
 
   /**
@@ -622,7 +700,7 @@ export class ToastQueue {
    * @param {ActivationReason} reason - Reason the queue should remain active.
    */
   #activate(reason) {
-    this.#updateActivation(reason, true);
+    this.#setActivation(reason, true);
   }
 
   /**
@@ -633,25 +711,21 @@ export class ToastQueue {
    * @param {ActivationReason} reason - Reason to remove.
    */
   #deactivate(reason) {
-    this.#updateActivation(reason, false);
+    this.#setActivation(reason, false);
   }
 
   /**
    * Clears all interaction activation reasons and resumes the queue.
    */
-  #clearActivation() {
-    if (!this.#active) return;
-
-    this.#activationReasons.clear();
-    this.resume();
-    this.#syncActivationState();
-
-    console.debug('[toast-queue] activation clear');
+  #clearActivation({ transition = true } = {}) {
+    for (const reason of [...this.#activationReasons]) {
+      this.#setActivation(reason, false, transition);
+    }
   }
 
   #syncActivationState() {
     wrapInViewTransition(() => {
-      this.#rootPart.toggleAttribute('data-active', this.#active);
+      this.#rootPart.toggleAttribute('data-active', this.#isActive);
     }, this.#rootPart);
   }
 
@@ -667,22 +741,24 @@ export class ToastQueue {
     this.#queue.clear();
   }
 
-  #syncTimers() {
-    for (const toast of this.#queue.values()) {
-      this.#paused ? toast.timer?.pause() : toast.timer?.resume();
+  #setPauseReason(reason, active) {
+    const wasPaused = this.#pauseReasons.size > 0;
+
+    if (active) {
+      this.#pauseReasons.add(reason);
+    } else {
+      this.#pauseReasons.delete(reason);
     }
-  }
 
-  /**
-   * @param {boolean} value
-   */
-  #setPaused(value) {
-    if (this.#paused === value) return;
+    const isPaused = this.#pauseReasons.size > 0;
 
-    this.#paused = value;
-    this.#syncTimers();
+    if (wasPaused === isPaused) return;
 
-    console.debug(`[toast-queue] ${value ? 'pause' : 'resume'}`);
+    for (const toast of this.#queue.values()) {
+      isPaused ? toast.timer?.pause() : toast.timer?.resume();
+    }
+
+    this.#dispatch(isPaused ? 'pause' : 'resume');
   }
 
   /* ---------------------------------------------------------------------- */
@@ -690,8 +766,7 @@ export class ToastQueue {
   /* ---------------------------------------------------------------------- */
 
   /**
-   * Synchronizes visibility-related attributes and CSS properties with the
-   * current `visibleLimit`.
+   * Synchronizes the queue's visibility metadata.
    *
    * Each item receives:
    *
@@ -702,7 +777,6 @@ export class ToastQueue {
    * The queue receives `data-hidden-count` when hidden items exist.
    *
    * These attributes and properties are styling hooks for CSS presets.
-   *
    */
   #syncVisibleLimitState() {
     const hidden = Math.max(0, this.#queue.size - this.#visibleLimit);
@@ -722,46 +796,39 @@ export class ToastQueue {
     }
   }
 
+  #syncPopoverState() {
+    const open = this.#queue.size > 0;
+
+    if (open && !this.#rootPart.matches(':popover-open')) {
+      this.#rootPart.showPopover();
+    } else if (!open && this.#rootPart.matches(':popover-open')) {
+      this.#rootPart.hidePopover();
+    }
+  }
+
   /**
-   * Synchronizes the queue's DOM and popover state.
+   * Applies a DOM update and synchronizes derived queue state.
    *
-   * Applies the update inside a view transition unless transitions are skipped.
-   * Resolves when the transition has finished.
+   * Updates popover visibility and toast visibility metadata after the DOM
+   * change. The update can optionally skip the view transition.
    *
-   * @param {function(): void} [update] - DOM update to apply.
-   * @param {boolean} [skipTransition=false] - Whether to skip the view transition.
+   * @param {function(): void} [update]
+   * @param {boolean} [skipTransition=false]
    * @returns {Promise<void>}
    */
   #syncRootState(update = () => {}, skipTransition = false) {
-    const applyUpdate = () => {
-      if (this.#queue.size > 0) {
-        if (!this.#rootPart.matches(':popover-open')) {
-          this.#rootPart.showPopover();
-        }
-      }
-
+    const apply = () => {
       update();
+      this.#syncPopoverState();
       this.#syncVisibleLimitState();
-
-      if (this.#queue.size === 0) {
-        if (this.#rootPart.matches(':popover-open')) {
-          this.#rootPart.hidePopover();
-        }
-
-        if (this.#active) {
-          this.resume();
-          this.#activationReasons.clear();
-          delete this.#rootPart.dataset.active;
-        }
-      }
     };
 
     if (skipTransition) {
-      applyUpdate();
+      apply();
       return Promise.resolve();
     }
 
-    return wrapInViewTransition(applyUpdate).finished;
+    return wrapInViewTransition(apply).finished;
   }
 
   /* ---------------------------------------------------------------------- */
@@ -848,16 +915,16 @@ export class ToastQueue {
   /* ---------------------------------------------------------------------- */
 
   /**
-   * Moves focus to the next visible toast after closing the focused toast.
+   * Moves focus to another visible toast after a toast is closed.
    *
-   * Falls back to the previous visible toast when no next toast is available.
    * Focus is moved only when the queue currently owns focus and is active.
+   * The next visible toast is preferred, falling back to the previous toast.
    *
    * @param {ToastRecord} toast - Toast being closed.
    */
   #moveFocusAfterClose(toast) {
     if (!this.#rootPart.contains(document.activeElement)) return;
-    if (!this.#active) return;
+    if (!this.#isActive) return;
 
     const { nextElementSibling: next, previousElementSibling: prev } = toast.itemRef;
     const target = next && !next.hasAttribute('data-hidden') ? next : prev;
@@ -895,8 +962,6 @@ export class ToastQueue {
     const message = this.#getAnnouncementText(toast);
 
     if (!message) return;
-
-    console.debug('[toast-queue] announce', message);
 
     const target = toast.itemRef.querySelector(SELECTORS.toast);
 

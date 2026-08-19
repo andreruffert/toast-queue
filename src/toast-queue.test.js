@@ -78,8 +78,11 @@ describe('ToastQueue', () => {
 
   test('renders action button and invokes callback', async () => {
     const onClick = vi.fn();
+    const onAction = vi.fn();
 
-    toastQueue.add('Toast message', {
+    toastQueue.element.addEventListener('toast-action', onAction);
+
+    const toastRef = toastQueue.add('Toast message', {
       action: {
         label: 'Action',
         onClick,
@@ -91,8 +94,12 @@ describe('ToastQueue', () => {
     });
 
     await expect.element(button).toBeInTheDocument();
-
     await button.click();
+
+    expect(onAction).toHaveBeenCalledTimes(1);
+    expect(onAction.mock.calls[0][0].detail).toEqual({
+      toast: toastRef,
+    });
 
     expect(onClick).toHaveBeenCalledTimes(1);
   });
@@ -107,6 +114,9 @@ describe('ToastQueue', () => {
 
   test('closes toast through close button', async () => {
     const onClose = vi.fn();
+    const onToastClose = vi.fn();
+
+    toastQueue.element.addEventListener('toast-close', onToastClose);
 
     const toastRef = toastQueue.add('Toast message', {
       onClose,
@@ -117,6 +127,15 @@ describe('ToastQueue', () => {
         name: 'Close',
       })
       .click();
+
+    expect(onToastClose).toHaveBeenCalledTimes(1);
+
+    const [event] = onToastClose.mock.calls[0];
+
+    expect(event.detail).toEqual({
+      toast: toastRef,
+      reason: 'button',
+    });
 
     expect(onClose).toHaveBeenCalledWith(toastRef);
     expect(toastQueue.get(toastRef.id)).toBeUndefined();
@@ -239,19 +258,17 @@ describe('ToastQueue', () => {
     });
   });
 
-  test('clears pending toast timers on clear()', () => {
-    const clearTimeoutSpy = vi.spyOn(window, 'clearTimeout');
-
-    toastQueue.add('First', { duration: 5000 });
-    toastQueue.add('Second', { duration: 5000 });
-
-    clearTimeoutSpy.mockClear();
+  test('clears pending toast timers on clear()', async () => {
+    const first = toastQueue.add('First', { duration: 50 });
+    const second = toastQueue.add('Second', { duration: 50 });
 
     toastQueue.clear();
 
-    // One clearTimeout per pending toast timer — proves clear() doesn't just
-    // drop the Map and leave the underlying setTimeouts running.
-    expect(clearTimeoutSpy).toHaveBeenCalledTimes(2);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(toastQueue.get(first.id)).toBeUndefined();
+    expect(toastQueue.get(second.id)).toBeUndefined();
+    expect(toastQueue.size).toBe(0);
   });
 
   test('clears pending toast timers on destroy()', () => {
@@ -294,16 +311,34 @@ describe('ToastQueue', () => {
     tq.destroy();
   });
 
-  test('pauses and resumes timers', () => {
-    toastQueue.add('Toast message');
+  test('pauses and resumes timers', async () => {
+    const queue = new ToastQueue({ duration: 50 });
+    const toast = queue.add('Toast message');
 
-    toastQueue.pause();
+    const pause = vi.fn();
+    const resume = vi.fn();
 
-    expect(toastQueue.isPaused).toBe(true);
+    queue.element.addEventListener('pause', pause);
+    queue.element.addEventListener('resume', resume);
 
-    toastQueue.resume();
+    queue.pause();
 
-    expect(toastQueue.isPaused).toBe(false);
+    expect(pause).toHaveBeenCalledTimes(1);
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // Timer should remain paused.
+    expect(queue.get(toast.id)).toBe(toast);
+
+    queue.resume();
+
+    expect(resume).toHaveBeenCalledTimes(1);
+
+    await vi.waitFor(() => {
+      expect(queue.get(toast.id)).toBeUndefined();
+    });
+
+    queue.destroy();
   });
 
   test('announces toast using ariaNotify', async () => {
@@ -386,6 +421,96 @@ describe('ToastQueue', () => {
     expect(queue.element).toHaveAttribute('data-active');
 
     queue.destroy();
+  });
+
+  test('dispatches toast-add event', () => {
+    const listener = vi.fn();
+
+    toastQueue.element.addEventListener('toast-add', listener);
+
+    const toast = toastQueue.add('Toast message');
+
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    const [event] = listener.mock.calls[0];
+
+    expect(event).toBeInstanceOf(CustomEvent);
+    expect(event.detail).toEqual({ toast });
+    expect(event.bubbles).toBe(true);
+  });
+
+  test('dispatches pause and resume events', () => {
+    const pause = vi.fn();
+    const resume = vi.fn();
+
+    toastQueue.element.addEventListener('pause', pause);
+    toastQueue.element.addEventListener('resume', resume);
+
+    toastQueue.add('Toast message');
+
+    toastQueue.pause();
+
+    expect(pause).toHaveBeenCalledTimes(1);
+    expect(pause.mock.calls[0][0]).toBeInstanceOf(CustomEvent);
+    expect(pause.mock.calls[0][0].detail).toEqual({});
+
+    toastQueue.resume();
+
+    expect(resume).toHaveBeenCalledTimes(1);
+    expect(resume.mock.calls[0][0]).toBeInstanceOf(CustomEvent);
+    expect(resume.mock.calls[0][0].detail).toEqual({});
+  });
+
+  test('dispatches activate and deactivate events', async () => {
+    const activate = vi.fn();
+    const deactivate = vi.fn();
+
+    toastQueue.element.addEventListener('activate', activate);
+    toastQueue.element.addEventListener('deactivate', deactivate);
+
+    const toastRef = toastQueue.add('Toast message');
+
+    await expect.element(page.getByText('Toast message')).toBeInTheDocument();
+
+    const toastPart = document.querySelector(`[data-part="toast"][data-id="${toastRef.id}"]`);
+
+    toastPart.focus();
+
+    await vi.waitFor(() => {
+      expect(activate).toHaveBeenCalledTimes(1);
+    });
+
+    expect(activate.mock.calls[0][0].detail).toEqual({
+      reason: 'focus',
+      reasons: ['focus'],
+    });
+
+    const outside = document.createElement('button');
+    document.body.appendChild(outside);
+    outside.focus();
+
+    await vi.waitFor(() => {
+      expect(deactivate).toHaveBeenCalledTimes(1);
+    });
+
+    expect(deactivate.mock.calls[0][0].detail).toEqual({
+      reason: 'focus',
+    });
+
+    outside.remove();
+  });
+
+  test('custom events bubble from the queue root', () => {
+    const listener = vi.fn();
+
+    document.body.addEventListener('toast-add', listener);
+
+    toastQueue.add('Toast message');
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener.mock.calls[0][0].target).toBe(toastQueue.element);
+
+    document.body.removeEventListener('toast-add', listener);
   });
 
   test('destroys queue', () => {

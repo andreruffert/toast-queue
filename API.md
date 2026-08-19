@@ -43,6 +43,27 @@ library to locate and update their elements.</p>
 <dt><a href="#ToastRecord">ToastRecord</a> : <code>Object</code></dt>
 <dd><p>Record representing a toast managed by a <a href="#ToastQueue">ToastQueue</a>.</p>
 </dd>
+<dt><a href="#CloseReason">CloseReason</a> : <code>&#x27;timeout&#x27;</code> | <code>&#x27;button&#x27;</code> | <code>&#x27;escape&#x27;</code> | <code>&#x27;swipe&#x27;</code> | <code>&#x27;manual&#x27;</code></dt>
+<dd><p>Reason a toast was closed.</p>
+</dd>
+<dt><a href="#ActivationReason">ActivationReason</a> : <code>&#x27;focus&#x27;</code> | <code>&#x27;click&#x27;</code></dt>
+<dd><p>Reason the queue becomes interaction-active.</p>
+</dd>
+<dt><a href="#ToastAddEventDetail">ToastAddEventDetail</a> : <code>Object</code></dt>
+<dd><p>Detail payload for the <code>toast-add</code> event.</p>
+</dd>
+<dt><a href="#ToastCloseEventDetail">ToastCloseEventDetail</a> : <code>Object</code></dt>
+<dd><p>Detail payload for the <code>toast-close</code> event.</p>
+</dd>
+<dt><a href="#ToastActionEventDetail">ToastActionEventDetail</a> : <code>Object</code></dt>
+<dd><p>Detail payload for the <code>toast-action</code> event.</p>
+</dd>
+<dt><a href="#ToastActivateEventDetail">ToastActivateEventDetail</a> : <code>Object</code></dt>
+<dd><p>Detail payload for the <code>activate</code> event.</p>
+</dd>
+<dt><a href="#ToastDeactivateEventDetail">ToastDeactivateEventDetail</a> : <code>Object</code></dt>
+<dd><p>Detail payload for the <code>deactivate</code> event.</p>
+</dd>
 </dl>
 
 <a name="ToastQueue"></a>
@@ -52,18 +73,17 @@ library to locate and update their elements.</p>
 
 * [ToastQueue](#ToastQueue)
     * [new ToastQueue([options])](#new_ToastQueue_new)
-    * [.isPaused](#ToastQueue+isPaused) : <code>boolean</code>
     * [.element](#ToastQueue+element) : <code>HTMLElement</code>
     * [.size](#ToastQueue+size) : <code>number</code>
     * [.position](#ToastQueue+position) : [<code>ToastQueuePosition</code>](#ToastQueuePosition)
     * [.visibleLimit](#ToastQueue+visibleLimit) : <code>number</code>
     * [.add(content, [options])](#ToastQueue+add) ⇒ [<code>ToastRecord</code>](#ToastRecord)
     * [.get(id)](#ToastQueue+get) ⇒ [<code>ToastRecord</code>](#ToastRecord) \| <code>undefined</code>
-    * [.close(id)](#ToastQueue+close)
-    * [.clear()](#ToastQueue+clear)
-    * [.pause()](#ToastQueue+pause)
-    * [.resume()](#ToastQueue+resume)
-    * [.destroy()](#ToastQueue+destroy)
+    * [.close(id, [reason])](#ToastQueue+close) ⇒ <code>void</code>
+    * [.clear()](#ToastQueue+clear) ⇒ <code>void</code>
+    * [.pause()](#ToastQueue+pause) ⇒ <code>void</code>
+    * [.resume()](#ToastQueue+resume) ⇒ <code>void</code>
+    * [.destroy()](#ToastQueue+destroy) ⇒ <code>void</code>
 
 <a name="new_ToastQueue_new"></a>
 
@@ -86,6 +106,43 @@ The queue is unstyled by default. Use the exposed `data-*` attributes and
 CSS custom properties to provide your own presentation, or use one of the
 optional CSS presets.
 
+## Public API
+
+### Methods
+
+- [add](#ToastQueue+add)
+- [get](#ToastQueue+get)
+- [close](#ToastQueue+close)
+- [clear](#ToastQueue+clear)
+- [pause](#ToastQueue+pause)
+- [resume](#ToastQueue+resume)
+- [destroy](#ToastQueue+destroy)
+
+### Properties
+
+- [element](#ToastQueue+element)
+- [size](#ToastQueue+size)
+- [position](#ToastQueue+position)
+- [visibleLimit](#ToastQueue+visibleLimit)
+
+### Custom events
+
+The queue dispatches the following bubbling custom events from its
+root `<toast-queue>` element:
+
+- `toast-add` — [ToastAddEventDetail](#ToastAddEventDetail)
+   Dispatched after a toast is added to the queue.
+- `toast-close` — [ToastCloseEventDetail](#ToastCloseEventDetail)
+   Dispatched when a toast is closed.
+- `toast-action` — [ToastActionEventDetail](#ToastActionEventDetail)
+   Dispatched when a toast action button is clicked.
+- `activate` — [ToastActivateEventDetail](#ToastActivateEventDetail)
+   Dispatched when the queue becomes interaction-active.
+- `deactivate` — [ToastDeactivateEventDetail](#ToastDeactivateEventDetail)
+   Dispatched when the queue is no longer interaction-active.
+- `pause` — No detail payload. Dispatched when timers become paused.
+- `resume` — No detail payload. Dispatched when timers resume.
+
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -99,17 +156,6 @@ const toastQueue = new ToastQueue();
 
 toastQueue.add('Changes saved.');
 ```
-<a name="ToastQueue+isPaused"></a>
-
-### toastQueue.isPaused : <code>boolean</code>
-Whether the queue's toast timers are currently paused.
-
-Timers may be paused explicitly with [pause](#ToastQueue+pause), or
-automatically while the queue is hovered, focused, or the document is
-hidden.
-
-**Kind**: instance property of [<code>ToastQueue</code>](#ToastQueue)  
-**Read only**: true  
 <a name="ToastQueue+element"></a>
 
 ### toastQueue.element : <code>HTMLElement</code>
@@ -148,10 +194,10 @@ Changing the position updates the queue and existing toasts in place.
 <a name="ToastQueue+visibleLimit"></a>
 
 ### toastQueue.visibleLimit : <code>number</code>
-Gets or sets the number of toasts that are considered visible.
+Gets or sets the number of toasts considered visible.
 
-Toasts beyond this limit remain in the queue but are marked as hidden using
-`data-hidden`. The current number of hidden toasts is exposed through
+Toasts beyond this limit remain rendered and in the queue, but are marked
+with `data-hidden`. The number of hidden toasts is exposed through
 `data-hidden-count` on the queue element.
 
 CSS presets can use these attributes to create stacked or peek effects.
@@ -162,15 +208,16 @@ CSS presets can use these attributes to create stacked or peek effects.
 ### toastQueue.add(content, [options]) ⇒ [<code>ToastRecord</code>](#ToastRecord)
 Adds a toast notification to the queue.
 
-The toast is rendered immediately when space is available. When the
-`visibleLimit` has been reached, additional toasts remain queued until an
-earlier toast is closed.
+Toasts are added immediately. When the `visibleLimit` is exceeded, additional
+toasts remain in the queue but are marked hidden until the visible limit
+allows them to be shown.
 
 Pass a string for a simple message or an object for a title and optional
 description.
 
 **Kind**: instance method of [<code>ToastQueue</code>](#ToastQueue)  
 **Returns**: [<code>ToastRecord</code>](#ToastRecord) - The newly created toast record.  
+**Emits**: <code>ToastQueue#event:toast-add</code>  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -214,7 +261,7 @@ Retrieves a toast by its identifier.
 
 <a name="ToastQueue+close"></a>
 
-### toastQueue.close(id)
+### toastQueue.close(id, [reason]) ⇒ <code>void</code>
 Closes a toast and removes it from the queue.
 
 Closing a toast also cancels its auto-dismiss timer and updates queue state.
@@ -222,45 +269,51 @@ If the toast has an `onClose` callback, it is invoked after the queue has
 been updated.
 
 **Kind**: instance method of [<code>ToastQueue</code>](#ToastQueue)  
+**Emits**: <code>ToastQueue#event:toast-close</code>  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| id | <code>string</code> | Toast identifier. |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| id | <code>string</code> |  | Toast identifier. |
+| [reason] | [<code>CloseReason</code>](#CloseReason) | <code>&#x27;manual&#x27;</code> | Reason the toast was closed. |
 
 <a name="ToastQueue+clear"></a>
 
-### toastQueue.clear()
+### toastQueue.clear() ⇒ <code>void</code>
 Closes all toasts and clears the queue.
 
-All auto-dismiss timers are cancelled and the queue is reset to its empty state.
+All auto-dismiss timers are cancelled and the queue is reset to its empty
+state. Individual `onClose` callbacks are not invoked.
 
 **Kind**: instance method of [<code>ToastQueue</code>](#ToastQueue)  
 <a name="ToastQueue+pause"></a>
 
-### toastQueue.pause()
-Pauses all toast auto-dismiss timers.
+### toastQueue.pause() ⇒ <code>void</code>
+Manually pauses all toast auto-dismiss timers.
 
-Calling this method does not remove or hide toasts. Timers resume from
-their remaining time when [resume](#ToastQueue+resume) is called.
+The manual pause remains active until [resume](#ToastQueue+resume) is called.
+Other pause reasons, such as hover or document visibility, are independent.
 
 **Kind**: instance method of [<code>ToastQueue</code>](#ToastQueue)  
+**Emits**: <code>ToastQueue#event:pause</code>  
 <a name="ToastQueue+resume"></a>
 
-### toastQueue.resume()
-Resumes all paused toast auto-dismiss timers.
+### toastQueue.resume() ⇒ <code>void</code>
+Removes the queue's manual pause.
 
-Has no effect when the queue is already running.
+Auto-dismiss timers remain paused while another pause reason is active,
+such as hover, focus, or document visibility.
 
 **Kind**: instance method of [<code>ToastQueue</code>](#ToastQueue)  
+**Emits**: <code>ToastQueue#event:resume</code>  
 <a name="ToastQueue+destroy"></a>
 
-### toastQueue.destroy()
+### toastQueue.destroy() ⇒ <code>void</code>
 Permanently destroys the queue instance.
 
 Removes the queue element, clears all auto-dismiss timers, removes event
-listeners, and releases the associated resources.
+listeners, and releases associated resources.
 
-After calling `destroy()`, the queue instance must not be used again.
+The instance must not be used after calling `destroy()`.
 
 **Kind**: instance method of [<code>ToastQueue</code>](#ToastQueue)  
 <a name="ToastQueueOptions"></a>
@@ -316,7 +369,7 @@ Content displayed by a toast.
 
 | Name | Type | Description |
 | --- | --- | --- |
-| [title] | <code>string</code> | Primary toast message. |
+| title | <code>string</code> | Primary toast message. |
 | [description] | <code>string</code> | Optional supporting text displayed below the title. |
 
 <a name="ToastOptions"></a>
@@ -402,3 +455,58 @@ Record representing a toast managed by a [ToastQueue](#ToastQueue).
 | [timer] | <code>Timer</code> | Auto-dismiss timer. |
 | itemRef | <code>HTMLLIElement</code> | Associated toast item in the DOM. |
 
+<a name="CloseReason"></a>
+
+## CloseReason : <code>&#x27;timeout&#x27;</code> \| <code>&#x27;button&#x27;</code> \| <code>&#x27;escape&#x27;</code> \| <code>&#x27;swipe&#x27;</code> \| <code>&#x27;manual&#x27;</code>
+Reason a toast was closed.
+
+**Kind**: global typedef  
+<a name="ActivationReason"></a>
+
+## ActivationReason : <code>&#x27;focus&#x27;</code> \| <code>&#x27;click&#x27;</code>
+Reason the queue becomes interaction-active.
+
+**Kind**: global typedef  
+<a name="ToastAddEventDetail"></a>
+
+## ToastAddEventDetail : <code>Object</code>
+Detail payload for the `toast-add` event.
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| toast | [<code>ToastRecord</code>](#ToastRecord) | The toast that was added to the queue. |
+
+<a name="ToastCloseEventDetail"></a>
+
+## ToastCloseEventDetail : <code>Object</code>
+Detail payload for the `toast-close` event.
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| toast | [<code>ToastRecord</code>](#ToastRecord) | The toast that was closed. |
+| reason | [<code>CloseReason</code>](#CloseReason) | The reason the toast was closed. |
+
+<a name="ToastActionEventDetail"></a>
+
+## ToastActionEventDetail : <code>Object</code>
+Detail payload for the `toast-action` event.
+
+**Kind**: global typedef  
+<a name="ToastActivateEventDetail"></a>
+
+## ToastActivateEventDetail : <code>Object</code>
+Detail payload for the `activate` event.
+
+**Kind**: global typedef  
+<a name="ToastDeactivateEventDetail"></a>
+
+## ToastDeactivateEventDetail : <code>Object</code>
+Detail payload for the `deactivate` event.
+
+**Kind**: global typedef  

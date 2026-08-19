@@ -220,6 +220,37 @@
 
       const toastQueue = tq.element;
 
+      toastQueue.addEventListener('toast-add', ({ detail }) => {
+        console.log('[toast-queue] add', { id: detail.toast.id });
+      });
+
+      toastQueue.addEventListener('toast-close', ({ detail }) => {
+        console.log('[toast-queue] close', {
+          id: detail.toast.id,
+          reason: detail.reason,
+        });
+      });
+
+      toastQueue.addEventListener('toast-action', ({ detail }) => {
+        console.log('[toast-queue] action', { id: detail.toast.id });
+      });
+
+      toastQueue.addEventListener('activate', ({ detail }) => {
+        console.log('[toast-queue] activate', detail.reason);
+      });
+
+      toastQueue.addEventListener('deactivate', ({ detail }) => {
+        console.log('[toast-queue] deactivate', detail.reason);
+      });
+
+      toastQueue.addEventListener('pause', () => {
+        console.log('[toast-queue] pause');
+      });
+
+      toastQueue.addEventListener('resume', () => {
+        console.log('[toast-queue] resume');
+      });
+
       toastQueue.style.setProperty(
         '--tq-offset-inline',
         `${toastOffsetInline}px`,
