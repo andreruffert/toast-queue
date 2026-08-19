@@ -594,6 +594,7 @@ export class ToastQueue {
     const target = event.target instanceof Element ? event.target : null;
     const commandTarget = target?.closest(SELECTORS.command);
     const command = commandTarget?.dataset.command;
+    const id = commandTarget?.closest(SELECTORS.toast)?.dataset.id;
 
     if (commandTarget) {
       event.stopPropagation();
@@ -601,16 +602,12 @@ export class ToastQueue {
 
     switch (command) {
       case 'close': {
-        const id = commandTarget?.closest(SELECTORS.toast)?.dataset.id;
-
         this.close(id, 'button');
 
         break;
       }
 
       case 'action': {
-        const id = commandTarget?.closest(SELECTORS.toast)?.dataset.id;
-
         const toast = this.#queue.get(id);
 
         this.#dispatch('toast-action', { toast });
@@ -900,10 +897,7 @@ export class ToastQueue {
   }
 
   #syncItemPosition(item, dismissible) {
-    item.style.setProperty(
-      'view-transition-class',
-      `tq-item ${getPositionViewTransitionClass(this.#position)}`,
-    );
+    item.style.viewTransitionClass = `tq-item ${getPositionViewTransitionClass(this.#position)}`;
 
     if (!dismissible) return;
 
