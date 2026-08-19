@@ -418,12 +418,11 @@ export class ToastQueue {
    */
   add(content, options = {}) {
     const id = randomId();
-    const duration = typeof options?.duration !== 'undefined' ? options.duration : this.#duration;
+    const duration = options.duration ?? this.#duration;
 
     /** @type {ToastRecord} */
     const toast = {
       id,
-      index: this.#queue.size + 1,
       timestamp: Date.now(),
       content,
       className: options.className,
@@ -432,7 +431,7 @@ export class ToastQueue {
       dismissible: options.dismissible ?? true,
       priority: options.priority ?? 'normal',
       onClose: options.onClose,
-      timer: duration ? new Timer(() => this.close(id), duration) : undefined,
+      timer: duration > 0 ? new Timer(() => this.close(id), duration) : undefined,
       itemRef: null,
     };
 
@@ -507,7 +506,7 @@ export class ToastQueue {
     }
     this.#queue.clear();
     this.#syncRootState(() => {
-      this.#groupPart.innerHTML = '';
+      this.#groupPart.replaceChildren();
     });
     this.#clearActivation();
     console.debug('[toast-queue] clear');
@@ -641,9 +640,10 @@ export class ToastQueue {
   }
 
   set visibleLimit(value) {
-    if (this.#visibleLimit === value) return;
+    const next = Math.max(0, value);
+    if (this.#visibleLimit === next) return;
 
-    this.#visibleLimit = value;
+    this.#visibleLimit = next;
     wrapInViewTransition(() => this.#syncVisibleLimitState(), this.#rootPart);
   }
 
@@ -676,24 +676,19 @@ export class ToastQueue {
   /* ---------------------------------------------------------------------- */
 
   /**
-   * Synchronizes queue visibility state with the current `visibleLimit`.
    * Synchronizes visibility-related attributes and CSS properties with the
    * current `visibleLimit`.
    *
-   * The queue element receives `data-hidden-count` when toasts exceed the
    * Each item receives:
    *
-   * - `data-hidden` when they are beyond the visible limit.
    * - `data-hidden` when it exceeds the visible limit.
    * - `data-peek` on the first hidden item.
-   * - `--tq-item-index` containing the item's zero-based position.
    * - `--tq-item-index` containing its zero-based position.
    *
    * The queue receives `data-hidden-count` when hidden items exist.
    *
    * These attributes and properties are styling hooks for CSS presets.
    *
-   * These attributes are intended as styling hooks for CSS presets.
    */
   #syncVisibleLimitState() {
     const hidden = Math.max(0, this.#queue.size - this.#visibleLimit);
@@ -714,7 +709,6 @@ export class ToastQueue {
   }
 
   /**
-   * @param {function(): void} [update]
    * Synchronizes the queue's DOM and popover state.
    *
    * Applies the update inside a view transition unless transitions are skipped.
@@ -760,7 +754,6 @@ export class ToastQueue {
   /* ---------------------------------------------------------------------- */
 
   /**
-   * @param {ToastRecord} toast
    * Creates and populates a toast item from a toast record.
    *
    * @param {ToastRecord} toast - Toast data to render.
@@ -770,28 +763,31 @@ export class ToastQueue {
     const titleId = `tq:${toast.id}:title`;
     const descId = `tq:${toast.id}:desc`;
     const fragment = this.#template.item.content.cloneNode(true);
-
-    /** @type {HTMLLIElement} */
     const item = fragment.querySelector(SELECTORS.item);
+    const toastPart = item.querySelector(SELECTORS.toast);
+    const iconPart = fragment.querySelector(SELECTORS.icon);
+    const contentPart = fragment.querySelector(SELECTORS.content);
+    const titlePart = fragment.querySelector(SELECTORS.title);
+    const descPart = fragment.querySelector(SELECTORS.desc);
+    const actionsPart = fragment.querySelector(SELECTORS.actions);
+    const closeButton = toastPart.querySelector(SELECTORS.closeButton);
 
     item.style.setProperty('view-transition-name', `tq-item-${toast.id}`);
     item.style.setProperty(
       'view-transition-class',
       `tq-item ${getPositionViewTransitionClass(this.#position)}`,
     );
-    const toastPart = item.querySelector(SELECTORS.toast);
+
     toastPart.tabIndex = 0;
     toastPart.dataset.id = toast.id;
     toastPart.dataset.dismissible = toast.dismissible;
     toastPart.setAttribute('aria-labelledby', titleId);
 
     if (toast.dismissible) toastPart.dataset.swipeable = getSwipeableDirection(this.#position);
-    if (toast.dismissible === false) toastPart.querySelector(SELECTORS.closeButton).remove();
+    if (toast.dismissible === false) closeButton.remove();
     if (toast.className) toastPart.classList.add(...toast.className.split(' '));
     if (toast.content?.description) toastPart.setAttribute('aria-describedby', descId);
 
-    /** Toast icon - Optional */
-    const iconPart = fragment.querySelector(SELECTORS.icon);
     if (toast.icon) {
       if (typeof iconPart.setHTML === 'function') {
         iconPart.setHTML(toast.icon);
@@ -802,22 +798,16 @@ export class ToastQueue {
       iconPart.remove();
     }
 
-    /** Toast content */
-    const contentPart = fragment.querySelector(SELECTORS.content);
     if (typeof toast.content === 'string') {
       contentPart.id = titleId;
       contentPart.textContent = toast.content;
     } else {
-      const titlePart = fragment.querySelector(SELECTORS.title);
-      const descPart = fragment.querySelector(SELECTORS.desc);
       titlePart.id = titleId;
       titlePart.textContent = toast.content?.title ?? '';
       descPart.id = descId;
       descPart.textContent = toast.content?.description ?? '';
     }
 
-    /** Toast actions - Optional */
-    const actionsPart = fragment.querySelector(SELECTORS.actions);
     if (toast.action?.label) {
       const actionButtonTemplate = this.#template.actionButton.content.cloneNode(true);
       const actionButton = actionButtonTemplate.querySelector(SELECTORS.actionButton);
@@ -835,7 +825,6 @@ export class ToastQueue {
   /* ---------------------------------------------------------------------- */
 
   /**
-   * @param {ToastRecord} toast
    * Moves focus to the next visible toast after closing the focused toast.
    *
    * Falls back to the previous visible toast when no next toast is available.
@@ -858,7 +847,6 @@ export class ToastQueue {
   /* ---------------------------------------------------------------------- */
 
   /**
-   * @param {ToastRecord} toast
    * Converts toast content into a string suitable for screen-reader
    * announcement.
    *
