@@ -84,7 +84,7 @@ const DEFAULT_VISIBLE_LIMIT = 3;
  * [`@github/arianotify-polyfill`](https://github.com/github/aria-notify-polyfill)
  * before creating the queue.
  *
- * The queue is unstyled by default. Use the exposed `data-*` attributes and
+ * The queue is unopinionated by default, with sensible core styles. Use the exposed `data-*` attributes and
  * CSS custom properties to provide your own presentation, or use one of the
  * optional CSS presets.
  *
@@ -129,7 +129,7 @@ const DEFAULT_VISIBLE_LIMIT = 3;
  * @param {ToastQueueOptions} [options] - Queue configuration.
  *
  * @example
- * import ToastQueue from 'toast-queue';
+ * import { ToastQueue } from 'toast-queue';
  *
  * const toastQueue = new ToastQueue();
  *
@@ -455,7 +455,6 @@ export class ToastQueue {
    * - `top-start`
    * - `top-center`
    * - `top-end`
-   * - `center`
    * - `bottom-start`
    * - `bottom-center`
    * - `bottom-end`
@@ -512,22 +511,20 @@ export class ToastQueue {
 
     document.addEventListener('visibilitychange', this.#onVisibility, { signal });
     document.addEventListener('pointerdown', this.#onOutsidePointer, { signal });
+    document.addEventListener('pointermove', this.#onPointerMove, { signal, passive: true });
 
-    this.#rootPart.addEventListener('pointerenter', this.#onEnter, { signal });
-    this.#rootPart.addEventListener('pointerleave', this.#onLeave, { signal });
-    this.#rootPart.addEventListener('pointercancel', this.#onLeave, { signal });
     this.#rootPart.addEventListener('click', this.#onClick, { signal });
     this.#rootPart.addEventListener('focusin', this.#onFocusIn, { signal });
     this.#rootPart.addEventListener('focusout', this.#onFocusOut, { signal });
     this.#rootPart.addEventListener('keydown', this.#onKeydown, { signal });
   }
 
-  #onEnter = () => {
-    this.#setPauseReason('hover', true);
-  };
+  #onPointerMove = (event) => {
+    if (event.pointerType !== 'mouse') return;
 
-  #onLeave = () => {
-    this.#setPauseReason('hover', false);
+    const hovered = this.#rootPart.matches(':hover');
+
+    this.#setPauseReason('hover', hovered);
   };
 
   /** @param {FocusEvent} event */
@@ -563,9 +560,7 @@ export class ToastQueue {
     if (!this.#isActive) return;
     if (this.#rootPart.contains(event.target)) return;
 
-    // Pointer interaction can dismiss click activation,
-    // but must not cancel focus activation while focus remains inside.
-    this.#deactivate('click');
+    this.#clearActivation();
   };
 
   #onVisibility = () => {

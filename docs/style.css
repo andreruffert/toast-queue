@@ -1,328 +1,24 @@
 @layer reset, tokens, syntax-highlight-element, layout;
 
-@layer layout {
-  :root {
-    color-scheme: light dark;
-
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  body {
-    display: grid;
-    min-block-size: 100dvh;
-    font-family: var(--fonts-sans);
-    font-weight: 400;
-  }
-
-  :focus-visible {
-    outline-color: var(--accent);
-    outline-offset: var(--spacing-0\.5);
-  }
-
-  :any-link {
-    color: inherit;
-    text-decoration-color: var(--accent);
-    text-decoration-line: underline;
-    text-underline-offset: var(--spacing-1);
-  }
-
-  :any-link:not(:is(:hover, :focus)) {
-    text-decoration-color: color-mix(in srgb, currentColor, transparent 75%);
-  }
-
-  [hidden] {
-    display: none;
-  }
-
-  button,
-  .button,
-  [role="button"] {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-2);
-    border-radius: 0.5em;
-    border: 1px solid transparent;
-    padding: 0.4em 1em;
-    font-weight: 500;
-    font-family: inherit;
-    color: inherit;
-    background-color: light-dark(var(--light-button-face), var(--dark-button-face));
-    cursor: pointer;
-    transition: border-color 0.25s ease;
-    text-decoration: unset;
-    touch-action: manipulation;
-  }
-  button:hover,
-  .button:hover,
-  [role="button"]:hover {
-    border-color: var(--accent);
-  }
-
-  .copy-code {
-    display: grid;
-    margin-block: var(--spacing-10);
-
-    > * {
-      grid-area: 1 / 1;
-    }
-
-    syntax-highlight:not([content-selector="style"]),
-    syntax-highlight:is([content-selector="style"]) style {
-      border: 1px solid color-mix(in srgb, currentColor, transparent 87%);
-      border-radius: 0.5rem;
-      padding: var(--spacing-4);
-    }
-
-    syntax-highlight:is([content-selector="style"]) {
-      display: grid;
-    }
-    syntax-highlight:is([content-selector="style"]) style {
-      display: block;
-      overflow: auto;
-      block-size: 400px;
-      outline: 0;
-    }
-
-    [role="button"] {
-      justify-self: end;
-      align-self: start;
-      margin-inline-end: var(--spacing-2);
-      margin-block-start: var(--spacing-2);
-      opacity: 0;
-      font-size: small;
-      border-radius: calc(0.5rem - var(--spacing-2) / 2);
-      background: color-mix(in srgb, var(--canvas) 88%, transparent);
-      backdrop-filter: blur(8px);
-    }
-  }
-
-  .copy-code:hover [role="button"],
-  .copy-code:focus-within [role="button"] {
-    opacity: 1;
-  }
-
-  color-scheme-switch {
-    aspect-ratio: 1;
-    padding: var(--spacing-2) !important;
-  }
-
-  code {
-    background-color: light-dark(#efefef, #000000);
-    border-radius: 0.25rem;
-    color: light-dark(#111111, #ffffff);
-    padding: var(--spacing-0\.5) var(--spacing-1);
-    text-wrap: nowrap;
-  }
-
-  input,
-  select {
-    font-size: 1rem;
-  }
-
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: var(--spacing-5);
-    position: sticky;
-    top: 0;
-    background-color: color-mix(in srgb, var(--canvas) 88%, transparent);
-    backdrop-filter: blur(8px);
-    padding: var(--spacing-6) var(--spacing-4);
-    /* padding: 1rem clamp(1rem, 4vw, 2rem); */
-    container-type: inline-size;
-
-    .brand {
-      margin: unset;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      text-wrap: nowrap;
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-2);
-    }
-
-    .brand [aria-hidden="true"],
-    .byline {
-      display: none;
-    }
-
-    .byline {
-      font-weight: 400;
-      font-size: 0.8rem;
-      color: var(--muted);
-    }
-
-    .header-links {
-      font-size: 0.9rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--spacing-5);
-
-      a {
-        color: inherit;
-        display: inline-flex;
-        align-items: center;
-        gap: var(--spacing-2);
-        text-wrap: nowrap;
-      }
-
-      a span {
-        display: none;
-      }
-    }
-  }
-  @container (min-width: 400px) {
-    header .brand [aria-hidden="true"] {
-      display: initial;
-    }
-  }
-
-  @container (min-width: 520px) {
-    header .byline,
-    header .header-links a span {
-      display: initial;
-    }
-  }
-
-  main {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--spacing-10);
-    margin-inline: auto;
-    max-inline-size: var(--sizes-4xl);
-    inline-size: var(--sizes-full);
-    padding-inline: var(--spacing-4);
-    padding-block-end: var(--spacing-24);
-  }
-
-  main p,
-  main ul,
-  main legend {
-    color: color-mix(in srgb, var(--canvas-text) 75%, transparent);
-  }
-
-  main p,
-  main ul {
-    max-width: 60ch;
-    text-wrap: pretty;
-    line-height: 1.5;
-  }
-
-  main ul {
-    padding-inline-start: var(--spacing-4);
-  }
-
-  main .control-actions {
-    display: flex;
-    align-items: center;
-    padding: var(--spacing-4);
-    gap: var(--spacing-2);
-    background-color: color-mix(in srgb, currentColor, transparent 98%);
-    border: 1px solid color-mix(in srgb, currentColor, transparent 96%);
-    border-radius: 0.5rem;
-
-    button {
-      border: 1px solid color-mix(in srgb, currentColor, transparent 87%);
-      font-size: 1rem;
-    }
-
-    output {
-      margin-inline-start: auto;
-      font-size: smaller;
-    }
-  }
-
-  main legend {
-    font-size: smaller;
-  }
-
-  main fieldset {
-    background-color: color-mix(in srgb, currentColor, transparent 98%);
-    border: 1px solid color-mix(in srgb, currentColor, transparent 96%);
-    border-radius: 0.5rem;
-    padding: var(--spacing-4);
-  }
-
-  main fieldset p:first-of-type {
-    margin-block-start: unset;
-  }
-
-  main label {
-    font-size: smaller;
-    font-weight: 500;
-  }
-
-  main .controls {
-    display: grid;
-    /* grid-template-columns: minmax(0, 4fr) minmax(0, 5fr); */
-    grid-template-columns: auto;
-    gap: var(--spacing-4);
-  }
-
-  main .controls .copy-code {
-    margin: unset;
-
-    syntax-highlight {
-      border-radius: 0.5rem;
-    }
-  }
-
-  main .controls-row {
-    display: flex;
-    gap: var(--spacing-4);
-    align-items: center;
-  }
-
-  #visibleLimit {
-    field-sizing: content;
-  }
-
-  main article {
-    display: flex;
-    flex-direction: column;
-    align-self: stretch;
-    gap: var(--spacing-10);
-  }
-
-  main article > section:has(section) {
-    display: flex;
-    flex-direction: inherit;
-    gap: inherit;
-  }
-
-  footer {
-    background: color-mix(in srgb, var(--canvas) 88%, transparent);
-    text-align: center;
-    font-size: 0.85rem;
-    margin-inline: auto;
-    margin-block-start: auto;
-    inline-size: var(--sizes-full);
-    padding: var(--spacing-8) var(--spacing-4);
-
-    p {
-      margin: 0;
-      margin-block-end: var(--spacing-2);
-    }
-  }
-}
+/* ==========================================================================
+    RESET
+  ========================================================================== */
 
 @layer reset {
   *,
-  :after,
-  :before {
+  *::before,
+  *::after {
     box-sizing: border-box;
   }
+
   body {
     margin: 0;
   }
 }
+
+/* ==========================================================================
+    TOKENS
+  ========================================================================== */
 
 @layer tokens {
   :where(:root) {
@@ -365,6 +61,7 @@
     --sizes-full: 100%;
 
     --fonts-sans: ui-sans-serif, "Segoe UI", system-ui, -apple-system, sans-serif;
+
     --fonts-mono:
       ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
 
@@ -376,6 +73,10 @@
   }
 }
 
+/* ==========================================================================
+    SYNTAX HIGHLIGHT
+  ========================================================================== */
+
 @layer syntax-highlight-element {
   syntax-highlight {
     --mono-bg: light-dark(#fdfdfd, #000000);
@@ -386,29 +87,33 @@
     --mono-entity-tag: light-dark(#666666, #a7a7a7);
     --mono-keyword: light-dark(#666666, #a7a7a7);
     --mono-string: light-dark(#666666, #a7a7a7);
-    /* --mono-variable: light-dark(#a65e2b, #cb997e);
+
+    /*
+    --mono-variable: light-dark(#a65e2b, #cb997e);
     --mono-deleted-bg: light-dark(#fce6e6, #37232b);
     --mono-deleted-text: light-dark(#a13f3f, #e28080);
     --mono-inserted-bg: light-dark(#e6f4e6, #1c3327);
-    --mono-inserted-text: light-dark(#3f7d4f, #8fca9e); */
+    --mono-inserted-text: light-dark(#3f7d4f, #8fca9e);
+    */
 
     font-family: var(--fonts-mono);
-    font-weight: 500;
     font-size: smaller;
+    font-weight: 500;
     line-height: 1.6;
+
+    color: var(--mono-fg);
+    background-color: var(--mono-bg);
+
     white-space: pre;
     word-spacing: normal;
     word-break: normal;
     word-wrap: normal;
-    overflow-inline: auto;
-    overscroll-behavior-inline: contain;
-    tab-size: 2;
     hyphens: none;
-    color: var(--mono-fg);
-    background-color: var(--mono-bg);
+    tab-size: 2;
 
-    /* Fallback for browsers without logical overscroll support (Safari) */
+    overflow-inline: auto;
     overflow-x: auto;
+    overscroll-behavior-inline: contain;
     overscroll-behavior-x: contain;
   }
 
@@ -476,5 +181,579 @@
   ::highlight(inserted) {
     color: var(--mono-inserted-text);
     background-color: var(--mono-inserted-bg);
+  }
+}
+
+/* ==========================================================================
+    LAYOUT
+  ========================================================================== */
+
+@layer layout {
+  /* ------------------------------------------------------------------------
+      Global
+    ------------------------------------------------------------------------ */
+
+  :root {
+    color-scheme: light dark;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    display: grid;
+    min-block-size: 100dvh;
+
+    font-family: var(--fonts-sans);
+    font-weight: 400;
+  }
+
+  :focus-visible {
+    outline-color: var(--accent);
+    outline-offset: var(--spacing-0\.5);
+  }
+
+  :any-link {
+    color: inherit;
+    text-decoration-color: var(--accent);
+    text-decoration-line: underline;
+    text-underline-offset: var(--spacing-1);
+  }
+
+  :any-link:not(:is(:hover, :focus)) {
+    text-decoration-color: color-mix(in srgb, currentColor, transparent 75%);
+  }
+
+  [hidden] {
+    display: none;
+  }
+
+  /* ------------------------------------------------------------------------
+      Interactive controls
+    ------------------------------------------------------------------------ */
+
+  button,
+  .button,
+  [role="button"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2);
+    min-block-size: 2.5rem;
+    padding: 0.4em 1em;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    color: inherit;
+    font: inherit;
+    font-weight: 500;
+    text-decoration: none;
+    background: var(--button-face);
+    text-wrap: nowrap;
+    cursor: pointer;
+    touch-action: manipulation;
+
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  button:hover,
+  .button:hover,
+  [role="button"]:hover {
+    border-color: var(--accent);
+  }
+
+  input,
+  select,
+  [contenteditable] {
+    font-size: 1rem;
+  }
+
+  @supports (appearance: base-select) {
+    select,
+    ::picker(select) {
+      appearance: base-select;
+      align-items: center;
+      min-height: 2.75rem;
+      padding: unset;
+      border-radius: 0.6rem;
+      background: var(--button-face);
+      border: 1px solid color-mix(in srgb, currentColor, transparent 87%);
+    }
+
+    select {
+      border: none;
+
+      button {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        margin: 0;
+      }
+
+      &::picker-icon {
+        display: none;
+      }
+    }
+
+    ::picker(select) {
+      width: max-content;
+      padding: 0.5rem;
+    }
+
+    option {
+      padding: var(--spacing-2);
+      color: currentColor;
+      background: var(--button-face);
+      border-radius: 0.25rem;
+    }
+  }
+
+  color-scheme-switch {
+    aspect-ratio: 1;
+    padding: var(--spacing-2) !important;
+  }
+
+  code {
+    padding: var(--spacing-0\.5) var(--spacing-1);
+    border-radius: 0.25rem;
+    color: light-dark(#111111, #ffffff);
+    background-color: light-dark(#efefef, #000000);
+    text-wrap: nowrap;
+  }
+
+  /* ------------------------------------------------------------------------
+      Code examples
+    ------------------------------------------------------------------------ */
+
+  .copy-code {
+    display: grid;
+    margin-block: var(--spacing-4);
+
+    > * {
+      grid-area: 1 / 1;
+    }
+
+    syntax-highlight:not([content-selector="style"]),
+    syntax-highlight:is([content-selector="style"]) style {
+      padding: var(--spacing-4);
+
+      border: 1px solid color-mix(in srgb, currentColor, transparent 87%);
+      border-radius: 0.5rem;
+    }
+
+    syntax-highlight:is([content-selector="style"]) {
+      display: grid;
+    }
+
+    syntax-highlight:is([content-selector="style"]) style {
+      display: block;
+
+      block-size: 400px;
+      overflow: auto;
+
+      outline: 0;
+    }
+
+    [role="button"] {
+      align-self: start;
+      justify-self: end;
+
+      margin-block-start: var(--spacing-2);
+      margin-inline-end: var(--spacing-2);
+
+      opacity: 0;
+
+      border-radius: calc(0.5rem - var(--spacing-2) / 2);
+
+      font-size: small;
+
+      background: color-mix(in srgb, var(--canvas) 88%, transparent);
+
+      backdrop-filter: blur(8px);
+    }
+  }
+
+  .copy-code:hover [role="button"],
+  .copy-code:focus-within [role="button"] {
+    opacity: 1;
+  }
+
+  /* ------------------------------------------------------------------------
+      Site header
+    ------------------------------------------------------------------------ */
+
+  /*
+   * Scoped intentionally to the page header.
+   *
+   * The playground contains another <header class="popover-header">.
+   * Keeping this selector scoped prevents the site-header styles from
+   * leaking into that component.
+   */
+
+  body > header {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--spacing-5);
+    padding: var(--spacing-6) var(--spacing-4);
+    background-color: color-mix(in srgb, var(--canvas) 88%, transparent);
+    backdrop-filter: blur(8px);
+    container-type: inline-size;
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-2);
+
+      margin: unset;
+
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      text-wrap: nowrap;
+    }
+
+    .brand > span,
+    .byline {
+      display: none;
+    }
+
+    .byline {
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 400;
+    }
+
+    .header-fields {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-5);
+
+      font-size: 0.9rem;
+
+      a {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-2);
+
+        color: inherit;
+        text-wrap: nowrap;
+      }
+
+      a span {
+        display: none;
+      }
+    }
+  }
+
+  @container (min-width: 400px) {
+    body > header .brand > span {
+      display: initial;
+    }
+  }
+
+  @container (min-width: 520px) {
+    body > header .byline,
+    body > header .header-links a span {
+      display: initial;
+    }
+  }
+
+  /* ------------------------------------------------------------------------
+      Main content
+    ------------------------------------------------------------------------ */
+
+  main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-10);
+
+    inline-size: var(--sizes-full);
+    max-inline-size: var(--sizes-4xl);
+
+    margin-inline: auto;
+    padding-inline: var(--spacing-4);
+    padding-block-start: var(--spacing-12);
+    padding-block-end: var(--spacing-24);
+  }
+
+  main p,
+  main ul {
+    color: color-mix(in srgb, var(--canvas-text) 75%, transparent);
+  }
+
+  main p,
+  main ul {
+    max-width: 60ch;
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  main ul {
+    padding-inline-start: var(--spacing-4);
+  }
+
+  main article {
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    gap: var(--spacing-10);
+  }
+
+  main article > section:has(section) {
+    display: flex;
+    flex-direction: inherit;
+    gap: inherit;
+  }
+
+  main article section h3 {
+    margin-block-start: unset;
+  }
+
+  /* ------------------------------------------------------------------------
+      Playground
+    ------------------------------------------------------------------------ */
+
+  .playground {
+    position: relative;
+    padding: var(--spacing-6);
+    border: 1px solid color-mix(in srgb, currentColor, transparent 88%);
+    border-radius: 1rem;
+    background:
+      radial-gradient(
+        circle at 10% 100%,
+        color-mix(in srgb, var(--accent) 10%, transparent),
+        transparent 45%
+      ),
+      color-mix(in srgb, var(--canvas-text) 2%, var(--canvas));
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.04),
+      0 1rem 3rem rgb(0 0 0 / 0.05);
+  }
+
+  /* ------------------------------------------------------------------------
+      Demo controls
+    ------------------------------------------------------------------------ */
+
+  main .control-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    flex-wrap: wrap;
+    padding: var(--spacing-4);
+    border: 1px solid color-mix(in srgb, currentColor, transparent 96%);
+    border-radius: 0.5rem;
+    background-color: color-mix(in srgb, currentColor, transparent 98%);
+
+    button {
+      border-color: color-mix(in srgb, currentColor, transparent 87%);
+      font-size: 1rem;
+    }
+
+    output {
+      margin-inline-start: auto;
+      font-size: smaller;
+    }
+  }
+
+  /* ------------------------------------------------------------------------
+      Playground popover
+    ------------------------------------------------------------------------ */
+
+  #tq-controls {
+    inline-size: min(26rem, calc(100vw - 2rem));
+    max-block-size: min(42rem, calc(100dvh - 2rem));
+    overflow: auto;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, CurrentColor 12%, transparent);
+    border-radius: 1rem;
+    box-shadow:
+      0 1.5rem 4rem rgb(0 0 0 / 0.14),
+      0 0.25rem 1rem rgb(0 0 0 / 0.08);
+  }
+
+  .playground-controls {
+    display: grid;
+    gap: var(--spacing-1\.5);
+
+    fieldset {
+      display: grid;
+      gap: 0.75rem;
+      margin: 0;
+      padding: 1rem 1.25rem;
+      border: 0;
+      border-block-end: 1px solid color-mix(in srgb, CurrentColor 10%, transparent);
+    }
+
+    legend {
+      margin-block-end: 0.25rem;
+      padding: 0;
+      color: color-mix(in srgb, CurrentColor 55%, transparent);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+  }
+
+  /* ------------------------------------------------------------------------
+      Popover header
+     ------------------------------------------------------------------------ */
+
+  .popover-header {
+    padding: 1.25rem 1.25rem 1rem;
+    border-block-end: 1px solid color-mix(in srgb, CurrentColor 10%, transparent);
+
+    .eyebrow {
+      font-size: smaller;
+      margin-block-start: 0;
+    }
+
+    h2 {
+      margin: 0.15rem 0 0.35rem;
+      font-size: 1rem;
+    }
+
+    p:last-child {
+      margin: 0;
+      color: color-mix(in srgb, CanvasText 65%, transparent);
+      font-size: 0.875rem;
+    }
+  }
+
+  /* ------------------------------------------------------------------------
+      Playground fields
+     ------------------------------------------------------------------------ */
+
+  #visibleLimit {
+    field-sizing: content;
+  }
+
+  .field {
+    display: grid;
+    gap: 0.4rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+
+    > span {
+      color: color-mix(in srgb, CanvasText 75%, transparent);
+    }
+
+    select,
+    input {
+      box-sizing: border-box;
+      inline-size: 100%;
+      min-block-size: 2.5rem;
+      padding-inline: 0.7rem;
+      color: inherit;
+      background: color-mix(in srgb, CanvasText 4%, Canvas);
+      border: 1px solid color-mix(in srgb, CanvasText 15%, transparent);
+      border-radius: 0.6rem;
+      font: inherit;
+    }
+
+    &:has(input[type="number"]) {
+      grid-template-columns: 1fr 5rem;
+      align-items: center;
+
+      > span {
+        align-self: center;
+      }
+
+      input {
+        inline-size: 5rem;
+      }
+    }
+  }
+
+  /* ------------------------------------------------------------------------
+      Playground notes / editor
+     ------------------------------------------------------------------------ */
+
+  .popover-note {
+    margin: 1rem 1.25rem;
+    padding: 0.75rem 0.875rem;
+    color: color-mix(in srgb, CanvasText 65%, transparent);
+    background: color-mix(in srgb, CanvasText 4%, Canvas);
+    border-radius: 0.6rem;
+    font-size: 0.8rem;
+    line-height: 1.5;
+
+    p {
+      margin: 0;
+    }
+
+    code {
+      color: CanvasText;
+    }
+  }
+
+  .css-editor {
+    border-block-start: 1px solid color-mix(in srgb, CanvasText 10%, transparent);
+
+    summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.9rem 1.25rem;
+      cursor: pointer;
+      list-style: none;
+      font-size: 0.875rem;
+      font-weight: 600;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+
+      &::after {
+        content: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWNoZXZyb24tZG93bi1pY29uIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im02IDkgNiA2IDYtNiIvPjwvc3ZnPg==");
+        transition: transform 0.15s ease;
+      }
+    }
+
+    &[open] summary::after {
+      transform: rotate(180deg);
+    }
+
+    .copy-code {
+      margin: unset;
+      padding: 1rem;
+      padding-block-start: 0;
+      border-radius: inherit;
+    }
+  }
+
+  .css-editor-meta {
+    color: color-mix(in srgb, CanvasText 50%, transparent);
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  /* ------------------------------------------------------------------------
+      Footer
+     ------------------------------------------------------------------------ */
+
+  footer {
+    inline-size: var(--sizes-full);
+    margin-inline: auto;
+    margin-block-start: auto;
+    padding: var(--spacing-8) var(--spacing-4);
+    text-align: center;
+    font-size: 0.85rem;
+    background: color-mix(in srgb, var(--canvas) 88%, transparent);
+
+    p {
+      margin: 0;
+      margin-block-end: var(--spacing-2);
+    }
   }
 }

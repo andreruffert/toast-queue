@@ -26,7 +26,7 @@
 /**
  * Position of the toast queue.
  *
- * @typedef {'top-start'|'top-center'|'top-end'|'center'|'bottom-start'|'bottom-center'|'bottom-end'} ToastQueuePosition
+ * @typedef {'top-start'|'top-center'|'top-end'|'bottom-start'|'bottom-center'|'bottom-end'} ToastQueuePosition
  */
 
 /**

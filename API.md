@@ -11,7 +11,7 @@
 <dt><a href="#ToastQueueOptions">ToastQueueOptions</a> : <code>Object</code></dt>
 <dd><p>Configuration options for a <a href="#ToastQueue">ToastQueue</a>.</p>
 </dd>
-<dt><a href="#ToastQueuePosition">ToastQueuePosition</a> : <code>&#x27;top-start&#x27;</code> | <code>&#x27;top-center&#x27;</code> | <code>&#x27;top-end&#x27;</code> | <code>&#x27;center&#x27;</code> | <code>&#x27;bottom-start&#x27;</code> | <code>&#x27;bottom-center&#x27;</code> | <code>&#x27;bottom-end&#x27;</code></dt>
+<dt><a href="#ToastQueuePosition">ToastQueuePosition</a> : <code>&#x27;top-start&#x27;</code> | <code>&#x27;top-center&#x27;</code> | <code>&#x27;top-end&#x27;</code> | <code>&#x27;bottom-start&#x27;</code> | <code>&#x27;bottom-center&#x27;</code> | <code>&#x27;bottom-end&#x27;</code></dt>
 <dd><p>Position of the toast queue.</p>
 </dd>
 <dt><a href="#ToastQueueTemplate">ToastQueueTemplate</a> : <code>Object</code></dt>
@@ -102,7 +102,7 @@ Browsers without `ariaNotify()` can use the
 [`@github/arianotify-polyfill`](https://github.com/github/aria-notify-polyfill)
 before creating the queue.
 
-The queue is unstyled by default. Use the exposed `data-*` attributes and
+The queue is unopinionated by default, with sensible core styles. Use the exposed `data-*` attributes and
 CSS custom properties to provide your own presentation, or use one of the
 optional CSS presets.
 
@@ -150,7 +150,7 @@ root `<toast-queue>` element:
 
 **Example**  
 ```js
-import ToastQueue from 'toast-queue';
+import { ToastQueue } from 'toast-queue';
 
 const toastQueue = new ToastQueue();
 
@@ -183,7 +183,6 @@ Supported positions are:
 - `top-start`
 - `top-center`
 - `top-end`
-- `center`
 - `bottom-start`
 - `bottom-center`
 - `bottom-end`
@@ -334,7 +333,7 @@ Configuration options for a [ToastQueue](#ToastQueue).
 
 <a name="ToastQueuePosition"></a>
 
-## ToastQueuePosition : <code>&#x27;top-start&#x27;</code> \| <code>&#x27;top-center&#x27;</code> \| <code>&#x27;top-end&#x27;</code> \| <code>&#x27;center&#x27;</code> \| <code>&#x27;bottom-start&#x27;</code> \| <code>&#x27;bottom-center&#x27;</code> \| <code>&#x27;bottom-end&#x27;</code>
+## ToastQueuePosition : <code>&#x27;top-start&#x27;</code> \| <code>&#x27;top-center&#x27;</code> \| <code>&#x27;top-end&#x27;</code> \| <code>&#x27;bottom-start&#x27;</code> \| <code>&#x27;bottom-center&#x27;</code> \| <code>&#x27;bottom-end&#x27;</code>
 Position of the toast queue.
 
 **Kind**: global typedef  

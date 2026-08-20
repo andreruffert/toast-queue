@@ -24,29 +24,22 @@
     --tq-offset-block: var(--tq-offset);
 
     &[data-position^="top"] {
-      inset-block-start: max(var(--tq-offset-block), env(safe-area-inset-top, 0px));
+      inset-block-start: calc(var(--tq-offset-block) + env(safe-area-inset-top, 0px));
     }
     &[data-position^="bottom"] {
-      inset-block-end: max(var(--tq-offset-block), env(safe-area-inset-bottom, 0px));
+      inset-block-end: calc(var(--tq-offset-block) + env(safe-area-inset-bottom, 0px));
     }
     &[data-position$="-start"] {
-      inset-inline-start: max(var(--tq-offset-inline), env(safe-area-inset-left, 0px));
+      inset-inline-start: calc(var(--tq-offset-inline) + env(safe-area-inset-left, 0px));
     }
     &[data-position$="-end"] {
-      inset-inline-end: max(var(--tq-offset-inline), env(safe-area-inset-right, 0px));
+      inset-inline-end: calc(var(--tq-offset-inline) + env(safe-area-inset-right, 0px));
     }
     &[data-position="top-center"],
     &[data-position="bottom-center"] {
-      inset-inline-start: max(var(--tq-offset-inline), env(safe-area-inset-left, 0px));
-      inset-inline-end: max(var(--tq-offset-inline), env(safe-area-inset-right, 0px));
+      inset-inline-start: calc(var(--tq-offset-inline) + env(safe-area-inset-left, 0px));
+      inset-inline-end: calc(var(--tq-offset-inline) + env(safe-area-inset-right, 0px));
       margin-inline: auto;
-    }
-    &[data-position="center"] {
-      inset-block-start: max(var(--tq-offset-block), env(safe-area-inset-top, 0px));
-      inset-block-end: max(var(--tq-offset-block), env(safe-area-inset-bottom, 0px));
-      inset-inline-start: max(var(--tq-offset-inline), env(safe-area-inset-left, 0px));
-      inset-inline-end: max(var(--tq-offset-inline), env(safe-area-inset-right, 0px));
-      margin: auto;
     }
 
     &:has([data-part="toast"][data-dragging]) {

@@ -14,7 +14,6 @@ const viewTransitionPositionTypes = {
   'bottom-start': 'block-end inline-start',
   'bottom-center': 'block-end',
   'bottom-end': 'block-end inline-end',
-  center: 'block-end',
 };
 
 /**
@@ -28,7 +27,6 @@ const swipeableDirectionPositionTypes = {
   'top-start': 'left',
   'top-center': 'up',
   'top-end': 'right',
-  center: 'inline',
   'bottom-start': 'left',
   'bottom-center': 'down',
   'bottom-end': 'right',
@@ -87,24 +85,24 @@ const immediateTransition = () => ({
  * is scoped to that element. Otherwise, the document is used.
  *
  * @param {function(): void} update - Callback that performs the DOM update.
- * @param {Element} [root=document] - Element used to scope the transition.
+ * @param {Element} [scope=document] - Element used to scope the transition.
  * @returns {TransitionResult} - Transition lifecycle promises.
  * @private
  */
-export function wrapInViewTransition(update, root = document) {
+export function wrapInViewTransition(update, scope = document) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     update();
     return immediateTransition();
   }
 
-  const scope = typeof root.startViewTransition === 'function' ? root : document;
+  const transitionTarget = typeof scope.startViewTransition === 'function' ? scope : document;
 
-  if (typeof scope.startViewTransition !== 'function') {
+  if (typeof transitionTarget.startViewTransition !== 'function') {
     update();
     return immediateTransition();
   }
 
-  const transition = scope.startViewTransition(update);
+  const transition = transitionTarget.startViewTransition(update);
   transition.ready.catch(() => {});
 
   return {

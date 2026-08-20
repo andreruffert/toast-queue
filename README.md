@@ -12,6 +12,8 @@
 
 > Accessible, unstyled toast notifications for modern web apps.
 
+## Features
+
 - Framework agnostic: Vanilla JavaScript with zero runtime dependencies.
 - Unstyled by design: Bring your own CSS or start with the included presets.
 - Accessible: Screen-reader announcements via [`ariaNotify()`](#browser-support), keyboard dismissal with <kbd>Escape</kbd>, and focus management.

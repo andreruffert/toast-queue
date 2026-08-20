@@ -1,12 +1,10 @@
 {
   "name": "toast-queue",
   "version": "1.0.0-alpha.24",
-  "description": "Accessible, unstyled toast notifications for modern web apps. A framework-agnostic JavaScript library with progressive enhancement and optional CSS presets.",
+  "description": "Accessible toast notifications for modern web apps. A framework-agnostic JavaScript library with progressive enhancement, sensible core styles, and optional CSS presets.",
   "type": "module",
   "exports": {
-    ".": {
-      "import": "./dist/toast-queue.js"
-    },
+    ".": "./dist/toast-queue.js",
     "./style.css": "./dist/toast-queue.css",
     "./presets/*": "./dist/presets/*"
   },
