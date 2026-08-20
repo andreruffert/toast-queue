@@ -718,7 +718,7 @@ export class ToastQueue {
   #syncActivationState() {
     wrapInViewTransition(() => {
       this.#rootPart.toggleAttribute('data-active', this.#isActive);
-    }, this.#rootPart);
+    });
   }
 
   /* ---------------------------------------------------------------------- */
