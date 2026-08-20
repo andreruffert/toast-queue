@@ -1,12 +1,12 @@
 @layer toast-queue {
-  /* Disable document-wide transitions. */
-  :root {
+  :root:has(toast-queue:popover-open) {
+    /* Disable document-wide transitions. */
     view-transition-name: none;
-  }
 
-  /* Keep the underlying page interactive while transitions are rendered. */
-  ::view-transition {
-    pointer-events: none;
+    /* Keep the underlying page interactive while transitions are rendered. */
+    &::view-transition {
+      pointer-events: none;
+    }
   }
 
   toast-queue {
