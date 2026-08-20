@@ -1,44 +1,46 @@
 @layer toast-queue {
   toast-queue {
     --tq-stack-z-base: 1000;
-  }
 
-  toast-queue [data-part="group"] {
-    display: grid;
-    grid-auto-flow: row;
-  }
+    [data-part="group"] {
+      display: grid;
+      grid-auto-flow: row;
+    }
 
-  toast-queue [data-part="item"] {
-    height: fit-content;
+    [data-part="item"] {
+      height: fit-content;
 
-    /* Topmost item (--tq-item-index: 0) sits highest; each item behind it
-       drops one z-index step, however many are visible. */
-    z-index: calc(var(--tq-stack-z-base) - var(--tq-item-index, 0));
-  }
+      /* Topmost item (--tq-item-index: 0) sits highest; each item behind it
+        drops one z-index step, however many are visible. */
+      z-index: calc(var(--tq-stack-z-base) - var(--tq-item-index, 0));
+    }
 
-  toast-queue[data-position^="top"]:not([data-active]) [data-part="item"] {
-    margin-block-start: calc(var(--tq-item-index, 0) * 10px);
-  }
-  toast-queue[data-position^="bottom"]:not([data-active]) [data-part="item"] {
-    margin-block-start: calc(var(--tq-item-index, 0) * -10px);
-  }
+    &[data-position^="top"]:not([data-active]) [data-part="item"] {
+      margin-block-start: calc(var(--tq-item-index, 0) * 10px);
+    }
 
-  toast-queue:not([data-active]) [data-part="item"]:not(:first-child) {
-    pointer-events: none;
-  }
-  toast-queue:not([data-active]) [data-part="item"] {
-    grid-area: 1 / 1;
-    scale: calc(1 - (var(--tq-item-index, 0) * 0.05));
-  }
+    &[data-position^="bottom"]:not([data-active]) [data-part="item"] {
+      margin-block-start: calc(var(--tq-item-index, 0) * -10px);
+    }
 
-  /**
-   * The first hidden item gets a small preview as a hint
-   * that another toast is queued behind the stack.
-   */
-  toast-queue[data-position]:not([data-active]) [data-part="item"][data-peek] {
-    display: initial;
-    scale: 0.8;
-    opacity: 0;
+    &:not([data-active]) [data-part="item"]:not(:first-child) {
+      pointer-events: none;
+    }
+
+    &:not([data-active]) [data-part="item"] {
+      grid-area: 1 / 1;
+      scale: calc(1 - (var(--tq-item-index, 0) * 0.05));
+    }
+
+    /**
+     * The first hidden item gets a small preview as a hint
+     * that another toast is queued behind the stack.
+     */
+    &[data-position]:not([data-active]) [data-part="item"][data-peek] {
+      display: initial;
+      scale: 0.8;
+      opacity: 0;
+    }
   }
 
   ::view-transition-group(.tq-item) {

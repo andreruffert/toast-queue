@@ -26,15 +26,19 @@
     &[data-position^="top"] {
       inset-block-start: calc(var(--tq-offset-block) + env(safe-area-inset-top, 0px));
     }
+
     &[data-position^="bottom"] {
       inset-block-end: calc(var(--tq-offset-block) + env(safe-area-inset-bottom, 0px));
     }
+
     &[data-position$="-start"] {
       inset-inline-start: calc(var(--tq-offset-inline) + env(safe-area-inset-left, 0px));
     }
+
     &[data-position$="-end"] {
       inset-inline-end: calc(var(--tq-offset-inline) + env(safe-area-inset-right, 0px));
     }
+
     &[data-position="top-center"],
     &[data-position="bottom-center"] {
       inset-inline-start: calc(var(--tq-offset-inline) + env(safe-area-inset-left, 0px));
@@ -42,51 +46,51 @@
       margin-inline: auto;
     }
 
-    &:has([data-part="toast"][data-dragging]) {
+    /** Group */
+    [data-part="group"] {
+      /* Reset */
+      margin: unset;
+      padding: unset;
+      list-style: none;
+
+      /* The group is layout-transparent by default. Presets are responsible for defining the queue layout. */
+      display: contents;
+    }
+
+    /**
+     * Items beyond `visibleLimit` are flagged with `[data-hidden]`.
+     *
+     * The item owns queue state and layout. The toast surface is free to
+     * contain only the visual presentation of the notification.
+     */
+    [data-part="item"] {
+      &:is([data-swipeable]) {
+        /* Ensure that pointer events work properly on touch devices. */
+        touch-action: none;
+      }
+    }
+
+    [data-part="item"][data-hidden] {
+      display: none;
+    }
+
+    &:has([data-part="item"][data-dragging]) {
       /* Prevent content selection relevant for touch devices */
       user-select: none;
       -webkit-user-select: none;
     }
-  }
 
-  /** Group */
-  toast-queue [data-part="group"] {
-    /* Reset */
-    margin: unset;
-    padding: unset;
-    list-style: none;
-
-    /* The group is layout-transparent by default. Presets are responsible for defining the queue layout. */
-    display: contents;
-  }
-
-  /** Toast **/
-  toast-queue [data-part="toast"] {
-    background-color: Canvas;
-    display: flex;
-
-    &:is([data-swipeable]) {
-      /* Ensure that pointer events work properly on touch devices. */
-      touch-action: none;
+    /** Toast surface */
+    [data-part="toast"] {
+      background-color: Canvas;
+      display: flex;
     }
-  }
 
-  /** Close button */
-  toast-queue [data-part="toast"]:is([data-dismissible="false"]) [data-part="close-button"] {
-    display: none;
-  }
-
-  /** Toast content **/
-  toast-queue [data-part="content"] {
-    display: flex;
-    flex-direction: column;
-    min-inline-size: 0;
-  }
-
-  /**
-   * Items beyond `visibleLimit` are flagged with `[data-hidden]`.
-   */
-  toast-queue [data-part="item"][data-hidden] {
-    display: none;
+    /** Toast content **/
+    [data-part="content"] {
+      display: flex;
+      flex-direction: column;
+      min-inline-size: 0;
+    }
   }
 }

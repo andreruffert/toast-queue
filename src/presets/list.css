@@ -1,7 +1,18 @@
 @layer toast-queue {
-  toast-queue [data-part="group"] {
-    display: flex;
-    flex-direction: column-reverse;
+  toast-queue {
+    [data-part="group"] {
+      display: flex;
+    }
+
+    /* Add new items from top */
+    &:is([data-position^="top"]) [data-part="group"] {
+      flex-direction: column;
+    }
+
+    /* Add new items from bottom */
+    &:is([data-position^="bottom"]) [data-part="group"] {
+      flex-direction: column-reverse;
+    }
   }
 
   ::view-transition-group(.tq-item) {

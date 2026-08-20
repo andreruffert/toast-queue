@@ -36,11 +36,13 @@ describe('ToastQueue', () => {
 
     await expect.element(page.getByText('Toast message')).toBeInTheDocument();
 
-    const toastPart = document.querySelector(`[data-part="toast"][data-id="${toastRef.id}"]`);
+    const item = document.querySelector(`[data-part="item"][data-id="${toastRef.id}"]`);
+    const toastPart = item?.querySelector('[data-part="toast"]');
+
+    expect(item).toHaveAttribute('data-dismissible', 'true');
+    expect(item).toHaveAttribute('data-swipeable', 'right');
 
     expect(toastPart).toHaveAttribute('tabindex', '0');
-    expect(toastPart).toHaveAttribute('data-dismissible', 'true');
-    expect(toastPart).toHaveAttribute('data-swipeable', 'right');
   });
 
   test('renders title and description toast content', async () => {
@@ -53,7 +55,10 @@ describe('ToastQueue', () => {
 
     await expect.element(page.getByText('Description')).toBeInTheDocument();
 
-    const toastPart = document.querySelector(`[data-part="toast"][data-id="${toastRef.id}"]`);
+    const item = document.querySelector(`[data-part="item"][data-id="${toastRef.id}"]`);
+    const toastPart = item?.querySelector('[data-part="toast"]');
+
+    expect(item).toHaveAttribute('data-id', toastRef.id);
 
     expect(toastPart).toHaveAttribute('aria-labelledby', `tq:${toastRef.id}:title`);
 
@@ -148,11 +153,10 @@ describe('ToastQueue', () => {
 
     await expect.element(page.getByText('Toast message')).toBeInTheDocument();
 
-    const toastPart = document.querySelector(`[data-part="toast"][data-id="${toastRef.id}"]`);
+    const item = document.querySelector(`[data-part="item"][data-id="${toastRef.id}"]`);
 
-    expect(toastPart).toHaveAttribute('data-dismissible', 'false');
-
-    expect(toastPart).not.toHaveAttribute('data-swipeable');
+    expect(item).toHaveAttribute('data-dismissible', 'false');
+    expect(item).not.toHaveAttribute('data-swipeable');
 
     await expect
       .element(
@@ -163,28 +167,62 @@ describe('ToastQueue', () => {
       .not.toBeInTheDocument();
   });
 
+  test('resolves commands from the item boundary', async () => {
+    const toastRef = toastQueue.add('Toast message');
+
+    await expect.element(page.getByText('Toast message')).toBeInTheDocument();
+
+    const item = document.querySelector(`[data-part="item"][data-id="${toastRef.id}"]`);
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.dataset.command = 'close';
+    button.textContent = 'External close';
+    item.appendChild(button);
+
+    await page.getByRole('button', { name: 'External close' }).click();
+
+    expect(toastQueue.get(toastRef.id)).toBeUndefined();
+  });
+
   test('closes dismissible toast on Escape', async () => {
     const toastRef = toastQueue.add('Toast message');
 
     await expect.element(page.getByText('Toast message')).toBeInTheDocument();
 
-    const toastPart = document.querySelector(`[data-part="toast"][data-id="${toastRef.id}"]`);
+    const item = document.querySelector(`[data-part="item"][data-id="${toastRef.id}"]`);
+    const toastPart = item?.querySelector('[data-part="toast"]');
+
     toastPart.focus();
 
-    toastPart.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    toastPart.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+      }),
+    );
 
     expect(toastQueue.get(toastRef.id)).toBeUndefined();
   });
 
   test('ignores Escape on a non-dismissible toast', async () => {
-    const toastRef = toastQueue.add('Toast message', { dismissible: false });
+    const toastRef = toastQueue.add('Toast message', {
+      dismissible: false,
+    });
 
     await expect.element(page.getByText('Toast message')).toBeInTheDocument();
 
-    const toastPart = document.querySelector(`[data-part="toast"][data-id="${toastRef.id}"]`);
+    const item = document.querySelector(`[data-part="item"][data-id="${toastRef.id}"]`);
+    const toastPart = item?.querySelector('[data-part="toast"]');
+
     toastPart.focus();
 
-    toastPart.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    toastPart.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+      }),
+    );
 
     expect(toastQueue.get(toastRef.id)).toBe(toastRef);
   });
@@ -200,9 +238,9 @@ describe('ToastQueue', () => {
       expect(toastQueue.element).toHaveAttribute('data-position', 'bottom-center');
     });
 
-    const toastPart = document.querySelector(`[data-part="toast"][data-id="${toastRef.id}"]`);
+    const item = document.querySelector(`[data-part="item"][data-id="${toastRef.id}"]`);
 
-    expect(toastPart).toHaveAttribute('data-swipeable', getSwipeableDirection('bottom-center'));
+    expect(item).toHaveAttribute('data-swipeable', getSwipeableDirection('bottom-center'));
   });
 
   test('flags items beyond visibleLimit as hidden and exposes the count', async () => {
@@ -377,12 +415,14 @@ describe('ToastQueue', () => {
     const second = toastQueue.add('Second');
 
     await expect.element(page.getByText('First')).toBeInTheDocument();
-
     await expect.element(page.getByText('Second')).toBeInTheDocument();
 
-    const firstToast = document.querySelector(`[data-part="toast"][data-id="${first.id}"]`);
+    const firstItem = document.querySelector(`[data-part="item"][data-id="${first.id}"]`);
 
-    const secondToast = document.querySelector(`[data-part="toast"][data-id="${second.id}"]`);
+    const secondItem = document.querySelector(`[data-part="item"][data-id="${second.id}"]`);
+
+    const firstToast = firstItem?.querySelector('[data-part="toast"]');
+    const secondToast = secondItem?.querySelector('[data-part="toast"]');
 
     firstToast.focus();
 
@@ -403,7 +443,9 @@ describe('ToastQueue', () => {
 
     await expect.element(page.getByText('Third')).toBeInTheDocument();
 
-    const thirdToast = document.querySelector(`[data-part="toast"][data-id="${third.id}"]`);
+    const thirdItem = document.querySelector(`[data-part="item"][data-id="${third.id}"]`);
+
+    const thirdToast = thirdItem?.querySelector('[data-part="toast"]');
 
     // Focusing a toast is one of the ways the queue expands (data-active).
     thirdToast.focus();
@@ -472,7 +514,8 @@ describe('ToastQueue', () => {
 
     await expect.element(page.getByText('Toast message')).toBeInTheDocument();
 
-    const toastPart = document.querySelector(`[data-part="toast"][data-id="${toastRef.id}"]`);
+    const item = document.querySelector(`[data-part="item"][data-id="${toastRef.id}"]`);
+    const toastPart = item?.querySelector('[data-part="toast"]');
 
     toastPart.focus();
 
