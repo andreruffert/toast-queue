@@ -474,6 +474,7 @@ export class ToastQueue {
     for (const toast of this.#queue.values()) {
       this.#syncItemPosition(toast.itemRef, toast.dismissible);
     }
+
     wrapInViewTransition(() => {
       this.#rootPart.dataset.position = value;
     });
@@ -572,8 +573,8 @@ export class ToastQueue {
     if (event.key !== 'Escape') return;
 
     const target = event.target instanceof Element ? event.target : null;
-    const toastPart = target?.closest(SELECTORS.toast);
-    const id = toastPart?.dataset.id;
+    const item = target?.closest(SELECTORS.item);
+    const id = item?.dataset.id;
 
     if (!id) return;
 
@@ -589,7 +590,8 @@ export class ToastQueue {
     const target = event.target instanceof Element ? event.target : null;
     const commandTarget = target?.closest(SELECTORS.command);
     const command = commandTarget?.dataset.command;
-    const id = commandTarget?.closest(SELECTORS.toast)?.dataset.id;
+    const item = commandTarget?.closest(SELECTORS.item);
+    const id = item?.dataset.id;
 
     if (commandTarget) {
       event.stopPropagation();
@@ -828,34 +830,49 @@ export class ToastQueue {
   /* ---------------------------------------------------------------------- */
 
   /**
-   * Creates and populates a toast item from a toast record.
+   * Creates and populates a toast queue item from a toast record.
+   *
+   * The outer `<li>` owns queue state, identity, layout, and visibility.
+   * The inner `[data-part="toast"]` owns the toast's interactive and
+   * accessibility surface.
    *
    * @param {ToastRecord} toast - Toast data to render.
-   * @returns {HTMLLIElement} The newly created toast item.
+   * @returns {HTMLLIElement} The newly created toast queue item.
    */
   #createItem(toast) {
     const titleId = `tq:${toast.id}:title`;
     const descId = `tq:${toast.id}:desc`;
     const fragment = this.#template.item.content.cloneNode(true);
+
     const item = fragment.querySelector(SELECTORS.item);
-    const toastPart = item.querySelector(SELECTORS.toast);
+    const toastPart = fragment.querySelector(SELECTORS.toast);
     const iconPart = fragment.querySelector(SELECTORS.icon);
     const contentPart = fragment.querySelector(SELECTORS.content);
     const titlePart = fragment.querySelector(SELECTORS.title);
     const descPart = fragment.querySelector(SELECTORS.desc);
     const actionsPart = fragment.querySelector(SELECTORS.actions);
-    const closeButton = toastPart.querySelector(SELECTORS.closeButton);
+    const closeButton = fragment.querySelector(SELECTORS.closeButton);
 
+    // Queue state and layout belong to the item.
+    item.dataset.id = toast.id;
+    item.dataset.dismissible = toast.dismissible;
     item.style.setProperty('view-transition-name', `tq-item-${toast.id}`);
 
+    if (toast.className) {
+      item.classList.add(...toast.className.split(' '));
+    }
+
+    this.#syncItemPosition(item, toast.dismissible);
+
+    // The toast surface owns focus and accessibility semantics.
     toastPart.tabIndex = 0;
-    toastPart.dataset.id = toast.id;
-    toastPart.dataset.dismissible = toast.dismissible;
     toastPart.setAttribute('aria-labelledby', titleId);
 
     if (toast.dismissible === false) closeButton.remove();
-    if (toast.className) toastPart.classList.add(...toast.className.split(' '));
-    if (toast.content?.description) toastPart.setAttribute('aria-describedby', descId);
+
+    if (toast.content?.description) {
+      toastPart.setAttribute('aria-describedby', descId);
+    }
 
     if (toast.icon) {
       if (typeof iconPart.setHTML === 'function') {
@@ -880,23 +897,31 @@ export class ToastQueue {
     if (toast.action?.label) {
       const actionButtonTemplate = this.#template.actionButton.content.cloneNode(true);
       const actionButton = actionButtonTemplate.querySelector(SELECTORS.actionButton);
+
       actionButton.textContent = toast.action.label;
       actionsPart.appendChild(actionButton);
     } else {
       actionsPart.remove();
     }
 
-    this.#syncItemPosition(item, toast.dismissible);
-
     return item;
   }
 
+  /**
+   * Synchronizes item positioning and swipe state with the current queue
+   * position.
+   *
+   * @param {HTMLLIElement} item - Toast queue item.
+   * @param {boolean} dismissible - Whether the toast can be dismissed.
+   */
   #syncItemPosition(item, dismissible) {
     item.style.viewTransitionClass = `tq-item ${getPositionViewTransitionClass(this.#position)}`;
 
-    if (!dismissible) return;
-
-    item.querySelector(SELECTORS.toast).dataset.swipeable = getSwipeableDirection(this.#position);
+    if (dismissible) {
+      item.dataset.swipeable = getSwipeableDirection(this.#position);
+    } else {
+      delete item.dataset.swipeable;
+    }
   }
 
   /* ---------------------------------------------------------------------- */
@@ -916,9 +941,10 @@ export class ToastQueue {
     if (!this.#isActive) return;
 
     const { nextElementSibling: next, previousElementSibling: prev } = toast.itemRef;
+
     const target = next && !next.hasAttribute('data-hidden') ? next : prev;
 
-    target?.firstElementChild?.focus();
+    target?.querySelector(SELECTORS.toast)?.focus();
   }
 
   /* ---------------------------------------------------------------------- */

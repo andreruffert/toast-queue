@@ -149,6 +149,10 @@
     gap: .6rem;
   }
 
+  [data-part="item"]:is([data-dragging]) {
+    opacity: clamp(0.4, calc(1 - var(--tq-swipe-distance, 0)), 1);
+  }
+
   [data-part="toast"] {
     color: contrast-color(var(--toast-color));
     border: 1px solid color-mix(in srgb, currentColor, transparent 87%);
@@ -159,10 +163,6 @@
     gap: 1rem;
     font-size: smaller;
     flex-wrap: wrap;
-  }
-
-  [data-part="toast"]:is([data-dragging]) {
-    opacity: clamp(0.4, calc(1 - var(--tq-swipe-distance, 0)), 1);
   }
 
   [data-part="content"] {
