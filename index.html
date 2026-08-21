@@ -37,6 +37,10 @@
         gap: .6rem;
       }
 
+      toast-queue [data-part="item"]:is([data-dragging]) {
+        opacity: calc(1 - var(--tq-swipe-distance, 0));
+      }
+
       toast-queue [data-part="toast"] {
         color: hsl(from var(--toast-color) h s 15%);
         border: 1px solid var(--toast-color);
@@ -45,10 +49,6 @@
         border-radius: 1rem;
         padding: 1rem;
         gap: .5rem;
-
-        &:is([data-dragging]) {
-          opacity: calc(1 - var(--tq-swipe-distance, 0));
-        }
       }
 
       toast-queue [data-part="content"] {

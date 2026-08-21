@@ -78,7 +78,7 @@ const immediateTransition = () => ({
  * View Transition API is unavailable. In either case, the DOM update runs
  * synchronously and the returned promises resolve immediately.
  *
- * When a transition is aborted, its `finished` promise resolves instead of
+ * When a transition is aborted, its `finished` promise resolves rather than
  * rejecting. Other transition errors are propagated.
  *
  * When the provided root supports scoped View Transitions, the transition
