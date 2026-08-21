@@ -1,6 +1,6 @@
 {
   "name": "toast-queue",
-  "version": "1.0.0-alpha.25",
+  "version": "1.0.0-alpha.26",
   "description": "Accessible toast notifications for modern web apps. A framework-agnostic JavaScript library with progressive enhancement, sensible core styles, and optional CSS presets.",
   "type": "module",
   "exports": {
