@@ -295,7 +295,10 @@ export class ToastQueue {
     toast.itemRef = item;
     this.#queue.set(id, toast);
 
-    this.#syncRootState(() => {
+    // The popover must be open before the entering view transition begins.
+    this.#openPopover();
+
+    this.#updateWithTransition(() => {
       this.#groupPart.prepend(item);
     }).then(() => {
       this.#announce(toast);
@@ -337,17 +340,24 @@ export class ToastQueue {
     toast.timer?.clear();
     this.#moveFocusAfterClose(toast);
 
-    const wasLastToast = this.#queue.size === 0;
+    const isEmpty = this.#queue.size === 0;
+    const skipTransition = toast.itemRef.hasAttribute('data-hidden');
 
-    if (wasLastToast) {
+    if (isEmpty) {
       this.#clearActivation({ transition: false });
     }
 
-    this.#syncRootState(
-      () => toast.itemRef.remove(),
-      // Skip transition for hidden elements
-      toast.itemRef.hasAttribute('data-hidden'),
-    );
+    this.#updateWithTransition(
+      () => {
+        toast.itemRef.remove();
+      },
+      { transition: !skipTransition },
+    ).finally(() => {
+      // Close only after the visual removal has completed, and only if the queue is still empty.
+      if (this.#queue.size === 0) {
+        this.#closePopover();
+      }
+    });
 
     this.#dispatch('toast-close', { toast, reason });
 
@@ -371,9 +381,12 @@ export class ToastQueue {
   clear() {
     this.#clearActivation();
     this.#clearQueue();
-
-    this.#syncRootState(() => {
+    this.#updateWithTransition(() => {
       this.#groupPart.replaceChildren();
+    }).finally(() => {
+      if (this.#queue.size === 0) {
+        this.#closePopover();
+      }
     });
   }
 
@@ -790,34 +803,34 @@ export class ToastQueue {
     }
   }
 
-  #syncPopoverState() {
-    const open = this.#queue.size > 0;
-
-    if (open && !this.#rootPart.matches(':popover-open')) {
+  #openPopover() {
+    if (!this.#rootPart.matches(':popover-open')) {
       this.#rootPart.showPopover();
-    } else if (!open && this.#rootPart.matches(':popover-open')) {
+    }
+  }
+
+  #closePopover() {
+    if (this.#rootPart.matches(':popover-open')) {
       this.#rootPart.hidePopover();
     }
   }
 
   /**
-   * Applies a DOM update and synchronizes derived queue state.
+   * Applies a DOM update and synchronizes toast visibility metadata.
    *
-   * Updates popover visibility and toast visibility metadata after the DOM
-   * change. The update can optionally skip the view transition.
+   * The update can optionally skip the view transition.
    *
    * @param {function(): void} [update]
-   * @param {boolean} [skipTransition=false]
+   * @param {{transition: boolean}} [options]
    * @returns {Promise<void>}
    */
-  #syncRootState(update = () => {}, skipTransition = false) {
+  #updateWithTransition(update = () => {}, { transition = true } = {}) {
     const apply = () => {
       update();
-      this.#syncPopoverState();
       this.#syncVisibleLimitState();
     };
 
-    if (skipTransition) {
+    if (!transition) {
       apply();
       return Promise.resolve();
     }
