@@ -361,11 +361,6 @@
     }
   }
 
-  color-scheme-switch {
-    aspect-ratio: 1;
-    padding: var(--spacing-2) !important;
-  }
-
   code {
     padding: var(--spacing-0\.5) var(--spacing-1);
     border-radius: 0.25rem;
@@ -469,8 +464,7 @@
     .header-fields {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--spacing-5);
-
+      gap: var(--spacing-3);
       font-size: 0.9rem;
 
       a {
@@ -480,6 +474,11 @@
 
         color: inherit;
         text-wrap: nowrap;
+      }
+
+      [aria-label]:has(svg) {
+        aspect-ratio: 1;
+        padding: var(--spacing-2);
       }
 
       a span {
@@ -623,6 +622,7 @@
       display: flex;
       flex-direction: column;
       padding: 1rem;
+      border-block-end: 1px solid color-mix(in srgb, CurrentColor 10%, transparent);
 
       [command="close"] {
         align-self: flex-end;
@@ -653,7 +653,7 @@
       display: grid;
       gap: 0.75rem;
       margin: 0;
-      padding: 1rem 1.25rem;
+      padding: 1rem;
       border: 0;
       border-block-end: 1px solid color-mix(in srgb, CurrentColor 10%, transparent);
     }
