@@ -182,8 +182,19 @@ export class ToastQueue {
   /** @type {Swipeable} */
   #swipeable;
 
-  /** @type {AbortController} Controls all document/root event listeners added by this instance. */
+  /**
+   * Controls all document/root event listeners added by this instance.
+   *
+   * @type {AbortController}
+   */
   #controller = new AbortController();
+
+  /**
+   * Keep a history of modal contexts so nested dialogs can restore.
+   *
+   * @type {Array<{ dialog: HTMLDialogElement, parent: Node }>}
+   */
+  #topLayerContexts = [];
 
   constructor(options = {}) {
     const templates = options.template ?? {};
@@ -525,7 +536,8 @@ export class ToastQueue {
 
     document.addEventListener('visibilitychange', this.#onVisibility, { signal });
     document.addEventListener('pointerdown', this.#onOutsidePointer, { signal });
-    document.addEventListener('pointermove', this.#onPointerMove, { signal, passive: true });
+    document.addEventListener('pointermove', this.#onPointerMove, { passive: true, signal });
+    document.addEventListener('toggle', this.#onTopLayerToggle, { capture: true, signal });
 
     this.#rootPart.addEventListener('click', this.#onClick, { signal });
     this.#rootPart.addEventListener('focusin', this.#onFocusIn, { signal });
@@ -539,6 +551,43 @@ export class ToastQueue {
     const hovered = this.#rootPart.matches(':hover');
 
     this.#setPauseReason('hover', hovered);
+  };
+
+  /**
+   * Keeps the toast queue above dialogs and popovers.
+   *
+   * Modal dialogs require the queue to be moved inside the dialog so it remains in the non-inert
+   * DOM context. Popovers only require the queue to be re-promoted to the top of the top layer.
+   *
+   * When modal dialog closes, restore the toast-queue to its original context.
+   *
+   * @param {ToggleEvent} event
+   */
+  #onTopLayerToggle = ({ target, newState }) => {
+    if (target.matches(SELECTORS.root)) return;
+
+    const isDialog = target instanceof HTMLDialogElement;
+    const isPopover = target.hasAttribute('popover');
+    const isModal = target.matches(':modal');
+    const promoteToTopLayer = this.#rootPart.matches(':popover-open');
+
+    // Only care about dialogs and popovers.
+    if (!(isDialog || isPopover)) return;
+
+    if (newState === 'open') {
+      if (isDialog && isModal) {
+        this.#enterModalContext(target);
+      }
+      if (promoteToTopLayer) {
+        // Re-promotes the toast-queue to the top of the top layer.
+        this.#rootPart.hidePopover();
+        this.#rootPart.showPopover();
+      }
+    } else if (newState === 'closed' && isDialog) {
+      // Do not check `:modal` here. The dialog is no longer modal
+      // once the closed toggle event is dispatched.
+      this.#leaveModalContext(target);
+    }
   };
 
   /** @param {FocusEvent} event */
@@ -594,6 +643,7 @@ export class ToastQueue {
     const toast = this.#queue.get(id);
     if (!toast || toast.dismissible === false) return;
 
+    event.preventDefault();
     event.stopPropagation();
     this.close(id, 'escape');
   };
@@ -1002,5 +1052,58 @@ export class ToastQueue {
         priority: toast.priority,
       });
     }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Top layer                                                              */
+  /* ---------------------------------------------------------------------- */
+
+  /**
+   * Moves the queue into a new DOM context while preserving its open popover state.
+   *
+   * Modern browsers use moveBefore(), which preserves the element's state while moving it.
+   * Older browsers fall back to insertBefore(); because that removes and reinserts the popover,
+   * its open state must be restored explicitly.
+   *
+   * @param {Node} parent
+   */
+  #moveQueueTo(parent) {
+    if (typeof parent.moveBefore === 'function') {
+      parent.moveBefore(this.#rootPart, null);
+      return;
+    }
+
+    const wasOpen = this.#rootPart.matches(':popover-open');
+    parent.insertBefore(this.#rootPart, null);
+    if (wasOpen) this.#rootPart.showPopover();
+  }
+
+  /**
+   * Moves the queue into a modal dialog and remembers its previous DOM context.
+   *
+   * @param {HTMLDialogElement} dialog
+   */
+  #enterModalContext(dialog) {
+    const parent = this.#rootPart.parentNode;
+    if (!parent) return;
+
+    this.#topLayerContexts.push({ dialog, parent });
+    this.#moveQueueTo(dialog);
+  }
+
+  /**
+   * Restores the queue to the DOM context it occupied before entering a modal.
+   *
+   * @param {HTMLDialogElement} dialog
+   */
+  #leaveModalContext(dialog) {
+    const context = this.#topLayerContexts.at(-1);
+    if (!context || context.dialog !== dialog) return;
+
+    this.#topLayerContexts.pop();
+
+    if (!context.parent.isConnected) return;
+
+    this.#moveQueueTo(context.parent);
   }
 }

@@ -17,20 +17,38 @@
         box-sizing: border-box;
       }
 
+      main {
+        display: grid;
+        grid-column: auto;
+        gap: 1rem;
+      }
+
       button {
         touch-action: manipulation;
         user-select: none;
         -webkit-user-select: none;
       }
 
+      [id="demo-modal-dialog"],
+      [id="demo-popover"] {
+        width: min(100% - 2rem, 32rem);
+        max-block-size: 85vh;
+        min-block-size: 50vh;
+        border-radius: 1rem;
+      }
+
       /* toast-queue customization */
       toast-queue {
         --toast-color: Canvas;
 
-        display: flex;
-        flex-direction: column;
-        gap: .5rem;
+
         width: 300px;
+
+        &:popover-open {
+          display: flex;
+          flex-direction: column;
+          gap: .5rem;
+        }
       }
 
       toast-queue [data-part="group"] {
@@ -170,6 +188,30 @@
         <button type="button" data-action="add-no-dismiss">No dismiss</button>
         <button type="button" data-action="add-action">Action</button>
       </div>
+
+      <div data-actions>
+        <button type="button" commandfor="demo-modal-dialog" command="show-modal">Modal dialog top layer change</button>
+        <button type="button" popovertarget="demo-popover">Popover top layer change</button>
+      </div>
+
+      <dialog id="demo-modal-dialog">
+        <h1>Modal dialog</h1>
+        <button type="button" data-action="add-toast">Add toast</button>
+        <button type="button" commandfor="demo-nested-dialog" command="show-modal">Open nested dialog</button>
+        <button type="button" commandfor="demo-modal-dialog" command="close">Close dialog</button>
+
+        <dialog id="demo-nested-dialog">
+          <h1>Nested dialog</h1>
+          <button type="button" data-action="add-toast">Add toast</button>
+          <button type="button" commandfor="demo-nested-dialog" command="close">Close dialog</button>
+        </dialog>
+      </dialog>
+
+      <div id="demo-popover" popover>
+        <h1>Popover</h1>
+        <button type="button" data-action="add-toast">Add toast</button>
+        <button type="button" popovertarget="demo-popover" popovertargetaction="hide">Hide popover</button>
+      </div>
     </main>
 
     <script type="module">
@@ -180,6 +222,10 @@
 
       if (typeof HTMLElement.prototype.ariaNotify !== 'function') {
         await import('https://cdn.jsdelivr.net/npm/@github/arianotify-polyfill');
+      }
+
+      if (!(typeof HTMLButtonElement !== 'undefined' && 'command' in HTMLButtonElement.prototype && 'source' in (globalThis.CommandEvent?.prototype || {}))) {
+        await import('https://cdn.jsdelivr.net/npm/invokers-polyfill@latest/+esm');
       }
 
       const presetUrls = {
@@ -205,7 +251,7 @@
       document.head.appendChild(presetLink);
 
       window.tq = new ToastQueue({
-        // duration: 0,
+        root: document.querySelector('main'),
         position: toastPosition,
         template: {
           root: `<toast-queue>
@@ -215,6 +261,11 @@
             <ol data-part="group"></ol>
           </toast-queue>`,
         },
+      });
+
+      window.tq2 = new ToastQueue({
+        duration: 0,
+        position: 'top-start',
       });
 
       const toastQueue = tq.element;
