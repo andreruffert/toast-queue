@@ -563,4 +563,182 @@ describe('ToastQueue', () => {
 
     expect(root.isConnected).toBe(false);
   });
+
+  describe('top layer', () => {
+    test('moves the queue into a modal dialog', async () => {
+      const originalParent = toastQueue.element.parentNode;
+      const dialog = document.createElement('dialog');
+
+      document.body.appendChild(dialog);
+
+      toastQueue.add('Toast message');
+
+      dialog.showModal();
+
+      await vi.waitFor(() => {
+        expect(toastQueue.element.parentNode).toBe(dialog);
+      });
+
+      expect(toastQueue.element.matches(':popover-open')).toBe(true);
+
+      dialog.close();
+
+      await vi.waitFor(() => {
+        expect(toastQueue.element.parentNode).toBe(originalParent);
+      });
+
+      dialog.remove();
+    });
+
+    test('restores the queue to its original parent after a modal closes', async () => {
+      const container = document.createElement('div');
+      const dialog = document.createElement('dialog');
+
+      document.body.appendChild(container);
+      document.body.appendChild(dialog);
+
+      const queue = new ToastQueue({ root: container });
+      const originalParent = queue.element.parentNode;
+
+      queue.add('Toast message');
+
+      dialog.showModal();
+
+      await vi.waitFor(() => {
+        expect(queue.element.parentNode).toBe(dialog);
+      });
+
+      dialog.close();
+
+      await vi.waitFor(() => {
+        expect(queue.element.parentNode).toBe(originalParent);
+      });
+
+      queue.destroy();
+      dialog.remove();
+      container.remove();
+    });
+
+    test('restores nested modal dialogs in LIFO order', async () => {
+      const firstDialog = document.createElement('dialog');
+      const secondDialog = document.createElement('dialog');
+
+      document.body.append(firstDialog, secondDialog);
+
+      const originalParent = toastQueue.element.parentNode;
+
+      toastQueue.add('Toast message');
+
+      firstDialog.showModal();
+
+      await vi.waitFor(() => {
+        expect(toastQueue.element.parentNode).toBe(firstDialog);
+      });
+
+      secondDialog.showModal();
+
+      await vi.waitFor(() => {
+        expect(toastQueue.element.parentNode).toBe(secondDialog);
+      });
+
+      secondDialog.close();
+
+      await vi.waitFor(() => {
+        expect(toastQueue.element.parentNode).toBe(firstDialog);
+      });
+
+      firstDialog.close();
+
+      await vi.waitFor(() => {
+        expect(toastQueue.element.parentNode).toBe(originalParent);
+      });
+
+      firstDialog.remove();
+      secondDialog.remove();
+    });
+
+    test('does not move the queue for a non-modal dialog', async () => {
+      const originalParent = toastQueue.element.parentNode;
+      const dialog = document.createElement('dialog');
+
+      document.body.appendChild(dialog);
+
+      toastQueue.add('Toast message');
+
+      dialog.show();
+
+      expect(toastQueue.element.parentNode).toBe(originalParent);
+
+      dialog.close();
+      dialog.remove();
+    });
+
+    test('re-promotes an open queue when a popover opens', async () => {
+      const popover = document.createElement('div');
+
+      popover.setAttribute('popover', 'manual');
+      document.body.appendChild(popover);
+
+      toastQueue.add('Toast message');
+
+      await vi.waitFor(() => {
+        expect(toastQueue.element.matches(':popover-open')).toBe(true);
+      });
+
+      const originalParent = toastQueue.element.parentNode;
+
+      popover.showPopover();
+
+      await vi.waitFor(() => {
+        expect(toastQueue.element.matches(':popover-open')).toBe(true);
+      });
+
+      expect(toastQueue.element.parentNode).toBe(originalParent);
+
+      popover.hidePopover();
+      popover.remove();
+    });
+
+    test('ignores an out-of-order modal close', async () => {
+      const firstDialog = document.createElement('dialog');
+      const secondDialog = document.createElement('dialog');
+
+      document.body.append(firstDialog, secondDialog);
+
+      toastQueue.add('Toast message');
+
+      firstDialog.showModal();
+
+      await vi.waitFor(() => {
+        expect(toastQueue.element.parentNode).toBe(firstDialog);
+      });
+
+      secondDialog.showModal();
+
+      await vi.waitFor(() => {
+        expect(toastQueue.element.parentNode).toBe(secondDialog);
+      });
+
+      // The second modal is still active, so closing the first one must not
+      // restore the queue out of the active modal context.
+      firstDialog.close();
+
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(toastQueue.element.parentNode).toBe(secondDialog);
+
+      secondDialog.close();
+
+      await vi.waitFor(() => {
+        expect(toastQueue.element.parentNode).toBe(firstDialog);
+      });
+
+      // The first dialog's close was already consumed, so there is no
+      // subsequent close event to restore the original parent.
+      expect(toastQueue.element.parentNode).toBe(firstDialog);
+
+      firstDialog.remove();
+      secondDialog.remove();
+    });
+  });
 });
