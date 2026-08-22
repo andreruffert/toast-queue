@@ -266,20 +266,16 @@
   }
 
   .note {
-    margin: 1rem 1.25rem;
     padding: 0.75rem 0.875rem;
     color: color-mix(in srgb, CanvasText 65%, transparent);
     background: color-mix(in srgb, CanvasText 4%, Canvas);
     border-radius: 0.6rem;
     font-size: 0.8rem;
     line-height: 1.5;
+    width: fit-content;
 
     p {
       margin: 0;
-    }
-
-    code {
-      color: CanvasText;
     }
   }
 
@@ -300,6 +296,7 @@
     border-radius: 0.5rem;
     color: inherit;
     font: inherit;
+    font-size: 1rem;
     font-weight: 500;
     text-decoration: none;
     background: var(--button-face);
@@ -338,7 +335,6 @@
 
     select {
       border: none;
-
       button {
         display: flex;
         justify-content: space-between;
@@ -392,7 +388,6 @@
     syntax-highlight:not([content-selector="style"]),
     syntax-highlight:is([content-selector="style"]) style {
       padding: var(--spacing-4);
-
       border: 1px solid color-mix(in srgb, currentColor, transparent 87%);
       border-radius: 0.5rem;
     }
@@ -403,10 +398,8 @@
 
     syntax-highlight:is([content-selector="style"]) style {
       display: block;
-
       block-size: 400px;
       overflow: auto;
-
       outline: 0;
     }
 
@@ -416,15 +409,10 @@
 
       margin-block-start: var(--spacing-2);
       margin-inline-end: var(--spacing-2);
-
       opacity: 0;
-
       border-radius: calc(0.5rem - var(--spacing-2) / 2);
-
       font-size: small;
-
       background: color-mix(in srgb, var(--canvas) 88%, transparent);
-
       backdrop-filter: blur(8px);
     }
   }
@@ -677,6 +665,15 @@
       letter-spacing: 0.04em;
       text-transform: uppercase;
     }
+
+    .note {
+      margin: 1rem;
+    }
+
+    [commandfor="css-editor-dialog"] {
+      margin-inline: 1rem;
+      margin-block-end: 1rem;
+    }
   }
 
   /* ------------------------------------------------------------------------
@@ -729,36 +726,17 @@
      ------------------------------------------------------------------------ */
 
   .css-editor {
-    border-block-start: 1px solid color-mix(in srgb, CanvasText 10%, transparent);
+    border: 1px solid color-mix(in srgb, CanvasText 10%, transparent);
+    border-radius: 1rem;
 
-    summary {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 0.9rem 1.25rem;
-      cursor: pointer;
-      list-style: none;
-      font-size: 0.875rem;
-      font-weight: 600;
-
-      &::-webkit-details-marker {
-        display: none;
-      }
-
-      &::after {
-        content: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWNoZXZyb24tZG93bi1pY29uIGx1Y2lkZS1jaGV2cm9uLWRvd24iPjxwYXRoIGQ9Im02IDkgNiA2IDYtNiIvPjwvc3ZnPg==");
-        transition: transform 0.15s ease;
-      }
-    }
-
-    &[open] summary::after {
-      transform: rotate(180deg);
+    h2 {
+      /* margin: 0.15rem 0 0.5rem; */
+      margin-block-start: unset;
+      font-size: smaller;
     }
 
     .copy-code {
       margin: unset;
-      padding: 1rem;
       padding-block-start: 0;
       border-radius: inherit;
     }

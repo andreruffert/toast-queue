@@ -148,14 +148,15 @@
                 provides behavior and accessibility primitives. The visual presentation is yours to customize.
               </p>
             </div>
-
-            <details class="css-editor">
-              <summary>Customize CSS</summary>
-
-              <div class="copy-code">
-                <syntax-highlight language="css" content-selector="style">
-                  <!-- biome-ignore format: indent -->
-                  <style id="playground-css" type="text/css" spellcheck="false">toast-queue {
+            <button type="button" commandfor="css-editor-dialog" command="show-modal">Customize CSS</button>
+          </form>
+        </dialog>
+        <dialog class="css-editor" id="css-editor-dialog" closedby="any">
+          <h2>Customize CSS</h2>
+          <div class="copy-code">
+            <syntax-highlight language="css" content-selector="style">
+              <!-- biome-ignore format: indent -->
+              <style id="playground-css" type="text/css" spellcheck="false">toast-queue {
   --toast-color: light-dark(#ffffff, #171717);
   width: 300px;
 
@@ -222,13 +223,10 @@
     font-weight: 500;
     font-size: 1rem;
   }
-}
-                  </style>
-                </syntax-highlight>
-                <clipboard-copy for="playground-css" class="button"> Copy code </clipboard-copy>
-              </div>
-            </details>
-          </form>
+}</style>
+            </syntax-highlight>
+            <clipboard-copy for="playground-css" class="button"> Copy code </clipboard-copy>
+          </div>
         </dialog>
       </article>
       <article>
@@ -451,7 +449,9 @@ toastQueue.add('Your changes have been saved.');</syntax-highlight>
             <li><strong>stacked</strong>— a compact card stack where hidden toasts peek or overlap behind the active toast.</li>
           </ul>
 
-          <p>Presets are layered under <code>@layer toast-queue</code>, so your own styles can override them.</p>
+          <div class="note">
+            <p>Presets are layered under <code>@layer toast-queue</code>, so your own styles can override them.</p>
+          </div>
 
           <h4>Bundler</h4>
 
@@ -747,7 +747,7 @@ const toastQueue = new ToastQueue();</syntax-highlight>
       import 'https://cdn.jsdelivr.net/npm/syntax-highlight-element@1/+esm';
       import 'https://cdn.jsdelivr.net/npm/@github/clipboard-copy-element@1/+esm';
 
-      if (typeof HTMLButtonElement !== 'undefined' && 'command' in HTMLButtonElement.prototype && 'source' in ((globalThis.CommandEvent || {}).prototype || {})) {
+      if (!(typeof HTMLButtonElement !== 'undefined' && 'command' in HTMLButtonElement.prototype && 'source' in (globalThis.CommandEvent?.prototype || {}))) {
         await import('https://cdn.jsdelivr.net/npm/invokers-polyfill@latest/+esm');
       }
 
