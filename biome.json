@@ -27,5 +27,13 @@
     "formatter": {
       "quoteStyle": "single"
     }
+  },
+  "html": {
+    "formatter": {
+      "enabled": true,
+      "lineWidth": 320,
+      "indentScriptAndStyle": true
+    },
+    "experimentalFullSupportEnabled": true
   }
 }

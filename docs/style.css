@@ -230,6 +230,59 @@
     display: none;
   }
 
+  dialog {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: 150ms ease allow-discrete;
+    transition-property: opacity, transform, overlay, display;
+    overscroll-behavior: contain;
+
+    &:is([open]) {
+      opacity: 1;
+      transform: scale(1);
+
+      @starting-style {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+    }
+
+    &::backdrop {
+      background-color: rgba(0, 0, 0, 0);
+      transition: 150ms ease allow-discrete;
+      transition-property: background-color, overlay, display;
+
+      overflow: hidden;
+      overscroll-behavior: contain;
+    }
+
+    &:is([open])::backdrop {
+      background-color: rgb(0 0 0 / 0.3);
+
+      @starting-style {
+        background-color: rgb(0 0 0 / 0);
+      }
+    }
+  }
+
+  .note {
+    margin: 1rem 1.25rem;
+    padding: 0.75rem 0.875rem;
+    color: color-mix(in srgb, CanvasText 65%, transparent);
+    background: color-mix(in srgb, CanvasText 4%, Canvas);
+    border-radius: 0.6rem;
+    font-size: 0.8rem;
+    line-height: 1.5;
+
+    p {
+      margin: 0;
+    }
+
+    code {
+      color: CanvasText;
+    }
+  }
+
   /* ------------------------------------------------------------------------
       Interactive controls
     ------------------------------------------------------------------------ */
@@ -385,14 +438,7 @@
       Site header
     ------------------------------------------------------------------------ */
 
-  /*
-   * Scoped intentionally to the page header.
-   *
-   * The playground contains another <header class="popover-header">.
-   * Keeping this selector scoped prevents the site-header styles from
-   * leaking into that component.
-   */
-
+  /* Scoped intentionally to the page header. */
   body > header {
     position: sticky;
     inset-block-start: 0;
@@ -565,7 +611,7 @@
   }
 
   /* ------------------------------------------------------------------------
-      Playground popover
+      Playground dialog
     ------------------------------------------------------------------------ */
 
   #tq-controls {
@@ -584,6 +630,35 @@
     display: grid;
     gap: var(--spacing-1\.5);
 
+    header {
+      display: flex;
+      flex-direction: column;
+      padding: 1.25rem 1.25rem 1rem;
+      border-block-end: 1px solid color-mix(in srgb, CurrentColor 10%, transparent);
+
+      [command="close"] {
+        align-self: flex-end;
+        margin-inline-end: -0.5rem;
+        margin-block-start: -0.5rem;
+      }
+
+      .eyebrow {
+        font-size: smaller;
+        margin-block-start: 0;
+      }
+
+      h2 {
+        margin: 0.15rem 0 0.35rem;
+        font-size: 1rem;
+      }
+
+      p:last-child {
+        margin: 0;
+        color: color-mix(in srgb, CanvasText 65%, transparent);
+        font-size: 0.875rem;
+      }
+    }
+
     fieldset {
       display: grid;
       gap: 0.75rem;
@@ -601,31 +676,6 @@
       font-weight: 700;
       letter-spacing: 0.04em;
       text-transform: uppercase;
-    }
-  }
-
-  /* ------------------------------------------------------------------------
-      Popover header
-     ------------------------------------------------------------------------ */
-
-  .popover-header {
-    padding: 1.25rem 1.25rem 1rem;
-    border-block-end: 1px solid color-mix(in srgb, CurrentColor 10%, transparent);
-
-    .eyebrow {
-      font-size: smaller;
-      margin-block-start: 0;
-    }
-
-    h2 {
-      margin: 0.15rem 0 0.35rem;
-      font-size: 1rem;
-    }
-
-    p:last-child {
-      margin: 0;
-      color: color-mix(in srgb, CanvasText 65%, transparent);
-      font-size: 0.875rem;
     }
   }
 
@@ -675,26 +725,8 @@
   }
 
   /* ------------------------------------------------------------------------
-      Playground notes / editor
+      Playground editor
      ------------------------------------------------------------------------ */
-
-  .popover-note {
-    margin: 1rem 1.25rem;
-    padding: 0.75rem 0.875rem;
-    color: color-mix(in srgb, CanvasText 65%, transparent);
-    background: color-mix(in srgb, CanvasText 4%, Canvas);
-    border-radius: 0.6rem;
-    font-size: 0.8rem;
-    line-height: 1.5;
-
-    p {
-      margin: 0;
-    }
-
-    code {
-      color: CanvasText;
-    }
-  }
 
   .css-editor {
     border-block-start: 1px solid color-mix(in srgb, CanvasText 10%, transparent);

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>toast-queue — Accessible, customizable toast notifications</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <meta name="author" content="André Ruffert">
     <meta name="description" content="Accessible toast notifications for modern web apps. A framework-agnostic JavaScript library with progressive enhancement, sensible core styles, and optional CSS presets.">
@@ -14,18 +14,22 @@
     <meta property="og:image" content="https://repository-images.githubusercontent.com/1029697707/340c4711-aa28-41f7-bbb0-7e7d8fe8b566">
     <meta property="og:image:alt" content="Accessible toast notifications for modern web apps. A framework-agnostic JavaScript library with progressive enhancement, sensible core styles, and optional CSS presets.">
 
-    <link rel="icon" href="data:image/svg+xml,%3Csvg width%3D%22512%22 height%3D%22512%22 viewBox%3D%220 0 512 512%22 fill%3D%22none%22 xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cstyle%3E path%7Bcolor%3Ablack%7D%40media (prefers-color-scheme%3Adark)%7Bpath%7Bcolor%3Awhite%7D%7D%3C%2Fstyle%3E%3Crect width%3D%22512%22 height%3D%22512%22 rx%3D%22120%22 fill%3D%22url(%23paint0_linear_2_2)%22 fill-opacity%3D%220.3%22%2F%3E%3Cpath d%3D%22M304.877 355.467C311.87 381.538 296.382 408.336 270.283 415.323C244.183 422.308 217.355 406.836 210.362 380.764M247.806 155.519C252.767 146.603 254.402 135.827 251.551 125.196C245.722 103.47 223.367 90.5763 201.617 96.3979C179.867 102.219 166.96 124.551 172.787 146.277C175.639 156.908 182.448 165.424 191.208 170.668M334.964 215.866C329.144 194.165 313.602 176.018 291.762 165.417C269.92 154.816 243.568 152.63 218.5 159.339C193.433 166.049 171.705 181.104 158.096 201.193C144.487 221.283 140.112 244.76 145.933 266.462C155.565 302.366 153.694 331.011 147.612 352.777C140.68 377.586 137.214 389.99 138.151 392.48C139.222 395.33 139.997 396.113 142.838 397.213C145.322 398.174 155.755 395.38 176.622 389.796L370.122 338.005C390.988 332.419 401.422 329.627 403.092 327.553C405.002 325.181 405.281 324.117 404.784 321.115C404.348 318.489 395.137 309.479 376.715 291.456C360.554 275.643 344.596 251.771 334.964 215.866Z%22 stroke%3D%22currentColor%22 stroke-width%3D%2233%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%2F%3E%3Cdefs%3E%3ClinearGradient id%3D%22paint0_linear_2_2%22 x1%3D%22256%22 y1%3D%220%22 x2%3D%22256%22 y2%3D%22512%22 gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop stop-color%3D%22%23666666%22%2F%3E%3Cstop offset%3D%221%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3C%2Fsvg%3E" sizes="any" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg width%3D%22512%22 height%3D%22512%22 viewBox%3D%220 0 512 512%22 fill%3D%22none%22 xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cstyle%3E path%7Bcolor%3Ablack%7D%40media (prefers-color-scheme%3Adark)%7Bpath%7Bcolor%3Awhite%7D%7D%3C%2Fstyle%3E%3Crect width%3D%22512%22 height%3D%22512%22 rx%3D%22120%22 fill%3D%22url(%23paint0_linear_2_2)%22 fill-opacity%3D%220.3%22%2F%3E%3Cpath d%3D%22M304.877 355.467C311.87 381.538 296.382 408.336 270.283 415.323C244.183 422.308 217.355 406.836 210.362 380.764M247.806 155.519C252.767 146.603 254.402 135.827 251.551 125.196C245.722 103.47 223.367 90.5763 201.617 96.3979C179.867 102.219 166.96 124.551 172.787 146.277C175.639 156.908 182.448 165.424 191.208 170.668M334.964 215.866C329.144 194.165 313.602 176.018 291.762 165.417C269.92 154.816 243.568 152.63 218.5 159.339C193.433 166.049 171.705 181.104 158.096 201.193C144.487 221.283 140.112 244.76 145.933 266.462C155.565 302.366 153.694 331.011 147.612 352.777C140.68 377.586 137.214 389.99 138.151 392.48C139.222 395.33 139.997 396.113 142.838 397.213C145.322 398.174 155.755 395.38 176.622 389.796L370.122 338.005C390.988 332.419 401.422 329.627 403.092 327.553C405.002 325.181 405.281 324.117 404.784 321.115C404.348 318.489 395.137 309.479 376.715 291.456C360.554 275.643 344.596 251.771 334.964 215.866Z%22 stroke%3D%22currentColor%22 stroke-width%3D%2233%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%2F%3E%3Cdefs%3E%3ClinearGradient id%3D%22paint0_linear_2_2%22 x1%3D%22256%22 y1%3D%220%22 x2%3D%22256%22 y2%3D%22512%22 gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop stop-color%3D%22%23666666%22%2F%3E%3Cstop offset%3D%221%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3C%2Fsvg%3E"
+      sizes="any"
+    >
     <link rel="canonical" href="https://toast-queue.js.org">
     <link rel="stylesheet" href="./style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue/dist/toast-queue.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue/dist/presets/stacked.min.css" data-tq-preset>
     <script>
       // Ensure the event listener is setup before the initial `color-scheme-switch` event gets fired.
-      document.addEventListener('color-scheme-switch', event => {
+      document.addEventListener('color-scheme-switch', (event) => {
         const colorScheme = event.target.value;
         document.documentElement.style.setProperty('color-scheme', colorScheme);
-        event.target.querySelector('.icon use').setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", colorScheme === 'light' ? '#sun' : '#moon');
-        event.target.setAttribute('aria-label', `Switch to ${colorScheme === 'light' ? 'dark' : 'light'} color scheme`)
+        event.target.querySelector('.icon use').setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', colorScheme === 'light' ? '#sun' : '#moon');
+        event.target.setAttribute('aria-label', `Switch to ${colorScheme === 'light' ? 'dark' : 'light'} color scheme`);
       });
 
       window.she = window.she || {};
@@ -40,25 +44,38 @@
       <p class="brand">
         <span>
           <svg width="24" height="24" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <rect width="512" height="512" rx="120" fill="url(#paint0_linear_2_2)" fill-opacity="0.3"/>
-            <path d="M304.877 355.467C311.87 381.538 296.382 408.336 270.283 415.323C244.183 422.308 217.355 406.836 210.362 380.764M247.806 155.519C252.767 146.603 254.402 135.827 251.551 125.196C245.722 103.47 223.367 90.5763 201.617 96.3979C179.867 102.219 166.96 124.551 172.787 146.277C175.639 156.908 182.448 165.424 191.208 170.668M334.964 215.866C329.144 194.165 313.602 176.018 291.762 165.417C269.92 154.816 243.568 152.63 218.5 159.339C193.433 166.049 171.705 181.104 158.096 201.193C144.487 221.283 140.112 244.76 145.933 266.462C155.565 302.366 153.694 331.011 147.612 352.777C140.68 377.586 137.214 389.99 138.151 392.48C139.222 395.33 139.997 396.113 142.838 397.213C145.322 398.174 155.755 395.38 176.622 389.796L370.122 338.005C390.988 332.419 401.422 329.627 403.092 327.553C405.002 325.181 405.281 324.117 404.784 321.115C404.348 318.489 395.137 309.479 376.715 291.456C360.554 275.643 344.596 251.771 334.964 215.866Z" stroke="currentColor" stroke-width="33" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect width="512" height="512" rx="120" fill="url(#paint0_linear_2_2)" fill-opacity="0.3" />
+            <path
+              d="M304.877 355.467C311.87 381.538 296.382 408.336 270.283 415.323C244.183 422.308 217.355 406.836 210.362 380.764M247.806 155.519C252.767 146.603 254.402 135.827 251.551 125.196C245.722 103.47 223.367 90.5763 201.617 96.3979C179.867 102.219 166.96 124.551 172.787 146.277C175.639 156.908 182.448 165.424 191.208 170.668M334.964 215.866C329.144 194.165 313.602 176.018 291.762 165.417C269.92 154.816 243.568 152.63 218.5 159.339C193.433 166.049 171.705 181.104 158.096 201.193C144.487 221.283 140.112 244.76 145.933 266.462C155.565 302.366 153.694 331.011 147.612 352.777C140.68 377.586 137.214 389.99 138.151 392.48C139.222 395.33 139.997 396.113 142.838 397.213C145.322 398.174 155.755 395.38 176.622 389.796L370.122 338.005C390.988 332.419 401.422 329.627 403.092 327.553C405.002 325.181 405.281 324.117 404.784 321.115C404.348 318.489 395.137 309.479 376.715 291.456C360.554 275.643 344.596 251.771 334.964 215.866Z"
+              stroke="currentColor"
+              stroke-width="33"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
             <defs>
-            <linearGradient id="paint0_linear_2_2" x1="256" y1="0" x2="256" y2="512" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#666666"/>
-            <stop offset="1"/>
-            </linearGradient>
+              <linearGradient id="paint0_linear_2_2" x1="256" y1="0" x2="256" y2="512" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#666666" />
+                <stop offset="1" />
+              </linearGradient>
             </defs>
           </svg>
         </span>
         toast-queue
-        <span class="byline">by <a href="https://andreruffert.com" target="_blank" rel="noopener">André Ruffert</a></span>
+        <span class="byline"
+          >by
+          <a href="https://andreruffert.com" target="_blank" rel="noopener">André Ruffert</a></span
+        >
       </p>
       <div class="header-fields">
         <a class="button" href="https://github.com/andreruffert/toast-queue" target="_blank" rel="noopener" aria-label="View on GitHub">
-          <svg class="icon" width="1.1em" height="1.1em" aria-hidden="true"><use xlink:href="#github"></use></svg>
+          <svg class="icon" width="1.1em" height="1.1em" aria-hidden="true">
+            <use xlink:href="#github"></use>
+          </svg>
         </a>
         <color-scheme-switch class="button" title="Toggle light & dark color scheme">
-          <svg class="icon" width="1.2em" height="1.2em" aria-hidden="true"><use xlink:href="#sun"></use></svg>
+          <svg class="icon" width="1.2em" height="1.2em" aria-hidden="true">
+            <use xlink:href="#sun"></use>
+          </svg>
         </color-scheme-switch>
       </div>
     </header>
@@ -71,82 +88,79 @@
         </div>
         <div class="control-actions">
           <button type="button" id="addToast">Show toast</button>
-          <button type="button" popovertarget="tq-controls"><svg class="icon" width="1em" height="1em" aria-hidden="true"><use xlink:href="#settings"></use></svg> Settings</button>
+          <button type="button" commandfor="tq-controls" command="show-modal">
+            <svg class="icon" width="1em" height="1em" aria-hidden="true">
+              <use xlink:href="#settings"></use>
+            </svg>
+            Settings
+          </button>
           <button type="button" id="clearAll">Clear all</button>
           <output id="status" aria-live="polite">Toasts: 0</output>
         </div>
 
-        <div popover id="tq-controls">
-  <form class="playground-controls">
-    <header class="popover-header">
-      <div>
-        <p class="eyebrow">Playground</p>
-        <h2>Queue controls</h2>
-        <p>Change how the toast queue behaves.</p>
-      </div>
-    </header>
+        <dialog id="tq-controls">
+          <form class="playground-controls">
+            <header>
+              <button type="button" commandfor="tq-controls" command="close">Close</button>
+              <div>
+                <p class="eyebrow">Playground</p>
+                <h2>Queue controls</h2>
+                <p>Change how the toast queue behaves.</p>
+              </div>
+            </header>
 
-    <fieldset>
-      <legend>Behavior</legend>
+            <fieldset>
+              <legend>Behavior</legend>
 
-      <label class="field">
-        <span>Position</span>
-        <select id="position" aria-label="Toast position">
-          <option value="top-start">Top start</option>
-          <option value="top-center">Top center</option>
-          <option value="top-end">Top end</option>
-          <option value="bottom-start">Bottom start</option>
-          <option value="bottom-center">Bottom center</option>
-          <option value="bottom-end">Bottom end</option>
-        </select>
-      </label>
+              <label class="field">
+                <span>Position</span>
+                <select id="position" aria-label="Toast position">
+                  <option value="top-start">Top start</option>
+                  <option value="top-center">Top center</option>
+                  <option value="top-end">Top end</option>
+                  <option value="bottom-start">Bottom start</option>
+                  <option value="bottom-center">Bottom center</option>
+                  <option value="bottom-end">Bottom end</option>
+                </select>
+              </label>
 
-      <label class="field">
-        <span>Visible limit</span>
-        <input
-          type="number"
-          id="visibleLimit"
-          min="1"
-          max="8"
-          value="3"
-          inputmode="numeric"
-        />
-      </label>
-    </fieldset>
+              <label class="field">
+                <span>Visible limit</span>
+                <input type="number" id="visibleLimit" min="1" max="8" value="3" inputmode="numeric">
+              </label>
+            </fieldset>
 
-    <fieldset>
-      <legend>Appearance</legend>
+            <fieldset>
+              <legend>Appearance</legend>
 
-      <label class="field">
-        <span>Preset</span>
-        <select id="preset" aria-label="CSS preset">
-          <option value="list">List</option>
-          <option value="stacked" selected>Stacked</option>
-        </select>
-      </label>
-    </fieldset>
+              <label class="field">
+                <span>Preset</span>
+                <select id="preset" aria-label="CSS preset">
+                  <option value="list">List</option>
+                  <option value="stacked" selected>Stacked</option>
+                </select>
+              </label>
+            </fieldset>
 
-    <div class="popover-note">
-      <p>
-        <code>toast-queue</code> provides behavior and accessibility
-        primitives. The visual presentation is yours to customize.
-      </p>
-    </div>
+            <div class="note">
+              <p>
+                <code>toast-queue</code>
+                provides behavior and accessibility primitives. The visual presentation is yours to customize.
+              </p>
+            </div>
 
-    <details class="css-editor">
-      <summary>Customize CSS</summary>
+            <details class="css-editor">
+              <summary>Customize CSS</summary>
 
-      <div class="copy-code">
-        <syntax-highlight
-          language="css"
-          content-selector="style"
-        >
-          <style id="playground-css" type="text/css" spellcheck="false">toast-queue {
+              <div class="copy-code">
+                <syntax-highlight language="css" content-selector="style">
+                  <!-- biome-ignore format: indent -->
+                  <style id="playground-css" type="text/css" spellcheck="false">toast-queue {
   --toast-color: light-dark(#ffffff, #171717);
   width: 300px;
 
   [data-part="group"] {
-    gap: .6rem;
+    gap: 0.6rem;
   }
 
   [data-part="item"]:is([data-dragging]) {
@@ -157,7 +171,7 @@
     color: contrast-color(var(--toast-color));
     border: 1px solid color-mix(in srgb, currentColor, transparent 87%);
     background: var(--toast-color);
-    box-shadow: 0 4px 12px rgb(0, 0, 0, .1);
+    box-shadow: 0 4px 12px rgb(0, 0, 0, 0.1);
     border-radius: 1rem;
     padding: 1rem;
     gap: 1rem;
@@ -168,7 +182,7 @@
   [data-part="content"] {
     align-items: flex-start;
     flex: 1;
-    gap: .3rem;
+    gap: 0.3rem;
     min-inline-size: fit-content;
   }
 
@@ -196,7 +210,7 @@
 
   [data-part="action-button"] {
     width: 100%;
-    font-size: .8rem;
+    font-size: 0.8rem;
     font-weight: 600;
   }
   [data-part="close-button"] {
@@ -208,89 +222,79 @@
     font-weight: 500;
     font-size: 1rem;
   }
-}</style>
-        </syntax-highlight>
-
-        <clipboard-copy for="playground-css" class="button">
-          Copy code
-        </clipboard-copy>
-      </div>
-    </details>
-  </form>
-</div>
+}
+                  </style>
+                </syntax-highlight>
+                <clipboard-copy for="playground-css" class="button"> Copy code </clipboard-copy>
+              </div>
+            </details>
+          </form>
+        </dialog>
       </article>
       <article>
-      <div>
-        <p class="eyebrow">Documentation</p>
-        <h2 id="docs-heading">Using toast-queue</h2>
-        <p>
-          Add accessible toast notifications to any modern web app with a small,
-          framework-agnostic API. Start with the quick example, then customize
-          the queue and presentation to match your application.
-        </p>
-      </div>
-
-      <section>
-        <h3>Install</h3>
-
-        <p>
-          Install <code>toast-queue</code> from npm:
-        </p>
-
-        <div class="copy-code">
-          <syntax-highlight id="copy-install" language="shell">npm install toast-queue</syntax-highlight>
-          <clipboard-copy for="copy-install">Copy code</clipboard-copy>
+        <div>
+          <p class="eyebrow">Documentation</p>
+          <h2 id="docs-heading">Using toast-queue</h2>
+          <p>Add accessible toast notifications to any modern web app with a small, framework-agnostic API. Start with the quick example, then customize the queue and presentation to match your application.</p>
         </div>
-      </section>
 
-      <section>
-        <h3>Quick start</h3>
+        <section>
+          <h3>Install</h3>
 
-        <p>Create a queue and add a toast.</p>
+          <p>Install <code>toast-queue</code> from npm:</p>
 
-        <div class="copy-code">
-          <syntax-highlight id="copy-quick-start" language="js">import { ToastQueue } from 'toast-queue';
+          <div class="copy-code">
+            <syntax-highlight id="copy-install" language="shell">npm install toast-queue</syntax-highlight>
+            <clipboard-copy for="copy-install">Copy code</clipboard-copy>
+          </div>
+        </section>
+
+        <section>
+          <h3>Quick start</h3>
+
+          <p>Create a queue and add a toast.</p>
+
+          <div class="copy-code">
+            <!-- biome-ignore format: indent -->
+            <syntax-highlight id="copy-quick-start" language="js">import { ToastQueue } from 'toast-queue';
 
 const toastQueue = new ToastQueue();
 
 toastQueue.add('Your changes have been saved.');</syntax-highlight>
-      <clipboard-copy for="copy-quick-start">Copy code</clipboard-copy>
-    </div>
+            <clipboard-copy for="copy-quick-start">Copy code</clipboard-copy>
+          </div>
 
-    <p>
-      That's it. toast-queue handles the queue lifecycle, positioning, dismissal, interaction states, and screen-reader announcements for you.
-    </p>
-  </section>
+          <p>That's it. toast-queue handles the queue lifecycle, positioning, dismissal, interaction states, and screen-reader announcements for you.</p>
+        </section>
 
-  <section>
-    <h3>Adding toasts</h3>
+        <section>
+          <h3>Adding toasts</h3>
 
-    <p>
-      For simple messages, pass a string to <code>.add()</code>. For richer
-      notifications, pass an object containing a title and description.
-    </p>
+          <p>For simple messages, pass a string to <code>.add()</code>. For richer notifications, pass an object containing a title and description.</p>
 
-    <h4>Simple message</h4>
+          <h4>Simple message</h4>
 
-    <div class="copy-code">
-      <syntax-highlight id="copy-add-simple" language="js">toastQueue.add('Your profile has been updated.');</syntax-highlight>
-      <clipboard-copy for="copy-add-simple">Copy code</clipboard-copy>
-    </div>
+          <div class="copy-code">
+            <syntax-highlight id="copy-add-simple" language="js">toastQueue.add('Your profile has been updated.');</syntax-highlight>
+            <clipboard-copy for="copy-add-simple">Copy code</clipboard-copy>
+          </div>
 
-    <h4>Rich notification</h4>
+          <h4>Rich notification</h4>
 
-    <div class="copy-code">
-      <syntax-highlight id="copy-add-content" language="js">toastQueue.add({
+          <div class="copy-code">
+            <!-- biome-ignore format: indent -->
+            <syntax-highlight id="copy-add-content" language="js">toastQueue.add({
   title: 'Changes saved',
   description: 'Your profile has been updated.',
 });</syntax-highlight>
-      <clipboard-copy for="copy-add-content">Copy code</clipboard-copy>
-    </div>
+            <clipboard-copy for="copy-add-content">Copy code</clipboard-copy>
+          </div>
 
-    <h4>With an action</h4>
+          <h4>With an action</h4>
 
-    <div class="copy-code">
-      <syntax-highlight id="copy-action" language="js">toastQueue.add(
+          <div class="copy-code">
+            <!-- biome-ignore format: indent -->
+            <syntax-highlight id="copy-action" language="js">toastQueue.add(
   {
     title: 'Update available',
     description: 'A new version is ready to install.',
@@ -298,244 +302,236 @@ toastQueue.add('Your changes have been saved.');</syntax-highlight>
   {
     action: {
       label: 'Reload',
-      onClick: () => location.reload(),
+      onClick: () => location.reload()
     },
-  },
+  }
 );</syntax-highlight>
-      <clipboard-copy for="copy-action">Copy code</clipboard-copy>
-    </div>
-  </section>
+            <clipboard-copy for="copy-action">Copy code</clipboard-copy>
+          </div>
+        </section>
 
-  <section>
-    <h3>Controlling the queue</h3>
+        <section>
+          <h3>Controlling the queue</h3>
 
-    <p>Configure the queue when you create it. You can control where toasts appear, how long they remain visible, and how many are considered visible at once.</p>
+          <p>Configure the queue when you create it. You can control where toasts appear, how long they remain visible, and how many are considered visible at once.</p>
 
-    <div class="copy-code">
-      <syntax-highlight id="copy-queue-options" language="js">const toastQueue = new ToastQueue({
+          <div class="copy-code">
+            <!-- biome-ignore format: indent -->
+            <syntax-highlight id="copy-queue-options" language="js">const toastQueue = new ToastQueue({
   position: 'bottom-end',
   duration: 6000,
   visibleLimit: 3,
 });</syntax-highlight>
-      <clipboard-copy for="copy-queue-options">Copy code</clipboard-copy>
-    </div>
+            <clipboard-copy for="copy-queue-options">Copy code</clipboard-copy>
+          </div>
 
-    <h4>Position</h4>
+          <h4>Position</h4>
 
-    <p>
-      Choose from six logical positions:
-      <code>top-start</code>, <code>top-center</code>,
-      <code>top-end</code>, <code>bottom-start</code>,
-      <code>bottom-center</code>, and <code>bottom-end</code>. You can also change the position after creating the queue.
-    </p>
+          <p>
+            Choose from six logical positions:
+            <code>top-start</code>, <code>top-center</code>,
+            <code>top-end</code>, <code>bottom-start</code>,
+            <code>bottom-center</code>, and <code>bottom-end</code>. You can also change the position after creating the queue.
+          </p>
 
-    <div class="copy-code">
-      <syntax-highlight id="copy-position" language="js">const toastQueue = new ToastQueue({
+          <div class="copy-code">
+            <!-- biome-ignore format: indent -->
+            <syntax-highlight id="copy-position" language="js">const toastQueue = new ToastQueue({
   position: 'top-end',
 });</syntax-highlight>
-      <clipboard-copy for="copy-position">Copy code</clipboard-copy>
-    </div>
+            <clipboard-copy for="copy-position">Copy code</clipboard-copy>
+          </div>
 
-    <h4>Visible limit</h4>
+          <h4>Visible limit</h4>
 
-    <p>
-      <code>visibleLimit</code> controls how many toasts are considered visible at the same time. Additional toasts remain rendered in the queue and are marked hidden <code>[data-hidden]</code> until the visible limit allows them to be shown.
-    </p>
+          <p>
+            <code>visibleLimit</code>
+            controls how many toasts are considered visible at the same time. Additional toasts remain rendered in the queue and are marked hidden
+            <code>[data-hidden]</code>
+            until the visible limit allows them to be shown.
+          </p>
 
-    <div class="copy-code">
-      <syntax-highlight id="copy-visible-limit" language="js">const toastQueue = new ToastQueue({
+          <div class="copy-code">
+            <!-- biome-ignore format: indent -->
+            <syntax-highlight id="copy-visible-limit" language="js">const toastQueue = new ToastQueue({
   visibleLimit: 3,
 });</syntax-highlight>
-      <clipboard-copy for="copy-visible-limit">Copy code</clipboard-copy>
-    </div>
-  </section>
+            <clipboard-copy for="copy-visible-limit">Copy code</clipboard-copy>
+          </div>
+        </section>
 
-  <section>
-    <h3>Per-toast options</h3>
+        <section>
+          <h3>Per-toast options</h3>
 
-    <p>Individual toasts can customize their behavior by passing options as the second argument to <code>.add()</code>.</p>
+          <p>Individual toasts can customize their behavior by passing options as the second argument to <code>.add()</code>.</p>
 
-    <div class="copy-code">
-      <syntax-highlight id="copy-toast-options" language="js">toastQueue.add('Your changes have been saved.', {
+          <div class="copy-code">
+            <!-- biome-ignore format: indent -->
+            <syntax-highlight id="copy-toast-options" language="js">toastQueue.add('Your changes have been saved.', {
   duration: 6000,
   dismissible: true,
   priority: 'normal',
   className: 'my-toast',
   onClose: () => {
     console.log('Toast closed');
-  },
+  }
 });</syntax-highlight>
-      <clipboard-copy for="copy-toast-options">Copy code</clipboard-copy>
-    </div>
+            <clipboard-copy for="copy-toast-options">Copy code</clipboard-copy>
+          </div>
 
-    <h4>Disable automatic dismissal</h4>
+          <h4>Disable automatic dismissal</h4>
 
-    <p>
-      Set <code>duration</code> to <code>0</code> when a toast should remain visible until it is dismissed by the user or your application.
-    </p>
+          <p>Set <code>duration</code> to <code>0</code> when a toast should remain visible until it is dismissed by the user or your application.</p>
 
-    <div class="copy-code">
-      <syntax-highlight id="copy-persistent" language="js">toastQueue.add(
+          <div class="copy-code">
+            <!-- biome-ignore format: indent -->
+            <syntax-highlight id="copy-persistent" language="js">toastQueue.add(
   {
     title: 'Import finished',
     description: 'Your files are ready.',
   },
   {
     duration: 0,
-  },
+  }
 );</syntax-highlight>
-      <clipboard-copy for="copy-persistent">Copy code</clipboard-copy>
-    </div>
-  </section>
+            <clipboard-copy for="copy-persistent">Copy code</clipboard-copy>
+          </div>
+        </section>
 
-  <section>
-    <h3>Styling</h3>
+        <section>
+          <h3>Styling</h3>
 
-    <p>
-      <code>toast-queue</code> provides the queue behavior, accessibility
-      primitives, interaction states, and sensible structural styles.
-      It does not impose a visual design system.
-    </p>
+          <p>
+            <code>toast-queue</code>
+            provides the queue behavior, accessibility primitives, interaction states, and sensible structural styles. It does not impose a visual design system.
+          </p>
 
-    <p>
-      Customize the component with the <code>data-part</code> attributes
-      exposed by the toast markup. CSS custom properties are also available for queue-level positioning and interaction effects.
-    </p>
+          <p>Customize the component with the <code>data-part</code> attributes exposed by the toast markup. CSS custom properties are also available for queue-level positioning and interaction effects.</p>
 
-    <div class="copy-code">
-      <syntax-highlight id="copy-styling" language="css">/* Customization */
-toast-queue {
+          <div class="copy-code">
+            <!-- biome-ignore format: indent -->
+            <syntax-highlight id="copy-styling" language="css">toast-queue {
   /* ... */
-
-  [data-part="group"]         { /* ... */ }
-  [data-part="item"]          { /* ... */ }
-  [data-part="toast"]         { /* ... */ }
-  [data-part="icon"]          { /* ... */ }
-  [data-part="actions"]       { /* ... */ }
+  [data-part="group"] { /* ... */ }
+  [data-part="item"] { /* ... */ }
+  [data-part="toast"] { /* ... */ }
+  [data-part="icon"] { /* ... */ }
+  [data-part="actions"] { /* ... */ }
   [data-part="action-button"] { /* ... */ }
-  [data-part="close-button"]  { /* ... */ }
-}</syntax-highlight>
-      <clipboard-copy for="copy-styling">Copy code</clipboard-copy>
-    </div>
+  [data-part="close-button"] { /* ... */ }
+}</syntax-highlight
+            >
+            <clipboard-copy for="copy-styling">Copy code</clipboard-copy>
+          </div>
 
-    <h4>Positioning</h4>
+          <h4>Positioning</h4>
 
-    <p>
-      Use logical offset variables to control the distance from the viewport.
-    </p>
+          <p>Use logical offset variables to control the distance from the viewport.</p>
 
-    <div class="copy-code">
-      <syntax-highlight id="copy-offset" language="css">toast-queue {
+          <div class="copy-code">
+            <!-- biome-ignore format: indent -->
+            <syntax-highlight id="copy-offset" language="css">toast-queue {
   --tq-offset: 1rem;
 
   /* Or control each axis independently. */
   --tq-offset-inline: 1.5rem;
   --tq-offset-block: 2rem;
 }</syntax-highlight>
-      <clipboard-copy for="copy-offset">Copy code</clipboard-copy>
-    </div>
-  </section>
+            <clipboard-copy for="copy-offset">Copy code</clipboard-copy>
+          </div>
+        </section>
 
-  <section>
-    <h3>Presets</h3>
+        <section>
+          <h3>Presets</h3>
 
-    <p>
-      Optional CSS presets provide ready-made layouts without taking control
-      away from your application.
-    </p>
+          <p>Optional CSS presets provide ready-made layouts without taking control away from your application.</p>
 
-    <ul>
-      <li>
-        <strong>list</strong> — a conventional vertical queue where each toast occupies its own space.
-      </li>
-      <li>
-        <strong>stacked</strong> — a compact card stack where hidden toasts peek or overlap behind the active toast.
-      </li>
-    </ul>
+          <ul>
+            <li><strong>list</strong>— a conventional vertical queue where each toast occupies its own space.</li>
+            <li><strong>stacked</strong>— a compact card stack where hidden toasts peek or overlap behind the active toast.</li>
+          </ul>
 
-    <p>
-      Presets are layered under <code>@layer toast-queue</code>, so your own
-      styles can override them.
-    </p>
+          <p>Presets are layered under <code>@layer toast-queue</code>, so your own styles can override them.</p>
 
-    <h4>Bundler</h4>
+          <h4>Bundler</h4>
 
-    <div class="copy-code">
-      <syntax-highlight id="copy-presets-bundler" language="js">import 'toast-queue/presets/list.css';
+          <div class="copy-code">
+            <!-- biome-ignore format: indent -->
+            <syntax-highlight id="copy-presets-bundler" language="js">import 'toast-queue/presets/list.css';
 import 'toast-queue/presets/stacked.css';</syntax-highlight>
-      <clipboard-copy for="copy-presets-bundler">Copy code</clipboard-copy>
-    </div>
+            <clipboard-copy for="copy-presets-bundler">Copy code</clipboard-copy>
+          </div>
 
-    <h4>CDN</h4>
+          <h4>CDN</h4>
 
-    <div class="copy-code">
-      <syntax-highlight id="copy-presets-cdn" language="markup">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue/dist/presets/list.min.css"&gt;
+          <div class="copy-code">
+            <!-- biome-ignore format: indent -->
+            <syntax-highlight id="copy-presets-cdn" language="markup">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue/dist/presets/list.min.css"&gt;
 &lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue/dist/presets/stacked.min.css"&gt;</syntax-highlight>
-      <clipboard-copy for="copy-presets-cdn">Copy code</clipboard-copy>
-    </div>
-  </section>
+            <clipboard-copy for="copy-presets-cdn">Copy code</clipboard-copy>
+          </div>
+        </section>
 
-  <section>
-    <h3>Using toast-queue without a bundler</h3>
+        <section>
+          <h3>Using toast-queue without a bundler</h3>
 
-    <p>
-      Load the package directly from a CDN. This is useful for static sites, prototypes, and progressively enhanced applications.
-    </p>
+          <p>Load the package directly from a CDN. This is useful for static sites, prototypes, and progressively enhanced applications.</p>
 
-    <div class="copy-code">
-      <syntax-highlight id="copy-cdn" language="markup">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue/dist/toast-queue.min.css"&gt;
+          <div class="copy-code">
+            <!-- biome-ignore format: indent -->
+            <syntax-highlight id="copy-cdn" language="markup">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue/dist/toast-queue.min.css"&gt;
 
 &lt;script type="module">
   import { ToastQueue } from 'https://cdn.jsdelivr.net/npm/toast-queue/+esm';
 
   const toastQueue = new ToastQueue();
+  // ...
+&lt;/script&gt;</syntax-highlight
+            >
+            <clipboard-copy for="copy-cdn">Copy code</clipboard-copy>
+          </div>
+        </section>
 
-  toastQueue.add('Hello from toast-queue!');
-&lt;/script&gt;</syntax-highlight>
-      <clipboard-copy for="copy-cdn">Copy code</clipboard-copy>
-    </div>
-  </section>
+        <section>
+          <h3>Accessibility</h3>
 
-  <section>
-    <h3>Accessibility</h3>
+          <p>Toasts are announced to assistive technologies when supported by the browser. The queue also manages interaction states so a toast can be inspected or interacted with without being immediately dismissed.</p>
 
-    <p>Toasts are announced to assistive technologies when supported by the browser. The queue also manages interaction states so a toast can be inspected or interacted with without being immediately dismissed.</p>
+          <p>
+            <code>toast-queue</code>
+            uses modern browser APIs and progressively enhances them. Where supported animation or transition APIs are unavailable, the toast still renders and remains functional.
+          </p>
 
-    <p>
-      <code>toast-queue</code> uses modern browser APIs and progressively
-      enhances them. Where supported animation or transition APIs are unavailable, the toast still renders and remains functional.
-    </p>
+          <p>
+            If <code>ariaNotify()</code> is not available, you can load the
+            <code>@github/arianotify-polyfill</code>
+            conditionally before creating the queue:
+          </p>
 
-    <p>
-      If <code>ariaNotify()</code> is not available, you can load the <code>@github/arianotify-polyfill</code> conditionally before creating the queue:
-    </p>
-
-    <div class="copy-code">
-      <syntax-highlight id="copy-aria-polyfill" language="js">if (typeof HTMLElement.prototype.ariaNotify !== 'function') {
+          <div class="copy-code">
+            <!-- biome-ignore format: indent -->
+            <syntax-highlight id="copy-aria-polyfill" language="js">if (typeof HTMLElement.prototype.ariaNotify !== 'function') {
   await import('@github/arianotify-polyfill');
 }
 
 const toastQueue = new ToastQueue();</syntax-highlight>
-      <clipboard-copy for="copy-aria-polyfill">Copy code</clipboard-copy>
-    </div>
-  </section>
+            <clipboard-copy for="copy-aria-polyfill">Copy code</clipboard-copy>
+          </div>
+        </section>
 
-  <section>
-    <h3>Need more?</h3>
-
-    <p>
-      For the complete API, including queue options, toast options, methods, properties, and template hooks, see the <a
-        href="https://github.com/andreruffert/toast-queue/blob/main/API.md"
-        target="_blank"
-        rel="noopener"
-      >API reference</a>.
-    </p>
-  </section>
-</article>
+        <section>
+          <h3>Need more?</h3>
+          <p>
+            For the complete API, including queue options, toast options, methods, properties, and template hooks, see the
+            <a href="https://github.com/andreruffert/toast-queue/blob/main/API.md" target="_blank" rel="noopener">API reference</a>.
+          </p>
+        </section>
+      </article>
     </main>
     <footer>
       <p>
-        An open source project by <a href="https://andreruffert.com" target="_blank" rel="noopener">André Ruffert</a>.
+        An open source project by
+        <a href="https://andreruffert.com" target="_blank" rel="noopener">André Ruffert</a>.
       </p>
       <p class="footer-links">
         <a href="https://github.com/andreruffert/toast-queue" target="_blank" rel="noopener">GitHub</a>
@@ -563,10 +559,15 @@ const toastQueue = new ToastQueue();</syntax-highlight>
         <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
       </symbol>
       <symbol id="github" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.09 3.29 9.4 7.86 10.93.57.1.78-.25.78-.55 0-.27-.01-1.16-.02-2.11-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.71 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.64 1.59.24 2.77.12 3.06.74.81 1.18 1.84 1.18 3.1 0 4.44-2.7 5.42-5.27 5.7.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .3.2.66.79.55A10.51 10.51 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"></path>
+        <path
+          d="M12 .5C5.73.5.5 5.73.5 12c0 5.09 3.29 9.4 7.86 10.93.57.1.78-.25.78-.55 0-.27-.01-1.16-.02-2.11-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.71 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.64 1.59.24 2.77.12 3.06.74.81 1.18 1.84 1.18 3.1 0 4.44-2.7 5.42-5.27 5.7.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .3.2.66.79.55A10.51 10.51 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"
+        ></path>
       </symbol>
       <symbol id="settings" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/>
+        <path
+          d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"
+        />
+        <circle cx="12" cy="12" r="3" />
       </symbol>
     </svg>
     <script type="module">
@@ -575,6 +576,7 @@ const toastQueue = new ToastQueue();</syntax-highlight>
       if (typeof HTMLElement.prototype.ariaNotify !== 'function') {
         await import('https://cdn.jsdelivr.net/npm/@github/arianotify-polyfill@1/+esm');
       }
+
       const positionSelect = document.querySelector('#position');
       const presetSelect = document.querySelector('#preset');
       const visibleLimitInput = document.querySelector('#visibleLimit');
@@ -584,41 +586,38 @@ const toastQueue = new ToastQueue();</syntax-highlight>
       const tqControls = document.querySelector('#tq-controls');
 
       const playgroundCss = document.querySelector('#playground-css');
-      /**
-         * Playground CSS
-         * Allow only plaintext editing
-         * Firefox doesn't support `plaintext-only` yet so we fallback to `true`.
-         */
-        playgroundCss.setAttribute('contenteditable', 'plaintext-only');
-        if (playgroundCss.contentEditable !== 'plaintext-only') {
-          playgroundCss.setAttribute('contenteditable', 'true');
+
+      // Allow only plaintext editing with fallback to `true`
+      playgroundCss.setAttribute('contenteditable', 'plaintext-only');
+      if (playgroundCss.contentEditable !== 'plaintext-only') {
+        playgroundCss.setAttribute('contenteditable', 'true');
+      }
+
+      // Update syntax highlighting on input
+      playgroundCss.addEventListener('input', (event) => {
+        event.target.normalize();
+        event.target.closest('syntax-highlight')?.update();
+      });
+
+      // Enhance content-editable functionality
+      playgroundCss.addEventListener('keydown', (event) => {
+        // The tab key should insert a tab character
+        if (event.key === 'Tab') {
+          event.preventDefault();
+
+          const selection = window.getSelection();
+          if (!selection.rangeCount) return;
+
+          const range = selection.getRangeAt(0);
+          const tabNode = document.createTextNode('  '); // two spaces
+          range.insertNode(tabNode);
+          // Move the caret after the inserted spaces
+          range.setStartAfter(tabNode);
+          range.setEndAfter(tabNode);
+          selection.removeAllRanges();
+          selection.addRange(range);
         }
-        // Update syntax highlighting on input
-        playgroundCss.addEventListener('input', event => {
-          // if (SUPPORTS_CSS_HIGHLIGHTS) {
-            event.target.normalize();
-            event.target.closest('syntax-highlight')?.update();
-          // }
-        });
-        // Enhance content-editable functionality
-        playgroundCss.addEventListener('keydown', (event) => {
-          // The tab key should insert a tab character
-          if (event.key === 'Tab') {
-            event.preventDefault();
-
-            const selection = window.getSelection();
-            if (!selection.rangeCount) return;
-
-            const range = selection.getRangeAt(0);
-            const tabNode = document.createTextNode('  '); // two spaces
-            range.insertNode(tabNode);
-            // Move the caret after the inserted spaces
-            range.setStartAfter(tabNode);
-            range.setEndAfter(tabNode);
-            selection.removeAllRanges();
-            selection.addRange(range);
-          }
-        });
+      });
 
       const loadPreset = async (name) => {
         presetSelect.disabled = true;
@@ -629,15 +628,16 @@ const toastQueue = new ToastQueue();</syntax-highlight>
         link.onload = () => {
           document.head.removeChild(oldThemeStyles);
           presetSelect.disabled = false;
-        }
-        link.onerror = error => {
-          tq.add({ title: `Failed to load preset: ${name}`, description: error }, { className: 'tq-demo--action'})
+        };
+        link.onerror = (error) => {
+          tq.add({ title: `Failed to load preset: ${name}`, description: error }, { className: 'tq-demo--action' });
           console.error(`Failed to load preset: ${name}`, error);
           presetSelect.disabled = false;
         };
         link.href = `https://cdn.jsdelivr.net/npm/toast-queue@latest/dist/presets/${name}.min.css`;
         document.head.appendChild(link);
       };
+
       const storedPosition = localStorage.getItem('tq-position') || 'top-end';
       positionSelect.value = storedPosition;
 
@@ -683,29 +683,31 @@ const toastQueue = new ToastQueue();</syntax-highlight>
 
       tq.add(
         {
-          title: "toast-queue",
-          description:
-            "Accessible, customizable toast notifications for modern web apps."
+          title: 'toast-queue',
+          description: 'Accessible, customizable toast notifications for modern web apps.',
         },
         {
           duration: 10_000,
           action: {
-            label: "View on GitHub",
-            onClick: () => window.open("https://github.com/andreruffert/toast-queue")
+            label: 'View on GitHub',
+            onClick: () => window.open('https://github.com/andreruffert/toast-queue'),
           },
           onClose: renderStatus,
-        }
+        },
       );
 
       renderStatus();
 
       addToastButton.addEventListener('click', () => {
-        tq.add({
-          title: 'Toast created',
-          description: new Date(Date.now()).toLocaleTimeString()
-        }, {
-          onClose: renderStatus,
-        })
+        tq.add(
+          {
+            title: 'Toast created',
+            description: new Date(Date.now()).toLocaleTimeString(),
+          },
+          {
+            onClose: renderStatus,
+          },
+        );
         renderStatus();
       });
 
@@ -731,13 +733,13 @@ const toastQueue = new ToastQueue();</syntax-highlight>
         renderStatus();
       });
 
-      tqControls.addEventListener("toggle", (event) => {
+      tqControls.addEventListener('toggle', (event) => {
         const state = event.newState;
 
         if (state === 'open') {
-          tq.pause()
+          tq.pause();
         } else {
-          tq.resume()
+          tq.resume();
         }
       });
     </script>
@@ -745,10 +747,14 @@ const toastQueue = new ToastQueue();</syntax-highlight>
       import 'https://cdn.jsdelivr.net/npm/syntax-highlight-element@1/+esm';
       import 'https://cdn.jsdelivr.net/npm/@github/clipboard-copy-element@1/+esm';
 
-      document.addEventListener('clipboard-copy', event => {
+      if (typeof HTMLButtonElement !== 'undefined' && 'command' in HTMLButtonElement.prototype && 'source' in ((globalThis.CommandEvent || {}).prototype || {})) {
+        await import('https://cdn.jsdelivr.net/npm/invokers-polyfill@latest/+esm');
+      }
+
+      document.addEventListener('clipboard-copy', (event) => {
         const button = event.target;
         const defaultContent = button.textContent;
-        button.textContent = 'Copied Code'
+        button.textContent = 'Copied Code';
         setTimeout(() => {
           button.textContent = defaultContent;
         }, 1800);

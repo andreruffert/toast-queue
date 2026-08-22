@@ -18,6 +18,7 @@
 - Customizable: Bring your own CSS or start with the included presets.
 - Accessible: Screen-reader announcements via [`ariaNotify()`](#browser-support), keyboard dismissal with <kbd>Escape</kbd>, and focus management.
 - Touch-friendly: Swipe to dismiss on touch devices.
+- Top-layer: Stays above dialogs and popovers
 - Progressively enhanced: uses modern browser APIs where available and falls back where possible.
 
 > [!NOTE]
