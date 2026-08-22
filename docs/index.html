@@ -101,7 +101,7 @@
         <dialog id="tq-controls">
           <form class="playground-controls">
             <header>
-              <button type="button" commandfor="tq-controls" command="close">Close</button>
+              <button type="button" commandfor="tq-controls" command="close" aria-label="Close">&times;</button>
               <div>
                 <p class="eyebrow">Playground</p>
                 <h2>Queue controls</h2>
@@ -152,7 +152,10 @@
           </form>
         </dialog>
         <dialog class="css-editor" id="css-editor-dialog" closedby="any">
-          <h2>Customize CSS</h2>
+          <header>
+            <h2>Customize CSS</h2>
+            <button type="button" commandfor="css-editor-dialog" command="close" aria-label="Close">&times;</button>
+          </header>
           <div class="copy-code">
             <syntax-highlight language="css" content-selector="style">
               <!-- biome-ignore format: indent -->
@@ -214,6 +217,7 @@
     font-size: 0.8rem;
     font-weight: 600;
   }
+
   [data-part="close-button"] {
     display: flex;
     align-items: center;
@@ -404,14 +408,18 @@ toastQueue.add('Your changes have been saved.');</syntax-highlight>
             provides the queue behavior, accessibility primitives, interaction states, and sensible structural styles. It does not impose a visual design system.
           </p>
 
-          <p>Customize the component with the <code>data-part</code> attributes exposed by the toast markup. CSS custom properties are also available for queue-level positioning and interaction effects.</p>
+          <p>Customize the component with the <code>data-part</code> attributes exposed by the toast markup. Styling hooks and CSS custom properties are also available for queue-level positioning and interaction effects.</p>
 
           <div class="copy-code">
             <!-- biome-ignore format: indent -->
             <syntax-highlight id="copy-styling" language="css">toast-queue {
   /* ... */
+  &[data-active] { /* ... */ }
+  &[data-position] { /* ... */ }
   [data-part="group"] { /* ... */ }
   [data-part="item"] { /* ... */ }
+  [data-part="item"][data-hidden] { /* ... */ }
+  [data-part="item"][data-peek] { /* ... */ }
   [data-part="toast"] { /* ... */ }
   [data-part="icon"] { /* ... */ }
   [data-part="actions"] { /* ... */ }

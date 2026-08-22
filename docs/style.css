@@ -295,7 +295,7 @@
     border: 1px solid transparent;
     border-radius: 0.5rem;
     color: inherit;
-    font: inherit;
+    font-family: inherit;
     font-size: 1rem;
     font-weight: 500;
     text-decoration: none;
@@ -318,6 +318,7 @@
   input,
   select,
   [contenteditable] {
+    font-family: inherit;
     font-size: 1rem;
   }
 
@@ -621,13 +622,14 @@
     header {
       display: flex;
       flex-direction: column;
-      padding: 1.25rem 1.25rem 1rem;
-      border-block-end: 1px solid color-mix(in srgb, CurrentColor 10%, transparent);
+      padding: 1rem;
 
       [command="close"] {
         align-self: flex-end;
         margin-inline-end: -0.5rem;
         margin-block-start: -0.5rem;
+        aspect-ratio: 1;
+        padding: unset;
       }
 
       .eyebrow {
@@ -670,7 +672,7 @@
       margin: 1rem;
     }
 
-    [commandfor="css-editor-dialog"] {
+    [command="show-modal"] {
       margin-inline: 1rem;
       margin-block-end: 1rem;
     }
@@ -704,7 +706,7 @@
       background: color-mix(in srgb, CanvasText 4%, Canvas);
       border: 1px solid color-mix(in srgb, CanvasText 15%, transparent);
       border-radius: 0.6rem;
-      font: inherit;
+      font-weight: normal;
     }
 
     &:has(input[type="number"]) {
@@ -729,15 +731,27 @@
     border: 1px solid color-mix(in srgb, CanvasText 10%, transparent);
     border-radius: 1rem;
 
+    header {
+      display: flex;
+      align-items: center;
+      margin-block-end: 1rem;
+    }
+
     h2 {
-      /* margin: 0.15rem 0 0.5rem; */
-      margin-block-start: unset;
+      margin: unset;
       font-size: smaller;
+    }
+
+    [command="close"] {
+      margin-inline-start: auto;
+      margin-inline-end: -0.5rem;
+      margin-block-start: -0.5rem;
+      aspect-ratio: 1;
+      padding: unset;
     }
 
     .copy-code {
       margin: unset;
-      padding-block-start: 0;
       border-radius: inherit;
     }
   }
