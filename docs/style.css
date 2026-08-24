@@ -730,6 +730,7 @@
   .css-editor {
     border: 1px solid color-mix(in srgb, CanvasText 10%, transparent);
     border-radius: 1rem;
+    max-width: calc(100% - 1rem - 6px);
 
     header {
       display: flex;
@@ -737,17 +738,14 @@
       margin-block-end: 1rem;
     }
 
-    h2 {
+    header h2 {
       margin: unset;
       font-size: smaller;
     }
 
     [command="close"] {
-      margin-inline-start: auto;
-      margin-inline-end: -0.5rem;
-      margin-block-start: -0.5rem;
-      aspect-ratio: 1;
-      padding: unset;
+      margin-block-start: 1rem;
+      width: stretch;
     }
 
     .copy-code {

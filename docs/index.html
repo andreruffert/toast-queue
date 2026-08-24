@@ -6,13 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <meta name="author" content="André Ruffert">
-    <meta name="description" content="Accessible toast notifications for modern web apps. A framework-agnostic JavaScript library with progressive enhancement, sensible core styles, and optional CSS presets.">
+    <meta name="description" content="Accessible, customizable toast notifications for modern web apps. A framework-agnostic JavaScript library with progressive enhancement, sensible core styles, and optional CSS presets.">
 
     <meta property="og:title" content="toast-queue — Accessible, customizable toast notifications">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://toast-queue.js.org">
     <meta property="og:image" content="https://repository-images.githubusercontent.com/1029697707/340c4711-aa28-41f7-bbb0-7e7d8fe8b566">
-    <meta property="og:image:alt" content="Accessible toast notifications for modern web apps. A framework-agnostic JavaScript library with progressive enhancement, sensible core styles, and optional CSS presets.">
+    <meta property="og:image:alt" content="Accessible, customizable toast notifications for modern web apps. A framework-agnostic JavaScript library with progressive enhancement, sensible core styles, and optional CSS presets.">
 
     <link
       rel="icon"
@@ -159,7 +159,6 @@
         <dialog class="css-editor" id="css-editor-dialog" closedby="any">
           <header>
             <h2>Customize CSS</h2>
-            <button type="button" commandfor="css-editor-dialog" command="close" aria-label="Close">&times;</button>
           </header>
           <div class="copy-code">
             <syntax-highlight language="css" content-selector="style">
@@ -236,6 +235,7 @@
             </syntax-highlight>
             <clipboard-copy for="playground-css" class="button"> Copy code </clipboard-copy>
           </div>
+          <button type="button" commandfor="css-editor-dialog" command="close">Done</button>
         </dialog>
       </article>
       <article>
@@ -584,7 +584,7 @@ const toastQueue = new ToastQueue();</syntax-highlight>
           transform="translate(-.43 -.878)"
         ></path>
       </symbol>
-      <symbol id="settings" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <symbol id="settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path
           d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"
         />
@@ -708,7 +708,7 @@ const toastQueue = new ToastQueue();</syntax-highlight>
           description: 'Accessible, customizable toast notifications for modern web apps.',
         },
         {
-          duration: 10_000,
+          duration: 0,
           action: {
             label: 'View on GitHub',
             onClick: () => window.open('https://github.com/andreruffert/toast-queue'),
