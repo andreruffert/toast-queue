@@ -173,7 +173,7 @@ export class Swipeable {
       const target = this.#target;
       this.#dragFrame = requestAnimationFrame(() => {
         target.addEventListener('transitionend', onTransitionEnd, { once: true });
-        target.style.setProperty('transition', 'translate 0.3s');
+        target.style.setProperty('transition', 'translate 0.2s');
         target.style.removeProperty('translate');
         target.style.removeProperty('--tq-swipe-distance');
         target.style.removeProperty('will-change');
