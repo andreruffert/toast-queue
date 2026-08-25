@@ -21,8 +21,8 @@
     >
     <link rel="canonical" href="https://toast-queue.js.org">
     <link rel="stylesheet" href="./style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue/dist/toast-queue.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue/dist/presets/stacked.min.css" data-tq-preset>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue@1/dist/toast-queue.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue@1/dist/presets/stacked.min.css" data-tq-preset>
     <script>
       // Ensure the event listener is setup before the initial `color-scheme-switch` event gets fired.
       document.addEventListener('color-scheme-switch', (event) => {
@@ -479,8 +479,8 @@ import 'toast-queue/presets/stacked.css';</syntax-highlight>
 
           <div class="copy-code">
             <!-- biome-ignore format: indent -->
-            <syntax-highlight id="copy-presets-cdn" language="markup">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue/dist/presets/list.min.css"&gt;
-&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue/dist/presets/stacked.min.css"&gt;</syntax-highlight>
+            <syntax-highlight id="copy-presets-cdn" language="markup">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue@1/dist/presets/list.min.css"&gt;
+&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue@1/dist/presets/stacked.min.css"&gt;</syntax-highlight>
             <clipboard-copy for="copy-presets-cdn">Copy code</clipboard-copy>
           </div>
         </section>
@@ -492,10 +492,10 @@ import 'toast-queue/presets/stacked.css';</syntax-highlight>
 
           <div class="copy-code">
             <!-- biome-ignore format: indent -->
-            <syntax-highlight id="copy-cdn" language="markup">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue/dist/toast-queue.min.css"&gt;
+            <syntax-highlight id="copy-cdn" language="markup">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toast-queue@1/dist/toast-queue.min.css"&gt;
 
 &lt;script type="module">
-  import { ToastQueue } from 'https://cdn.jsdelivr.net/npm/toast-queue/+esm';
+  import { ToastQueue } from 'https://cdn.jsdelivr.net/npm/toast-queue@1/+esm';
 
   const toastQueue = new ToastQueue();
   // ...
@@ -592,7 +592,7 @@ const toastQueue = new ToastQueue();</syntax-highlight>
       </symbol>
     </svg>
     <script type="module">
-      import { ToastQueue } from 'https://cdn.jsdelivr.net/npm/toast-queue/+esm';
+      import { ToastQueue } from 'https://cdn.jsdelivr.net/npm/toast-queue@1/+esm';
 
       if (typeof HTMLElement.prototype.ariaNotify !== 'function') {
         await import('https://cdn.jsdelivr.net/npm/@github/arianotify-polyfill@1/+esm');
@@ -655,7 +655,7 @@ const toastQueue = new ToastQueue();</syntax-highlight>
           console.error(`Failed to load preset: ${name}`, error);
           presetSelect.disabled = false;
         };
-        link.href = `https://cdn.jsdelivr.net/npm/toast-queue@latest/dist/presets/${name}.min.css`;
+        link.href = `https://cdn.jsdelivr.net/npm/toast-queue@1/dist/presets/${name}.min.css`;
         document.head.appendChild(link);
       };
 
