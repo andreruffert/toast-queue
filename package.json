@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.9",
-    "@vitest/browser-playwright": "4.1.10",
+    "@vitest/browser-playwright": "4.1.11",
     "vite": "8.2.2",
     "vitest": "4.1.11"
   },
